@@ -1,0 +1,44 @@
+import type { Config } from 'tailwindcss';
+
+const config: Config = {
+  content: [
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        background: '#F7F5F3',
+        surface: '#FFFFFF',
+        sage: '#5B7A65',
+        coral: '#C47663',
+        amber: '#C09050',
+        ink: '#1F2420',
+        muted: '#6D756F',
+        hairline: '#EBE9E6',
+      },
+      fontFamily: {
+        serif: ['Instrument Serif', 'Georgia', 'serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      borderRadius: {
+        card: '1rem',
+      },
+      boxShadow: {
+        soft: '0 1px 2px rgba(31, 36, 32, 0.06), 0 8px 24px rgba(31, 36, 32, 0.06)',
+      },
+      keyframes: {
+        'fade-up': {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'fade-up': 'fade-up 0.45s ease-out both',
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;

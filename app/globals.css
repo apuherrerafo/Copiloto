@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-ink font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Safe area insets for iPhone notch/home indicator */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
