@@ -6,16 +6,14 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" fill="url(#hcg)"/>
-  <!-- Centro del trazo ~ (236,228) vs centro lienzo (256,256) → translate(20,28) -->
-  <g transform="translate(20 28)">
-    <path
-      d="M112 256 h30 l22 -80 l52 156 l38 -208 l38 140 h68"
-      fill="none"
-      stroke="#F7F5F3"
-      stroke-width="30"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      opacity="0.97"
-    />
-  </g>
+  <!-- Isotipo ECG centrado en 512; pico R en x=256; trazo más simétrico para icono maskable -->
+  <path
+    d="M 88 298 H 188 L 208 262 L 232 330 L 256 182 L 280 330 L 304 262 H 424"
+    fill="none"
+    stroke="#F7F5F3"
+    stroke-width="28"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.98"
+  />
 </svg>
