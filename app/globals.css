@@ -33,6 +33,30 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /**
+   * Tactile feedback on tap (especially iOS / PWA): visible flash + no 300ms delay.
+   * Subtle brightness on :active for native buttons (avoid transform here — framer whileTap uses transform).
+   */
+  button:enabled,
+  [type='button']:enabled,
+  [type='submit']:enabled,
+  [role='button']:not([aria-disabled='true']) {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(91, 122, 101, 0.16);
+    transition: filter 0.12s ease, opacity 0.12s ease;
+  }
+  button:enabled:active,
+  [type='button']:enabled:active,
+  [type='submit']:enabled:active,
+  [role='button']:not([aria-disabled='true']):active {
+    filter: brightness(0.94);
+  }
+
+  a[href] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(91, 122, 101, 0.12);
+  }
+
   /* Fondo editorial: malla orgánica cálida (peach + coral + sage) al estilo del mock. */
   .home-mesh {
     background-color: #F9F4EE;

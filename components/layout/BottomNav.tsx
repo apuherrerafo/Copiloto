@@ -88,7 +88,7 @@ export default function BottomNav() {
       <Link
         href="/registrar"
         aria-label="Log"
-        className="fixed bottom-[max(1.35rem,calc(env(safe-area-inset-bottom,0px)+0.85rem))] left-1/2 z-[60] flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-sage text-white shadow-lift ring-4 ring-background/95 transition-transform active:scale-95 hover:brightness-105"
+        className="fixed bottom-[max(1.35rem,calc(env(safe-area-inset-bottom,0px)+0.85rem))] left-1/2 z-[60] flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-sage text-white shadow-lift ring-4 ring-background/95 transition-[transform,filter] duration-150 ease-out hover:brightness-105 active:scale-[0.88] active:brightness-95"
       >
         <motion.span
           animate={{ rotate: fabActive ? 45 : 0 }}
@@ -125,35 +125,29 @@ export default function BottomNav() {
 
 function NavLink({ tab, active }: { tab: Tab; active: boolean }) {
   return (
-    <motion.div
-      whileTap={{ scale: 0.86 }}
-      transition={{ type: 'spring', stiffness: 480, damping: 22 }}
-      className="min-w-0"
+    <Link
+      href={tab.href}
+      className="group flex min-w-0 max-w-[5.75rem] flex-1 flex-col items-center gap-0.5 pb-1 outline-none transition-[transform,filter] duration-150 ease-out active:scale-[0.92] active:brightness-[0.96]"
+      aria-current={active ? 'page' : undefined}
     >
-      <Link
-        href={tab.href}
-        className="group flex flex-col items-center gap-0.5 pb-1 outline-none"
-        aria-current={active ? 'page' : undefined}
-      >
-        <span
-          className={`relative flex h-11 w-11 items-center justify-center rounded-full transition-all duration-200 ease-out
-            group-active:scale-90 group-active:bg-sage/20 group-active:text-sage
-            ${
-              active
-                ? 'bg-sage text-white shadow-[0_6px_16px_-4px_rgba(91,122,101,0.5)] ring-2 ring-sage/30 ring-offset-2 ring-offset-background/0'
-                : 'text-ink/55 group-hover:text-ink/80'
-            }`}
-        >
-          {tab.icon(active)}
-        </span>
-        <span
-          className={`text-[10px] leading-none transition-colors ${
-            active ? 'font-semibold text-sage' : 'font-normal text-muted group-active:text-sage'
+      <span
+        className={`relative flex h-11 w-11 items-center justify-center rounded-full transition-[transform,background-color,color,box-shadow] duration-150 ease-out
+          group-active:scale-[0.88] group-active:bg-sage/25 group-active:text-sage
+          ${
+            active
+              ? 'bg-sage text-white shadow-[0_6px_16px_-4px_rgba(91,122,101,0.5)] ring-2 ring-sage/30 ring-offset-2 ring-offset-background/0'
+              : 'text-ink/55 group-hover:text-ink/80'
           }`}
-        >
-          {tab.label}
-        </span>
-      </Link>
-    </motion.div>
+      >
+        {tab.icon(active)}
+      </span>
+      <span
+        className={`text-[10px] leading-none transition-colors duration-150 ${
+          active ? 'font-semibold text-sage' : 'font-normal text-muted group-active:text-sage'
+        }`}
+      >
+        {tab.label}
+      </span>
+    </Link>
   );
 }

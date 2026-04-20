@@ -314,8 +314,9 @@ export default function HistorialPage() {
                 key={t.key}
                 type="button"
                 onClick={() => setTab(t.key)}
-                whileTap={{ scale: 0.96 }}
-                className={`relative min-w-0 flex-1 rounded-full px-2 py-2 text-[9px] font-semibold uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[10px] ${
+                whileTap={{ scale: 0.88 }}
+                transition={{ type: 'spring', stiffness: 520, damping: 26 }}
+                className={`relative min-w-0 flex-1 touch-manipulation rounded-full px-2 py-2 text-[9px] font-semibold uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[10px] ${
                   active ? 'text-white' : 'text-ink/70 hover:text-ink'
                 }`}
               >
@@ -397,9 +398,11 @@ export default function HistorialPage() {
             return (
               <motion.button
                 key={key}
+                type="button"
                 onClick={() => setFilter(key)}
-                whileTap={{ scale: 0.94 }}
-                className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition-colors ${
+                whileTap={{ scale: 0.88 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 26 }}
+                className={`flex shrink-0 touch-manipulation items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition-colors ${
                   active
                     ? 'border-ink bg-ink text-white'
                     : 'border-hairline/80 bg-white/85 text-ink/80 hover:bg-white'
