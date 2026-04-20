@@ -1,7 +1,10 @@
 export type HypoSession = {
   name: string;
   email?: string;
+  /** Foto subida en el dispositivo (data URL) */
   avatarDataUrl?: string;
+  /** Foto de perfil de Google (URL https) */
+  avatarUrl?: string;
   createdAt: number;
 };
 

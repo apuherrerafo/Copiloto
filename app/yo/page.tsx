@@ -82,10 +82,10 @@ export default function YoPage() {
 
       <div className="px-6 space-y-5 pb-8">
         <div className="flex flex-col items-center py-2">
-          {session?.avatarDataUrl ? (
+          {session?.avatarUrl || session?.avatarDataUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={session.avatarDataUrl}
+              src={session.avatarUrl ?? session.avatarDataUrl}
               alt=""
               className="w-24 h-24 rounded-full object-cover border-2 border-hairline shadow-soft"
             />

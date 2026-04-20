@@ -1,9 +1,10 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useEffect, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import BottomNav from '@/components/layout/BottomNav';
-import { readSession, clearSession, type HypoSession } from '@/lib/auth/session';
+import { clearSession, type HypoSession } from '@/lib/auth/session';
 
 type Ctx = {
   session: HypoSession | null;
@@ -22,35 +23,40 @@ export function useHypoSession(): Ctx {
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-  const [session, setSession] = useState<HypoSession | null>(null);
+  const { data: authSession, status, update } = useSession();
+
+  const hypoSession = useMemo((): HypoSession | null => {
+    if (status !== 'authenticated' || !authSession?.user) return null;
+    const u = authSession.user;
+    return {
+      name: u.name?.trim() || 'Usuario',
+      email: u.email ?? undefined,
+      avatarUrl: u.image ?? undefined,
+      avatarDataUrl: undefined,
+      createdAt: 0,
+    };
+  }, [status, authSession]);
 
   const refresh = useCallback(() => {
-    setSession(readSession());
-  }, []);
+    void update();
+  }, [update]);
 
   const logout = useCallback(() => {
     clearSession();
-    setSession(null);
-    router.replace('/entrar');
-  }, [router]);
+    void signOut({ callbackUrl: '/entrar' });
+  }, []);
 
   useEffect(() => {
-    refresh();
-    setMounted(true);
-  }, [refresh]);
-
-  useEffect(() => {
-    if (!mounted) return;
-    if (!session && pathname !== '/entrar') {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated' && pathname !== '/entrar') {
       router.replace('/entrar');
     }
-    if (session && pathname === '/entrar') {
+    if (status === 'authenticated' && pathname === '/entrar') {
       router.replace('/');
     }
-  }, [mounted, session, pathname, router]);
+  }, [status, pathname, router]);
 
-  if (!mounted) {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3 px-6">
         <div className="w-10 h-10 rounded-full border-2 border-sage border-t-transparent animate-spin" />
@@ -60,11 +66,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
     );
   }
 
-  /** Siempre renderizamos la ruta: el efecto redirige a /entrar si no hay sesión.
-   *  Antes ocultábamos `children` y muchos navegadores se quedaban en spinner en blanco. */
-  const showNav = !!session && pathname !== '/entrar';
+  const showNav = status === 'authenticated' && pathname !== '/entrar';
 
-  const value: Ctx = { session, refresh, logout };
+  const value: Ctx = { session: hypoSession, refresh, logout };
 
   return (
     <SessionContext.Provider value={value}>

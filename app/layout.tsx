@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import AppShell from '@/components/layout/AppShell';
 import PWARecovery from '@/components/layout/PWARecovery';
+import AuthSessionProvider from '@/components/providers/AuthSessionProvider';
 import { APP_NAME, APP_TAGLINE } from '@/lib/brand';
 
 export const metadata: Metadata = {
@@ -34,9 +35,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <PWARecovery />
-        <AppShell>
-          <main className="min-h-screen pb-20">{children}</main>
-        </AppShell>
+        <AuthSessionProvider>
+          <AppShell>
+            <main className="min-h-screen pb-20">{children}</main>
+          </AppShell>
+        </AuthSessionProvider>
       </body>
     </html>
   );
