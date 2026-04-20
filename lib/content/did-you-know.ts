@@ -138,6 +138,67 @@ export const DID_YOU_KNOW: DidYouKnowItem[] = [
     hint: 'Bioequivalencia entre marcas de levotiroxina · ATA 2014',
     evidence: 'consenso expertos',
   },
+  /* ──── BIOHACK + LONGEVIDAD ──── */
+  {
+    topic: 'biohack',
+    fact: '¿Sabías que el frío activa la grasa parda — el tejido que literalmente quema calorías para producir calor? Una ducha fría de 30–90 segundos al final de tu baño puede activarla. En hipotiroidismo, donde el metabolismo ya va lento, esta es una de las herramientas más directas.',
+    hint: 'Termogénesis de grasa parda · Ray Ramis – Biohacking aplicado',
+    evidence: 'ensayo clínico',
+  },
+  {
+    topic: 'biohack',
+    fact: '¿Sabías que la luz solar en los ojos (sin gafas, sin cristal) en los primeros 30 minutos después de despertar es el reset circadiano más potente que existe? Regula el cortisol matutino, mejora el sueño nocturno y estabiliza el eje tiroideo. Gratis, 5–10 minutos al día.',
+    hint: 'Exposición lumínica y ritmo circadiano · Huberman Lab / Ray Ramis',
+    evidence: 'ensayo clínico',
+  },
+  {
+    topic: 'biohack',
+    fact: '¿Sabías que el ayuno de 16h activa un proceso llamado autofagia? Tu cuerpo "limpia" células dañadas y mitocondrias defectuosas. En hipotiroidismo, tener mitocondrias más eficientes se traduce directamente en más energía — sin cambiar la dosis.',
+    hint: 'Autofagia e hipotiroidismo · Nobel Yoshinori Ohsumi 2016',
+    evidence: 'fisiopatología',
+  },
+  {
+    topic: 'biohack',
+    fact: '¿Sabías que respirar por la boca durante el sueño (en lugar de la nariz) reduce el oxígeno en sangre y empeora la recuperación nocturna? En hipotiroidismo, donde el sueño ya tiende a ser menos reparador, tapar la boca con tape especializado durante la noche mejora el sueño profundo.',
+    hint: 'Respiración nasal y calidad de sueño · Breath, James Nestor',
+    evidence: 'consenso expertos',
+  },
+  {
+    topic: 'biohack',
+    fact: '¿Sabías que la creatina no es solo para deportistas? Suplementar con 3–5 g/día mejora la energía celular (ATP), la función cognitiva y reduce la fatiga crónica — síntoma muy común en hipotiroidismo. Es uno de los suplementos con más respaldo científico y más económicos.',
+    hint: 'Creatina y función mitocondrial · meta-análisis ISSN 2023',
+    evidence: 'meta-análisis',
+  },
+  {
+    topic: 'biohack',
+    fact: '¿Sabías que el 80 % de las personas con hipotiroidismo tiene el intestino permeable ("leaky gut")? Las uniones del intestino se abren y permiten que fragmentos de proteínas lleguen al torrente sanguíneo, activando respuestas autoinmunes. Colágeno, zinc y L-glutamina ayudan a repararlas.',
+    hint: 'Intestino permeable y autoinmunidad tiroidea · Ray Ramis',
+    evidence: 'fisiopatología',
+  },
+  {
+    topic: 'biohack',
+    fact: '¿Sabías que el ejercicio de fuerza (pesas, bandas) aumenta la sensibilidad celular a la hormona tiroidea? Tus músculos se vuelven mejores "receptores" de T3. 2–3 sesiones de fuerza por semana pueden hacer que te sientas mejor incluso sin cambiar la dosis de levotiroxina.',
+    hint: 'Fuerza muscular y receptores T3 · Ray Ramis – Hackea Tu Salud',
+    evidence: 'ensayo clínico',
+  },
+  {
+    topic: 'biohack',
+    fact: '¿Sabías que el estrés oxidativo es mayor en hipotiroidismo y que los antioxidantes de los vegetales de colores lo combaten directamente? Rojo (tomate, pimiento), naranja (zanahoria, mango), verde (brócoli, espinaca): cada color es un grupo de antioxidantes distinto. El objetivo: 5 colores al día.',
+    hint: 'Estrés oxidativo e hipotiroidismo · Ray Ramis – biohack nutricional',
+    evidence: 'consenso expertos',
+  },
+  {
+    topic: 'biohack',
+    fact: '¿Sabías que dormir menos de 7h durante 3 noches seguidas reduce la T3 activa casi como si bajaras la dosis de levotiroxina? El sueño es cuando tu hígado convierte T4 en T3 con más eficiencia. No hay pastilla ni suplemento que compense un sueño consistente.',
+    hint: 'Sueño y conversión T4→T3 hepática · Ray Ramis',
+    evidence: 'ensayo clínico',
+  },
+  {
+    topic: 'tiroides',
+    fact: '¿Sabías que la TSH es un promedio de semanas, no de horas? Si un día te sacas sangre estresado, después de viajar o sin haber dormido, la TSH puede salir alterada sin que tu tiroides haya cambiado. Sácatela siempre en condiciones similares: mismo horario, descansado, en ayunas.',
+    hint: 'Variabilidad de TSH y condiciones del análisis · endocrinología clínica',
+    evidence: 'consenso expertos',
+  },
 ];
 
 const TOPIC_LABEL: Record<DidYouKnowTopic, string> = {

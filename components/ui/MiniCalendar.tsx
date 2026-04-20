@@ -13,60 +13,75 @@ import {
   type Appointment,
 } from '@/lib/store/appointments';
 
-const PROTOCOL_KEYS = getTodaySchedule().map((e) => e.key);
+const PROTOCOL_EVENTS = getTodaySchedule();
+const PROTOCOL_KEYS = PROTOCOL_EVENTS.map((e) => e.key);
 const TOTAL_KEYS = PROTOCOL_KEYS.length;
 
-function loadChecksForDate(date: string): number {
-  if (typeof window === 'undefined') return 0;
+interface DayChecks {
+  count: number;
+  keys: Record<string, boolean>;
+  hasData: boolean;
+}
+
+function loadDayChecks(date: string): DayChecks {
+  if (typeof window === 'undefined') return { count: 0, keys: {}, hasData: false };
   try {
     const raw = localStorage.getItem(`copiloto_checked_${date}`);
-    if (!raw) return 0;
+    if (!raw) return { count: 0, keys: {}, hasData: false };
     const obj = JSON.parse(raw) as Record<string, boolean>;
-    return PROTOCOL_KEYS.filter((k) => obj[k]).length;
+    const count = PROTOCOL_KEYS.filter((k) => obj[k]).length;
+    return { count, keys: obj, hasData: count > 0 };
   } catch {
-    return 0;
+    return { count: 0, keys: {}, hasData: false };
   }
 }
 
 function buildDays(today: Date, past = 14, future = 10): Date[] {
   const days: Date[] = [];
-  for (let i = -past; i <= future; i++) {
-    days.push(addDaysLocal(today, i));
-  }
+  for (let i = -past; i <= future; i++) days.push(addDaysLocal(today, i));
   return days;
 }
 
 const DAY_LETTERS = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 
 const TYPE_COLORS: Record<AppointmentType, string> = {
-  medico: 'bg-coral/80',
-  examen: 'bg-amber/80',
-  lab:    'bg-sage/80',
-  otro:   'bg-ink/40',
+  medico: 'bg-coral/70',
+  examen: 'bg-amber/70',
+  lab:    'bg-sage/70',
+  otro:   'bg-ink/30',
 };
 
-interface Props {
-  onSelectDate?: (date: string) => void;
+function pctColor(pct: number): string {
+  if (pct === 0) return 'text-muted';
+  if (pct < 0.5) return 'text-coral';
+  if (pct < 1) return 'text-amber';
+  return 'text-sage';
 }
 
-export default function MiniCalendar({ onSelectDate }: Props) {
+function pctLabel(pct: number, count: number): string {
+  if (count === 0) return 'Sin registros';
+  if (pct === 1) return '¡Protocolo completo!';
+  if (pct >= 0.5) return `${count}/${TOTAL_KEYS} completado`;
+  return `${count}/${TOTAL_KEYS} completado`;
+}
+
+export default function MiniCalendar() {
   const today = new Date();
   const todayISO = localDateISO(today);
   const [selected, setSelected] = useState(todayISO);
   const [days] = useState(() => buildDays(today));
-  const [checks, setChecks] = useState<Record<string, number>>({});
+  const [checksMap, setChecksMap] = useState<Record<string, DayChecks>>({});
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const stripRef = useRef<HTMLDivElement>(null);
 
-  // Load checks from localStorage for each day
   useEffect(() => {
-    const map: Record<string, number> = {};
+    const map: Record<string, DayChecks> = {};
     days.forEach((d) => {
       const iso = localDateISO(d);
-      if (iso <= todayISO) map[iso] = loadChecksForDate(iso);
+      if (iso <= todayISO) map[iso] = loadDayChecks(iso);
     });
-    setChecks(map);
+    setChecksMap(map);
     setAppointments(loadAppointments());
   }, [days, todayISO]);
 
@@ -81,109 +96,160 @@ export default function MiniCalendar({ onSelectDate }: Props) {
     }
   }, []);
 
-  function select(iso: string) {
-    setSelected(iso);
-    onSelectDate?.(iso);
-  }
+  function reloadApts() { setAppointments(loadAppointments()); }
 
-  const selectedApts = appointments.filter((a) => a.date === selected);
-
-  function reloadApts() {
-    setAppointments(loadAppointments());
-  }
+  const isFuture = selected > todayISO;
+  const isPast   = selected < todayISO;
+  const isToday  = selected === todayISO;
+  const dayChecks = checksMap[selected];
+  const selApts = appointments.filter((a) => a.date === selected);
 
   return (
-    <div className="mb-4">
-      {/* Horizontal day strip */}
+    <div className="mb-2">
+      {/* Horizontal strip */}
       <div
         ref={stripRef}
-        className="flex gap-1.5 overflow-x-auto px-6 pb-2 scrollbar-hide"
+        className="flex gap-1.5 overflow-x-auto px-6 pb-1 scrollbar-hide"
         style={{ scrollbarWidth: 'none' }}
       >
         {days.map((d) => {
           const iso = localDateISO(d);
-          const isToday = iso === todayISO;
-          const isFuture = iso > todayISO;
+          const isT = iso === todayISO;
+          const isFut = iso > todayISO;
           const isSel = iso === selected;
-          const done = checks[iso] ?? 0;
-          const pct = isFuture ? 0 : TOTAL_KEYS > 0 ? done / TOTAL_KEYS : 0;
+          const dc = checksMap[iso];
+          const pct = dc && TOTAL_KEYS > 0 ? dc.count / TOTAL_KEYS : 0;
           const hasApt = appointments.some((a) => a.date === iso);
           const aptType = appointments.find((a) => a.date === iso)?.type;
 
           return (
             <button
               key={iso}
-              data-today={isToday ? 'true' : undefined}
-              onClick={() => select(iso)}
-              className={`flex-none flex flex-col items-center gap-1 rounded-2xl px-2.5 py-2 transition-all ${
-                isSel
-                  ? 'bg-sage text-white shadow-soft'
-                  : isToday
-                  ? 'bg-sage/10 text-sage'
-                  : 'text-muted hover:bg-surface'
+              data-today={isT ? 'true' : undefined}
+              onClick={() => setSelected(iso)}
+              className={`flex-none flex flex-col items-center gap-0.5 rounded-2xl px-2.5 py-2 transition-all ${
+                isSel ? 'bg-sage text-white shadow-soft' : isT ? 'bg-sage/10 text-sage' : 'text-muted hover:bg-surface'
               }`}
               style={{ minWidth: 44 }}
             >
               <span className={`text-[9px] font-semibold uppercase ${isSel ? 'text-white/70' : 'text-muted'}`}>
                 {DAY_LETTERS[d.getDay()]}
               </span>
-              <span className={`text-sm font-bold leading-none ${isSel ? 'text-white' : isToday ? 'text-sage' : 'text-ink'}`}>
+              <span className={`text-sm font-bold leading-none ${isSel ? 'text-white' : isT ? 'text-sage' : 'text-ink'}`}>
                 {d.getDate()}
               </span>
-              {/* Completion arc */}
-              {!isFuture ? (
-                <CompletionDots pct={pct} active={isSel} />
+              {/* Protocol dots */}
+              {!isFut ? (
+                <div className="flex gap-[2px] mt-0.5">
+                  {PROTOCOL_KEYS.map((k, i) => (
+                    <span key={k} className={`w-1 h-1 rounded-full transition-colors ${
+                      dc?.keys[k] ? (isSel ? 'bg-white' : 'bg-sage') : (isSel ? 'bg-white/25' : 'bg-ink/12')
+                    }`} />
+                  ))}
+                </div>
               ) : (
-                <span className="h-3 w-3" />
+                <div className="h-2.5" />
               )}
-              {/* Appointment dot */}
+              {/* Appointment indicator */}
               {hasApt ? (
-                <span className={`w-1.5 h-1.5 rounded-full ${aptType ? TYPE_COLORS[aptType] : 'bg-coral/70'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${aptType ? TYPE_COLORS[aptType] : 'bg-coral/60'}`} />
               ) : (
-                <span className="w-1.5 h-1.5" />
+                <span className="h-1.5" />
               )}
             </button>
           );
         })}
       </div>
 
-      {/* Selected day info */}
+      {/* Day detail panel */}
       <AnimatePresence mode="wait">
         <motion.div
           key={selected}
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="mx-6 mt-1"
+          transition={{ duration: 0.18 }}
+          className="mx-6 mt-3 space-y-2"
         >
-          {selectedApts.length > 0 ? (
-            <div className="flex flex-col gap-1.5 mb-2">
-              {selectedApts.map((apt) => (
-                <div key={apt.id} className="flex items-start justify-between gap-2 bg-surface border border-hairline rounded-xl px-3 py-2">
+          {/* Past or today: protocol summary */}
+          {!isFuture && (
+            <div className={`rounded-2xl border px-4 py-3 flex items-center gap-3 ${
+              dayChecks?.hasData ? 'border-hairline bg-surface' : 'border-hairline/60 bg-surface/60'
+            }`}>
+              {dayChecks?.hasData ? (
+                <>
+                  <span className="text-xl shrink-0">
+                    {dayChecks.count === TOTAL_KEYS ? '🌟' : dayChecks.count >= 3 ? '✅' : '🟡'}
+                  </span>
                   <div>
-                    <p className="text-xs font-semibold text-ink">{apt.title}</p>
-                    <p className="text-[10px] text-muted">
-                      {TYPE_LABELS[apt.type]}{apt.time ? ` · ${apt.time}` : ''}
+                    <p className={`text-sm font-semibold ${pctColor(dayChecks.count / TOTAL_KEYS)}`}>
+                      {pctLabel(dayChecks.count / TOTAL_KEYS, dayChecks.count)}
                     </p>
-                    {apt.notes ? <p className="text-[10px] text-muted/70 mt-0.5">{apt.notes}</p> : null}
+                    <div className="flex gap-1.5 mt-1 flex-wrap">
+                      {PROTOCOL_EVENTS.map((ev) => (
+                        <span key={ev.key} className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                          dayChecks.keys[ev.key]
+                            ? 'bg-sage/15 text-sage'
+                            : 'bg-ink/6 text-muted line-through'
+                        }`}>
+                          {ev.key === 'pill' ? 'Levo' :
+                           ev.key === 'fastBreak' ? 'Romper' :
+                           ev.key === 'walkLunch' ? 'Caminar' :
+                           ev.key === 'lastMeal' ? 'Cena' : 'Paseo'}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <button
-                    onClick={() => { removeAppointment(apt.id); reloadApts(); }}
-                    className="text-muted/50 hover:text-coral text-xs mt-0.5 shrink-0"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
+                </>
+              ) : (
+                <>
+                  <span className="text-xl shrink-0">😔</span>
+                  <div>
+                    <p className="text-sm font-medium text-muted">
+                      {isToday ? 'Aún sin registros hoy' : 'Sin información de este día'}
+                    </p>
+                    <p className="text-[10px] text-muted/70 mt-0.5">
+                      {isToday ? 'Marca ítems del protocolo para verlos aquí.' : 'No hay actividad registrada para esta fecha.'}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
-          ) : null}
+          )}
 
+          {/* Future: show placeholder */}
+          {isFuture && !selApts.length && (
+            <div className="rounded-2xl border border-hairline/60 bg-surface/60 px-4 py-3 flex items-center gap-3">
+              <span className="text-xl shrink-0">📅</span>
+              <p className="text-sm text-muted">Día futuro — agrega una cita o evento.</p>
+            </div>
+          )}
+
+          {/* Appointments for selected day */}
+          {selApts.map((apt) => (
+            <div key={apt.id} className="flex items-start justify-between gap-2 bg-surface border border-hairline rounded-2xl px-4 py-3">
+              <div>
+                <p className="text-sm font-semibold text-ink">{apt.title}</p>
+                <p className="text-[10px] text-muted mt-0.5">
+                  {TYPE_LABELS[apt.type]}{apt.time ? ` · ${apt.time}` : ''}
+                </p>
+                {apt.notes ? <p className="text-[10px] text-muted/70 mt-0.5">{apt.notes}</p> : null}
+              </div>
+              <button
+                onClick={() => { removeAppointment(apt.id); reloadApts(); }}
+                className="text-muted/40 hover:text-coral text-xs mt-0.5 shrink-0 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+
+          {/* Add appointment button */}
           <button
             onClick={() => setShowAdd(true)}
-            className="flex items-center gap-1.5 text-[11px] text-sage font-semibold hover:opacity-80 transition-opacity"
+            className="flex items-center gap-1.5 text-[11px] text-sage font-semibold hover:opacity-80 transition-opacity py-0.5"
           >
-            <span className="w-4 h-4 rounded-full bg-sage/15 flex items-center justify-center text-sage text-xs">+</span>
+            <span className="w-4 h-4 rounded-full bg-sage/15 flex items-center justify-center text-sage text-xs leading-none">+</span>
             Agregar cita u evento
           </button>
         </motion.div>
@@ -191,32 +257,14 @@ export default function MiniCalendar({ onSelectDate }: Props) {
 
       {/* Add appointment sheet */}
       <AnimatePresence>
-        {showAdd ? (
+        {showAdd && (
           <AddAppointmentSheet
             defaultDate={selected}
             onSave={(apt) => { addAppointment(apt); reloadApts(); setShowAdd(false); }}
             onClose={() => setShowAdd(false)}
           />
-        ) : null}
+        )}
       </AnimatePresence>
-    </div>
-  );
-}
-
-function CompletionDots({ pct, active }: { pct: number; active: boolean }) {
-  const filled = Math.round(pct * TOTAL_KEYS);
-  return (
-    <div className="flex gap-0.5">
-      {Array.from({ length: TOTAL_KEYS }).map((_, i) => (
-        <span
-          key={i}
-          className={`w-1 h-1 rounded-full transition-colors ${
-            i < filled
-              ? active ? 'bg-white' : 'bg-sage'
-              : active ? 'bg-white/30' : 'bg-ink/15'
-          }`}
-        />
-      ))}
     </div>
   );
 }
@@ -237,11 +285,11 @@ function AddAppointmentSheet({
   onSave: (apt: Omit<Appointment, 'id'>) => void;
   onClose: () => void;
 }) {
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState(defaultDate);
-  const [time, setTime] = useState('');
-  const [type, setType] = useState<AppointmentType>('medico');
-  const [notes, setNotes] = useState('');
+  const [title, setTitle]   = useState('');
+  const [date, setDate]     = useState(defaultDate);
+  const [time, setTime]     = useState('');
+  const [type, setType]     = useState<AppointmentType>('medico');
+  const [notes, setNotes]   = useState('');
 
   const handleSave = useCallback(() => {
     if (!title.trim() || !date) return;
@@ -271,8 +319,7 @@ function AddAppointmentSheet({
         <div>
           <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Título</label>
           <input
-            type="text"
-            value={title}
+            type="text" value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Ej. Endocrinólogo, TSH, Ecosonograma"
             className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink"
@@ -283,21 +330,13 @@ function AddAppointmentSheet({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Fecha</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink"
-            />
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
+              className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink" />
           </div>
           <div>
             <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Hora (opcional)</label>
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink"
-            />
+            <input type="time" value={time} onChange={(e) => setTime(e.target.value)}
+              className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink" />
           </div>
         </div>
 
@@ -305,14 +344,10 @@ function AddAppointmentSheet({
           <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Tipo</label>
           <div className="grid grid-cols-4 gap-1.5">
             {APT_TYPES.map((t) => (
-              <button
-                key={t.value}
-                type="button"
-                onClick={() => setType(t.value)}
+              <button key={t.value} type="button" onClick={() => setType(t.value)}
                 className={`rounded-xl border py-2 text-xs font-medium transition-colors ${
                   type === t.value ? 'border-sage bg-sage/10 text-sage' : 'border-hairline bg-white text-muted'
-                }`}
-              >
+                }`}>
                 {t.label}
               </button>
             ))}
@@ -321,20 +356,13 @@ function AddAppointmentSheet({
 
         <div>
           <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Notas (opcional)</label>
-          <input
-            type="text"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+          <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)}
             placeholder="Ej. en ayunas, traer resultados"
-            className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink"
-          />
+            className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink" />
         </div>
 
-        <button
-          onClick={handleSave}
-          disabled={!title.trim() || !date}
-          className="w-full rounded-2xl bg-sage py-3.5 text-sm font-semibold text-white disabled:opacity-40 transition-opacity"
-        >
+        <button onClick={handleSave} disabled={!title.trim() || !date}
+          className="w-full rounded-2xl bg-sage py-3.5 text-sm font-semibold text-white disabled:opacity-40 transition-opacity">
           Guardar
         </button>
       </motion.div>

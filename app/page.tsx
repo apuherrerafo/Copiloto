@@ -45,16 +45,25 @@ export default function HoyPage() {
 
       <YesterdayCoach />
 
-      {/* Anillo de ayuno */}
+      {/* Calendario + citas — justo debajo del banner */}
+      <div className="mb-2">
+        <p className="text-[10px] text-muted uppercase tracking-widest font-medium px-6 mb-2">Calendario</p>
+        <MiniCalendar />
+      </div>
+
+      <div className="mx-6 border-t border-hairline mb-4" />
+
+      {/* Anillo de ayuno (hoy) */}
       <div className="flex justify-center py-4">
         <FastRing />
       </div>
 
-      {/* Ventana + registrar */}
+      {/* Ventana de ayuno + registrar */}
       <div className="px-6 mb-5 flex gap-3">
         <div className="flex-1 bg-surface rounded-card px-4 py-3 border border-hairline shadow-soft">
-          <p className="text-[10px] text-muted uppercase tracking-widest font-medium">Ventana</p>
-          <p className="text-ink font-semibold text-sm mt-0.5">12:00 — 20:00</p>
+          <p className="text-[10px] text-muted uppercase tracking-widest font-medium">Ayuno</p>
+          <p className="text-ink font-semibold text-sm mt-0.5">20:00 → 12:00 · 16h</p>
+          <p className="text-[10px] text-muted mt-0.5">Comer: 12:00 – 20:00</p>
         </div>
         <Link href="/registrar" className="flex-none bg-sage text-white px-5 rounded-card font-semibold text-sm flex items-center gap-1.5 shadow-soft active:scale-[0.98] transition-transform">
           <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
@@ -62,15 +71,6 @@ export default function HoyPage() {
           </svg>
           Registrar
         </Link>
-      </div>
-
-      {/* Divisor */}
-      <div className="mx-6 border-t border-hairline mb-4" />
-
-      {/* Calendario + citas */}
-      <div className="mb-1">
-        <p className="text-[10px] text-muted uppercase tracking-widest font-medium px-6 mb-2">Calendario</p>
-        <MiniCalendar />
       </div>
 
       <div className="mx-6 border-t border-hairline mb-4" />
@@ -83,12 +83,7 @@ export default function HoyPage() {
 
       {/* Feed RSS */}
       <div className="px-6 pb-28">
-        <p className="text-[10px] text-muted uppercase tracking-widest font-medium mb-1">
-          Noticias (RSS)
-        </p>
-        <p className="text-[10px] text-muted/70 mb-3 leading-snug">
-          Complemento opcional — lo principal arriba: banner + protocolo.
-        </p>
+        <p className="text-[10px] text-muted uppercase tracking-widest font-medium mb-1">Noticias</p>
         <NewsFeed />
       </div>
     </div>
