@@ -3,24 +3,11 @@ import ProtocolTimeline from '@/components/ui/ProtocolTimeline';
 import NewsFeed from '@/components/ui/NewsFeed';
 import NotificationInit from '@/components/ui/NotificationInit';
 import PageEnter from '@/components/ui/PageEnter';
-import GeneIcon from '@/components/ui/GeneIcon';
 import YesterdayCoach from '@/components/ui/YesterdayCoach';
 import DidYouKnowBanner from '@/components/ui/DidYouKnowBanner';
 import MiniCalendar from '@/components/ui/MiniCalendar';
+import MotivationalHeader from '@/components/ui/MotivationalHeader';
 import Link from 'next/link';
-
-function todayLabel() {
-  return new Date().toLocaleDateString('es-MX', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  });
-}
-
-function greeting() {
-  const h = new Date().getHours();
-  if (h < 12) return 'Buenos días';
-  if (h < 19) return 'Buenas tardes';
-  return 'Buenas noches';
-}
 
 export default function HoyPage() {
   return (
@@ -28,17 +15,7 @@ export default function HoyPage() {
     <div className="min-h-screen bg-background">
       <NotificationInit />
 
-      {/* Header */}
-      <div className="px-6 pt-12 pb-3">
-        <p className="text-xs text-muted capitalize tracking-wide">{todayLabel()}</p>
-        <div className="flex items-end justify-between mt-0.5">
-          <h1 className="font-serif italic text-3xl text-ink">{greeting()}, Julio</h1>
-          <Link href="/copiloto" className="flex items-center gap-1.5 bg-sage/10 text-sage text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-sage/15 transition-colors">
-            <GeneIcon className="w-4 h-4 text-sage shrink-0" />
-            Hypo
-          </Link>
-        </div>
-      </div>
+      <MotivationalHeader />
 
       {/* ¿Sabías que? — banner hero principal */}
       <DidYouKnowBanner />
