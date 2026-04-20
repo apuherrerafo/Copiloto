@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { getLogsByDate } from '@/lib/store/db';
 import { getFastElapsed } from '@/lib/protocols/julio';
@@ -57,6 +57,7 @@ function HippoAvatar({ size = 'sm' }: { size?: 'sm' | 'lg' }) {
 
 function CopilotoInner() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const autoQ = searchParams.get('q');
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -149,9 +150,18 @@ function CopilotoInner() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.35 }}
     >
-      {/* Header — sin badge de modelo */}
-      <div className="px-6 pt-12 pb-4 bg-background border-b border-hairline shrink-0">
+      {/* Header */}
+      <div className="px-4 pt-12 pb-4 bg-background border-b border-hairline shrink-0">
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.back()}
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface transition-colors shrink-0"
+            aria-label="Volver"
+          >
+            <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-muted">
+              <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd"/>
+            </svg>
+          </button>
           <HippoAvatar />
           <div>
             <h1 className="font-serif italic text-xl text-ink leading-none">Hypo</h1>
