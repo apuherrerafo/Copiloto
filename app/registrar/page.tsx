@@ -8,6 +8,7 @@ import { addAppointment } from '@/lib/store/appointments';
 import { localDateISO, addDaysLocal } from '@/lib/dates';
 import { LEVO_DOSE_LABEL } from '@/lib/brand';
 import { playUiSound } from '@/lib/sounds';
+import { useAppLoading } from '@/contexts/app-loading';
 import {
   getAbsorptionConflict,
   LEVO_ABSORPTION_MINUTES,
@@ -86,6 +87,7 @@ export default function RegistrarPage() {
 }
 
 function RegistrarInner() {
+  const { show: showAppLoader, hide: hideAppLoader } = useAppLoading();
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialType = ((): EntryType => {
@@ -150,6 +152,10 @@ function RegistrarInner() {
     }
 
     setSaving(true);
+    showAppLoader({
+      title: 'Saving your entry…',
+      subtitle: 'Updating your timeline and history.',
+    });
     try {
       if (isAppt) {
         const specialty = apptSpecialty.trim();
@@ -208,6 +214,7 @@ function RegistrarInner() {
       alert('Could not save on this device. Check storage space or browser permissions.');
     } finally {
       setSaving(false);
+      hideAppLoader();
     }
   }
 

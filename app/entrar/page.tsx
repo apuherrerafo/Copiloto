@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { APP_NAME, APP_TAGLINE } from '@/lib/brand';
+import { useAppLoading } from '@/contexts/app-loading';
 import HypoSplashHero from '@/components/ui/HypoSplashHero';
 import LoginSplash from '@/components/ui/LoginSplash';
 
 const showGoogle = process.env.NEXT_PUBLIC_GOOGLE_LOGIN === 'true';
 
 export default function EntrarPage() {
+  const { show: showLoader, hide: hideLoader } = useAppLoading();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,13 +33,19 @@ export default function EntrarPage() {
     setErr('');
     setSuccess('');
     setBusy(true);
+    showLoader({
+      title: 'Signing you in…',
+      subtitle: 'Verifying your account. One moment.',
+    });
     try {
       const res = await signIn('credentials', { email, password, redirect: false });
       if (res?.error) {
+        hideLoader();
         setErr('Incorrect email or password. Check and try again.');
         setBusy(false);
         return;
       }
+      hideLoader();
       const local = email.split('@')[0]?.replace(/[._-]+/g, ' ').trim();
       setSplashName(local || undefined);
       setSplash(true);
@@ -46,6 +54,7 @@ export default function EntrarPage() {
         router.refresh();
       }, 2200);
     } catch {
+      hideLoader();
       setErr('Couldn’t sign in. Check your connection.');
       setBusy(false);
     }
@@ -54,9 +63,14 @@ export default function EntrarPage() {
   async function handleGoogle() {
     setErr('');
     setBusy(true);
+    showLoader({
+      title: 'Connecting to Google…',
+      subtitle: 'You may be redirected to complete sign-in.',
+    });
     try {
       await signIn('google', { callbackUrl: '/' });
     } catch {
+      hideLoader();
       setErr('Couldn’t open Google. Check GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.');
       setBusy(false);
     }

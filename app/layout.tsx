@@ -20,6 +20,7 @@ const inter = Inter({
 import AppShell from '@/components/layout/AppShell';
 import PWARecovery from '@/components/layout/PWARecovery';
 import AuthSessionProvider from '@/components/providers/AuthSessionProvider';
+import { AppLoadingProvider } from '@/contexts/app-loading';
 import SyncOnLogin from '@/components/sync/SyncOnLogin';
 import { authOptions } from '@/lib/auth.config';
 import { APP_NAME, APP_TAGLINE } from '@/lib/brand';
@@ -63,10 +64,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <PWARecovery />
         <AuthSessionProvider session={session}>
-          <SyncOnLogin />
-          <AppShell>
-            <main className="min-h-screen pb-20 pt-[env(safe-area-inset-top,0px)]">{children}</main>
-          </AppShell>
+          <AppLoadingProvider>
+            <SyncOnLogin />
+            <AppShell>
+              <main className="min-h-screen pb-20 pt-[env(safe-area-inset-top,0px)]">{children}</main>
+            </AppShell>
+          </AppLoadingProvider>
         </AuthSessionProvider>
       </body>
     </html>

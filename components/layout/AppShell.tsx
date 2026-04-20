@@ -15,6 +15,7 @@ import { useSession, signOut, getSession } from 'next-auth/react';
 import BottomNav from '@/components/layout/BottomNav';
 import HypoNavFloat from '@/components/layout/HypoNavFloat';
 import ServiceWorkerUpdateBanner from '@/components/layout/ServiceWorkerUpdateBanner';
+import FullScreenLoader from '@/components/ui/FullScreenLoader';
 import HealthDisclaimerGate from '@/components/legal/HealthDisclaimerGate';
 import { clearSession, readSession, type HypoSession } from '@/lib/auth/session';
 import { clearAllLocalUserData } from '@/lib/store/clear-local';
@@ -106,11 +107,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <SessionContext.Provider value={value}>
       {loadingGate ? (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3 px-6">
-          <div className="w-10 h-10 rounded-full border-2 border-sage border-t-transparent animate-spin" />
-          <p className="text-xs text-ink font-medium tracking-wide">HypoCopilot</p>
-          <p className="text-[10px] text-muted text-center max-w-xs">Loading…</p>
-        </div>
+        <FullScreenLoader
+          title="Optimizing your session…"
+          subtitle="Syncing your preferences and timeline. This may take a minute on slow connections."
+        />
       ) : timedOutGate ? (
         <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6">
           <p className="text-xs text-ink font-medium tracking-wide">HypoCopilot</p>
