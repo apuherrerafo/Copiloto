@@ -36,6 +36,9 @@ export function useHypoSession(): Ctx {
 
 const SESSION_LOAD_MS = 12_000;
 
+/** Rutas que deben pintarse sin esperar a `/api/auth/session` (evita flash del loader al reabrir la PWA tras logout). */
+const PUBLIC_PATHS = ['/entrar', '/registro'] as const;
+
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -88,8 +91,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (status === 'loading') return;
-    const publicPaths = ['/entrar', '/registro'];
-    if (status === 'unauthenticated' && !publicPaths.includes(pathname)) {
+    if (status === 'unauthenticated' && !PUBLIC_PATHS.includes(pathname as (typeof PUBLIC_PATHS)[number])) {
       router.replace('/entrar');
     }
     if (status === 'authenticated' && pathname === '/entrar') {
@@ -101,8 +103,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   const value: Ctx = { session: hypoSession, refresh, logout };
 
-  const loadingGate = status === 'loading' && !sessionLoadTimedOut;
-  const timedOutGate = status === 'loading' && sessionLoadTimedOut;
+  const onPublicPath = PUBLIC_PATHS.includes(pathname as (typeof PUBLIC_PATHS)[number]);
+  const loadingGate = status === 'loading' && !sessionLoadTimedOut && !onPublicPath;
+  const timedOutGate = status === 'loading' && sessionLoadTimedOut && !onPublicPath;
 
   return (
     <SessionContext.Provider value={value}>

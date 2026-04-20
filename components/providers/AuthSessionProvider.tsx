@@ -12,13 +12,15 @@ export default function AuthSessionProvider({
   children: ReactNode;
   session: Session | null;
 }) {
-  // Refuerzo: si el estado quedara desincronizado, un getSession extra ayuda.
+  // Si el servidor ya dijo “sin sesión”, no forzar otro fetch al montar (reduce flash de `loading` en /entrar).
+  // Si hay sesión SSR, un getSession extra alinea borradores de cookie / otra pestaña.
   useEffect(() => {
+    if (!session) return;
     const t = window.setTimeout(() => {
       void getSession();
     }, 0);
     return () => window.clearTimeout(t);
-  }, []);
+  }, [session]);
 
   return (
     <SessionProvider
