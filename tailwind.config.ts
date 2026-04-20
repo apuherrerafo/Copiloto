@@ -37,9 +37,23 @@ const config: Config = {
           '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        /** Soft “breathe” on HypoAI invite strip — brightness only, mesh-friendly */
+        'hypo-invite-pulse': {
+          '0%, 100%': {
+            filter: 'brightness(1) saturate(1)',
+            boxShadow:
+              '0 1px 2px rgba(31, 36, 32, 0.06), 0 8px 24px rgba(31, 36, 32, 0.06), 0 0 0 0 rgba(255, 178, 132, 0)',
+          },
+          '50%': {
+            filter: 'brightness(1.09) saturate(1.05)',
+            boxShadow:
+              '0 1px 2px rgba(31, 36, 32, 0.06), 0 10px 30px rgba(31, 36, 32, 0.07), 0 0 36px -2px rgba(255, 178, 132, 0.28), 0 0 22px -6px rgba(91, 122, 101, 0.12)',
+          },
+        },
       },
       animation: {
         'fade-up': 'fade-up 0.45s ease-out both',
+        'hypo-invite-pulse': 'hypo-invite-pulse 3.6s ease-in-out infinite',
       },
     },
   },
