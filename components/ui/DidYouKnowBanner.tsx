@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   getTodayDidYouKnow,
@@ -12,6 +13,12 @@ import { APP_NAME } from '@/lib/brand';
 
 export default function DidYouKnowBanner() {
   const item = useMemo(() => getTodayDidYouKnow(), []);
+  const router = useRouter();
+
+  function handleLearnMore() {
+    const question = `Quiero saber más sobre esto que leí hoy: "${item.fact.slice(0, 200)}…" ¿Puedes explicármelo con más detalle y conectarlo con mi protocolo de hipotiroidismo y levotiroxina?`;
+    router.push(`/copiloto?q=${encodeURIComponent(question)}`);
+  }
 
   return (
     <motion.section
@@ -36,6 +43,18 @@ export default function DidYouKnowBanner() {
       {item.hint && (
         <p className="text-[10px] text-muted mt-2 relative">Referencia: {item.hint}</p>
       )}
+
+      {/* CTA: llevar al copiloto con la pregunta pre-cargada */}
+      <button
+        onClick={handleLearnMore}
+        className="mt-3 relative flex items-center gap-1.5 text-xs font-semibold text-sage hover:text-sage/80 transition-colors group"
+      >
+        <span className="underline underline-offset-2 group-hover:no-underline">Quiero saber más</span>
+        <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" stroke="currentColor" strokeWidth="2">
+          <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+
       <p className="text-[10px] text-muted/80 mt-3 leading-snug relative border-t border-hairline pt-2">
         {didYouKnowFooter()}
       </p>

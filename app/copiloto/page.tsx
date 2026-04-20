@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { getLogsByDate } from '@/lib/store/db';
 import { getFastElapsed } from '@/lib/protocols/julio';
@@ -42,6 +43,16 @@ const startersGrid = {
 };
 
 export default function CopilotoPage() {
+  return (
+    <Suspense>
+      <CopilotoInner />
+    </Suspense>
+  );
+}
+
+function CopilotoInner() {
+  const searchParams = useSearchParams();
+  const autoQ = searchParams.get('q');
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -53,6 +64,15 @@ export default function CopilotoPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamText]);
 
+  // Auto-send question coming from "Quiero saber más" in DidYouKnowBanner
+  useEffect(() => {
+    if (autoQ) {
+      // Small delay so the page finishes mounting before sending
+      const t = setTimeout(() => sendMessage(autoQ), 400);
+      return () => clearTimeout(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   async function sendMessage(text: string) {
     if (!text.trim() || loading) return;
 
