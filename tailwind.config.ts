@@ -37,6 +37,11 @@ const config: Config = {
           '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        /** Solo opacidad — evita `transform` en el shell fixed de /copiloto (iOS + teclado). */
+        'copiloto-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
         /** Soft “breathe” on HypoAI invite strip — brightness only, mesh-friendly */
         'hypo-invite-pulse': {
           '0%, 100%': {
@@ -53,6 +58,7 @@ const config: Config = {
       },
       animation: {
         'fade-up': 'fade-up 0.45s ease-out both',
+        'copiloto-in': 'copiloto-in 0.35s ease-out both',
         'hypo-invite-pulse': 'hypo-invite-pulse 3.6s ease-in-out infinite',
       },
     },

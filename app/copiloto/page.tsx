@@ -35,10 +35,13 @@ export default function CopilotoPage() {
 }
 
 function HippoAvatar({ size = 'sm' }: { size?: 'sm' | 'lg' }) {
-  const dim = size === 'lg' ? 'w-16 h-16' : 'w-7 h-7';
   const mascotSize = size === 'lg' ? 52 : 22;
+  const wrap =
+    size === 'lg'
+      ? 'flex h-16 w-16 shrink-0 items-center justify-center'
+      : 'flex shrink-0 items-end justify-center self-end pb-0.5';
   return (
-    <div className={`${dim} flex shrink-0 items-center justify-center rounded-full bg-sage/15 ring-1 ring-sage/15`}>
+    <div className={wrap}>
       <HypoMascot size={mascotSize} title="HypoAI" />
     </div>
   );
@@ -52,13 +55,32 @@ function CopilotoInner() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [streamText, setStreamText] = useState('');
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [keyboardInsetPx, setKeyboardInsetPx] = useState(0);
   const hasMessages = messages.length > 0 || loading;
 
+  /** iOS: teclado suele no reducir el layout; inset desde visualViewport para encoger el shell sin perder el header. */
   useEffect(() => {
-    if (hasMessages) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-    }
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const apply = () => {
+      const h = window.innerHeight;
+      setKeyboardInsetPx(Math.max(0, h - vv.height - vv.offsetTop));
+    };
+    apply();
+    vv.addEventListener('resize', apply);
+    vv.addEventListener('scroll', apply);
+    return () => {
+      vv.removeEventListener('resize', apply);
+      vv.removeEventListener('scroll', apply);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasMessages) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
   }, [messages, streamText, hasMessages]);
 
   useEffect(() => {
@@ -150,15 +172,13 @@ function CopilotoInner() {
   return (
     <>
       <div className={`-mb-20 ${shellSpacerH} shrink-0`} aria-hidden />
-      <motion.div
-        className="fixed left-0 right-0 z-[40] flex flex-col overflow-hidden bg-background"
+      {/* Sin framer-motion en el nodo fixed: transform rompe `fixed` en iOS y el header se va con el scroll del teclado. */}
+      <div
+        className="fixed left-0 right-0 z-[40] flex flex-col overflow-hidden bg-background motion-safe:animate-copiloto-in motion-reduce:animate-none"
         style={{
           top: 'env(safe-area-inset-top, 0px)',
-          bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))',
+          bottom: `calc(5rem + env(safe-area-inset-bottom, 0px) + ${keyboardInsetPx}px)`,
         }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.35 }}
       >
       <div className="shrink-0 border-b border-hairline bg-background px-4 pb-4 pt-12">
         <div className="flex items-center gap-3">
@@ -187,7 +207,10 @@ function CopilotoInner() {
         </p>
       </div>
 
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-y-contain px-4 py-4">
+      <div
+        ref={scrollRef}
+        className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-y-contain px-4 py-4"
+      >
         {showWelcome && (
           <motion.div
             className="flex min-h-full flex-col items-center px-2 pb-6 pt-6 text-center"
@@ -246,7 +269,7 @@ function CopilotoInner() {
           </div>
         )}
 
-        <div ref={bottomRef} />
+        <div className="h-2 shrink-0" aria-hidden />
       </div>
 
       <div className="shrink-0 border-t border-hairline bg-background px-4 pb-chat-dock pt-2">
@@ -275,7 +298,7 @@ function CopilotoInner() {
         </div>
         <p className="mt-2 text-center text-xs text-muted/60">Enter to send · Shift+Enter for new line</p>
       </div>
-    </motion.div>
+    </div>
     </>
   );
 }
