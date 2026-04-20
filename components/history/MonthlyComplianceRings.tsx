@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   computeMonthlyCompliance,
@@ -15,24 +15,72 @@ const CY = 84;
 /** Radii from outer to inner — medication, walks, break fast, last meal */
 const RADII = [62, 50, 38, 26];
 const STROKE = 5.5;
+/** Max distance from a ring’s radius (svg units) to count as that ring — tuned for finger taps */
+const RING_HIT_SLACK = 11;
 
-function arcRing({ r, data }: { r: number; data: RingDatum }) {
+function clientToSvgCoords(
+  svg: SVGSVGElement,
+  clientX: number,
+  clientY: number,
+): { x: number; y: number } {
+  const rect = svg.getBoundingClientRect();
+  const vb = svg.viewBox.baseVal;
+  return {
+    x: ((clientX - rect.left) / rect.width) * vb.width,
+    y: ((clientY - rect.top) / rect.height) * vb.height,
+  };
+}
+
+/** Which concentric ring (0 = outer … 3 = inner), or null if tap is outside rings */
+function pickRingIndexFromDistance(dist: number): number | null {
+  if (dist > 72 || dist < 15) return null;
+  let best = 0;
+  let bestErr = Infinity;
+  RADII.forEach((r, i) => {
+    const err = Math.abs(dist - r);
+    if (err < bestErr) {
+      bestErr = err;
+      best = i;
+    }
+  });
+  if (bestErr > RING_HIT_SLACK) return null;
+  return best;
+}
+
+function AnimatedArcRing({
+  r,
+  data,
+  pulsing,
+}: {
+  r: number;
+  data: RingDatum;
+  pulsing: boolean;
+}) {
   const c = 2 * Math.PI * r;
   const dash = Math.max(0.02, Math.min(1, data.value)) * c;
   return (
-    <g key={data.id}>
+    <g>
       <circle cx={CX} cy={CY} r={r} fill="none" stroke={data.track} strokeWidth={STROKE} />
-      <circle
+      <motion.circle
         cx={CX}
         cy={CY}
         r={r}
         fill="none"
         stroke={data.color}
-        strokeWidth={STROKE}
         strokeLinecap="round"
         strokeDasharray={`${dash} ${c}`}
         transform={`rotate(-90 ${CX} ${CY})`}
-        className="transition-[stroke-dasharray] duration-700 ease-out"
+        className="will-change-[stroke-width]"
+        initial={false}
+        animate={
+          pulsing
+            ? {
+                strokeWidth: [STROKE, 10.5, STROKE],
+                opacity: [1, 0.88, 1],
+              }
+            : { strokeWidth: STROKE, opacity: 1 }
+        }
+        transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
       />
     </g>
   );
@@ -40,10 +88,12 @@ function arcRing({ r, data }: { r: number; data: RingDatum }) {
 
 function MiniRingCard({
   data,
+  ringIndex,
   onOpenDetail,
 }: {
   data: RingDatum;
-  onOpenDetail: (id: string) => void;
+  ringIndex: number;
+  onOpenDetail: (id: string, ringIndex: number) => void;
 }) {
   const r = 34;
   const c = 2 * Math.PI * r;
@@ -51,10 +101,12 @@ function MiniRingCard({
   const pct = Math.round(data.value * 100);
 
   return (
-    <button
+    <motion.button
       type="button"
-      onClick={() => onOpenDetail(data.id)}
-      className="flex w-full flex-col items-center rounded-2xl border border-hairline/70 bg-white/95 px-3 py-3 text-left shadow-soft outline-none ring-sage/0 transition-all hover:border-sage/35 hover:ring-2 hover:ring-sage/15 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-sage/35"
+      onClick={() => onOpenDetail(data.id, ringIndex)}
+      whileTap={{ scale: 0.96 }}
+      transition={{ type: 'spring', stiffness: 520, damping: 28 }}
+      className="flex w-full flex-col items-center rounded-2xl border border-hairline/70 bg-white/95 px-3 py-3 text-left shadow-soft outline-none ring-sage/0 transition-colors hover:border-sage/35 hover:ring-2 hover:ring-sage/15 focus-visible:ring-2 focus-visible:ring-sage/35"
     >
       <svg viewBox="0 0 88 88" className="h-[4.75rem] w-[4.75rem] shrink-0" aria-hidden>
         <circle cx={44} cy={44} r={r} fill="none" stroke={data.track} strokeWidth={7} />
@@ -76,7 +128,7 @@ function MiniRingCard({
         {data.label}
       </p>
       <span className="sr-only">Open details for {data.label}</span>
-    </button>
+    </motion.button>
   );
 }
 
@@ -106,10 +158,10 @@ function RingDetailSheet({
             onClick={onClose}
           />
           <motion.div
-            initial={{ y: 48, opacity: 0.94 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 28, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+            initial={{ y: 48, opacity: 0, scale: 0.96 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 28, opacity: 0, scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 34 }}
             className="relative z-[1] w-full max-w-md rounded-t-[1.5rem] border border-hairline/90 bg-background px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 shadow-lift sm:rounded-2xl sm:pb-5"
           >
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-hairline sm:hidden" />
@@ -143,6 +195,9 @@ export default function MonthlyComplianceRings() {
   });
   const [data, setData] = useState<ComplianceResult | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
+  /** Which ring (0…3) just fired the pulse animation after a chart tap */
+  const [pulsingRing, setPulsingRing] = useState<number | null>(null);
+  const pulseClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const apply = useCallback(() => {
     if (mode === 'week') {
@@ -179,9 +234,48 @@ export default function MonthlyComplianceRings() {
     });
   }
 
+  const triggerRingPulse = useCallback((ringIndex: number) => {
+    if (pulseClearRef.current) clearTimeout(pulseClearRef.current);
+    setPulsingRing(ringIndex);
+    pulseClearRef.current = setTimeout(() => {
+      setPulsingRing(null);
+      pulseClearRef.current = null;
+    }, 560);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (pulseClearRef.current) clearTimeout(pulseClearRef.current);
+    };
+  }, []);
+
   const openDetail = useCallback((id: string) => {
     if (COMPLIANCE_RING_HELP[id]) setDetailId(id);
   }, []);
+
+  const openMetricDetail = useCallback(
+    (id: string, ringIndex: number) => {
+      triggerRingPulse(ringIndex);
+      openDetail(id);
+    },
+    [openDetail, triggerRingPulse],
+  );
+
+  const handleCombinedChartClick = useCallback(
+    (e: React.MouseEvent<SVGSVGElement>) => {
+      if (!data) return;
+      const svg = e.currentTarget;
+      const { x, y } = clientToSvgCoords(svg, e.clientX, e.clientY);
+      const dist = Math.hypot(x - CX, y - CY);
+      const idx = pickRingIndexFromDistance(dist);
+      if (idx === null) return;
+      const ring = data.rings[idx];
+      if (!ring || !COMPLIANCE_RING_HELP[ring.id]) return;
+      triggerRingPulse(idx);
+      openDetail(ring.id);
+    },
+    [data, openDetail, triggerRingPulse],
+  );
 
   const today = new Date();
   const nextDisabled =
@@ -274,13 +368,13 @@ export default function MonthlyComplianceRings() {
                 By habit · tap for details
               </p>
               <div className="mb-5 grid grid-cols-2 gap-2.5 sm:gap-3">
-                {data.rings.map((r) => (
-                  <MiniRingCard key={r.id} data={r} onOpenDetail={openDetail} />
+                {data.rings.map((r, i) => (
+                  <MiniRingCard key={r.id} data={r} ringIndex={i} onOpenDetail={openMetricDetail} />
                 ))}
               </div>
 
               <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
-                Combined view · tap a row for details
+                Combined view · tap a ring, or a row
               </p>
               <div className="rounded-2xl border border-hairline/70 bg-white/90 p-4 shadow-inner ring-1 ring-sage/[0.06]">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
@@ -290,25 +384,41 @@ export default function MonthlyComplianceRings() {
                     transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                     className="mx-auto shrink-0 sm:mx-0"
                   >
-                    <svg
-                      viewBox="0 0 168 168"
-                      className="h-[10.5rem] w-[10.5rem]"
-                      role="img"
-                      aria-hidden
+                    <motion.div
+                      whileTap={{ scale: 0.97 }}
+                      transition={{ type: 'spring', stiffness: 480, damping: 32 }}
+                      className="relative touch-manipulation"
                     >
-                      {RADII.map((r, i) =>
-                        data.rings[i] ? arcRing({ r, data: data.rings[i]! }) : null,
-                      )}
-                    </svg>
+                      <svg
+                        viewBox="0 0 168 168"
+                        className="h-[10.5rem] w-[10.5rem] cursor-pointer select-none"
+                        role="img"
+                        aria-label="Combined protocol rings — tap a colored ring for details"
+                        onClick={handleCombinedChartClick}
+                      >
+                        {RADII.map((r, i) =>
+                          data.rings[i] ? (
+                            <AnimatedArcRing
+                              key={data.rings[i]!.id}
+                              r={r}
+                              data={data.rings[i]!}
+                              pulsing={pulsingRing === i}
+                            />
+                          ) : null,
+                        )}
+                      </svg>
+                    </motion.div>
                   </motion.div>
 
                   <ul className="min-w-0 flex-1 space-y-2">
-                    {data.rings.map((r) => (
+                    {data.rings.map((r, rowIdx) => (
                       <li key={r.id}>
-                        <button
+                        <motion.button
                           type="button"
-                          onClick={() => openDetail(r.id)}
-                          className="flex w-full items-center justify-between gap-3 rounded-xl border border-hairline/70 bg-white/95 px-3 py-2 text-left shadow-soft outline-none transition-colors hover:border-sage/30 hover:bg-white active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-sage/30"
+                          onClick={() => openMetricDetail(r.id, rowIdx)}
+                          whileTap={{ scale: 0.99 }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                          className="flex w-full items-center justify-between gap-3 rounded-xl border border-hairline/70 bg-white/95 px-3 py-2 text-left shadow-soft outline-none transition-colors hover:border-sage/30 hover:bg-white focus-visible:ring-2 focus-visible:ring-sage/30"
                         >
                           <div className="flex min-w-0 items-center gap-2.5">
                             <span
@@ -320,7 +430,7 @@ export default function MonthlyComplianceRings() {
                           <span className="shrink-0 font-mono text-[12px] font-semibold tabular-nums text-muted">
                             {Math.round(r.value * 100)}%
                           </span>
-                        </button>
+                        </motion.button>
                       </li>
                     ))}
                   </ul>
