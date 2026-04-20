@@ -25,7 +25,7 @@ const credentials = CredentialsProvider({
 
     const { data, error } = await admin
       .from('hc_credential_users')
-      .select('user_id, password_hash')
+      .select('user_id, password_hash, username')
       .eq('email', email)
       .maybeSingle();
 
@@ -36,7 +36,9 @@ const credentials = CredentialsProvider({
     return {
       id: data.user_id,
       email,
-      name: email,
+      name: (data.username as string | null) ?? email,
+      // pass username through; stored in JWT below
+      username: (data.username as string | null) ?? '',
     };
   },
 });
@@ -45,28 +47,26 @@ const googleId = process.env.GOOGLE_CLIENT_ID?.trim();
 const googleSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
 const google =
   googleId && googleSecret
-    ? GoogleProvider({
-        clientId: googleId,
-        clientSecret: googleSecret,
-      })
+    ? GoogleProvider({ clientId: googleId, clientSecret: googleSecret })
     : null;
 
 export const authOptions: NextAuthOptions = {
   providers: [credentials, ...(google ? [google] : [])],
   secret: process.env.NEXTAUTH_SECRET,
-  pages: {
-    signIn: '/entrar',
-  },
+  pages: { signIn: '/entrar' },
   callbacks: {
     async jwt({ token, user }) {
-      if (user?.id) {
+      if (user) {
+        token.id = user.id;
         token.sub = user.id;
+        token.username = (user as { username?: string }).username ?? '';
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.sub) {
-        session.user.id = token.sub;
+      if (session.user) {
+        session.user.id = (token.id ?? token.sub) as string;
+        session.user.username = token.username ?? '';
       }
       return session;
     },

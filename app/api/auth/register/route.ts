@@ -4,8 +4,13 @@ import { randomUUID } from 'crypto';
 import { getSupabaseAdmin } from '@/lib/supabase/admin';
 
 const MIN_PASSWORD = 8;
+const USERNAME_RE = /^[a-z0-9_]{1,10}$/;
 
 function normalizeEmail(raw: string): string {
+  return raw.trim().toLowerCase();
+}
+
+function normalizeUsername(raw: string): string {
   return raw.trim().toLowerCase();
 }
 
@@ -17,12 +22,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'JSON inválido' }, { status: 400 });
   }
 
-  const email = typeof (body as { email?: unknown }).email === 'string'
-    ? normalizeEmail((body as { email: string }).email)
-    : '';
-  const password = typeof (body as { password?: unknown }).password === 'string'
-    ? (body as { password: string }).password
-    : '';
+  const b = body as { email?: unknown; password?: unknown; username?: unknown };
+
+  const email = typeof b.email === 'string' ? normalizeEmail(b.email) : '';
+  const password = typeof b.password === 'string' ? b.password : '';
+  const username = typeof b.username === 'string' ? normalizeUsername(b.username) : '';
 
   if (!email || !email.includes('@')) {
     return NextResponse.json({ error: 'Correo no válido' }, { status: 400 });
@@ -33,15 +37,34 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
+  if (!USERNAME_RE.test(username)) {
+    return NextResponse.json(
+      { error: 'El usuario debe tener máx. 10 caracteres (letras, números o _)' },
+      { status: 400 },
+    );
+  }
 
   const admin = getSupabaseAdmin();
   if (!admin) {
     return NextResponse.json({ error: 'Servidor sin Supabase configurado' }, { status: 503 });
   }
 
-  const { data: existing } = await admin.from('hc_credential_users').select('user_id').eq('email', email).maybeSingle();
-  if (existing) {
+  const { data: existingEmail } = await admin
+    .from('hc_credential_users')
+    .select('user_id')
+    .eq('email', email)
+    .maybeSingle();
+  if (existingEmail) {
     return NextResponse.json({ error: 'Ese correo ya está registrado' }, { status: 409 });
+  }
+
+  const { data: existingUser } = await admin
+    .from('hc_credential_users')
+    .select('user_id')
+    .eq('username', username)
+    .maybeSingle();
+  if (existingUser) {
+    return NextResponse.json({ error: 'Ese nombre de usuario ya existe. Elige otro.' }, { status: 409 });
   }
 
   const password_hash = await bcrypt.hash(password, 12);
@@ -51,6 +74,7 @@ export async function POST(req: Request) {
     user_id,
     email,
     password_hash,
+    username,
   });
 
   if (error) {
