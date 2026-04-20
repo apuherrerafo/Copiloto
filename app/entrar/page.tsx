@@ -44,7 +44,7 @@ export default function EntrarPage() {
       setTimeout(() => {
         router.push('/');
         router.refresh();
-      }, 1400);
+      }, 2200);
     } catch {
       setErr('No se pudo iniciar sesión. Revisa tu conexión.');
       setBusy(false);
