@@ -1,10 +1,18 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ReactElement } from 'react';
-import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getAllLogs, type LogEntry, type ProCheckInValue } from '@/lib/store/db';
-import { loadAppointments, type Appointment } from '@/lib/store/appointments';
+import {
+  loadAppointments,
+  removeAppointment,
+  TYPE_LABELS as APPT_TYPE_LABELS,
+  type Appointment,
+} from '@/lib/store/appointments';
 import { localDateISO } from '@/lib/dates';
+
+type Tab = 'clinica' | 'agenda';
 
 type FilterKey =
   | 'all'
@@ -153,6 +161,7 @@ export default function HistorialPage() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [appts, setAppts] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<Tab>('clinica');
   const [filter, setFilter] = useState<FilterKey>('all');
   const [query, setQuery] = useState('');
 
@@ -261,16 +270,77 @@ export default function HistorialPage() {
     };
   }, [filtered]);
 
+  function handleDeleteAppointment(id: string) {
+    removeAppointment(id);
+    setAppts(loadAppointments());
+  }
+
   return (
     <div className="home-mesh min-h-screen">
       <div className="px-safe pt-10 pb-3">
-        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted/80">Tu historial</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted/80">Tu historia</p>
         <h1 className="mt-1 font-serif text-[2.25rem] italic leading-[1.05] text-ink">
           Todo lo que <span className="text-sage">cuidaste de ti</span>
         </h1>
       </div>
 
+      {/* Tabs: Historia clínica · Agenda */}
       <div className="px-safe">
+        <div className="flex rounded-full border border-hairline/80 bg-white/85 p-1 shadow-soft">
+          {([
+            { key: 'clinica', label: 'Historia clínica' },
+            { key: 'agenda', label: 'Agenda' },
+          ] as { key: Tab; label: string }[]).map((t) => {
+            const active = tab === t.key;
+            return (
+              <motion.button
+                key={t.key}
+                type="button"
+                onClick={() => setTab(t.key)}
+                whileTap={{ scale: 0.96 }}
+                className={`relative flex-1 rounded-full px-3 py-2 text-[12.5px] font-semibold transition-colors ${
+                  active ? 'text-white' : 'text-ink/70 hover:text-ink'
+                }`}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="historia-tab-pill"
+                    className="absolute inset-0 rounded-full bg-sage shadow-[0_4px_14px_-6px_rgba(91,122,101,0.55)]"
+                    transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                  />
+                )}
+                <span className="relative">{t.label}</span>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {tab === 'agenda' ? (
+          <motion.div
+            key="agenda"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            className="pb-nav-clear"
+          >
+            <AgendaView
+              appointments={appts}
+              loading={loading}
+              onDelete={handleDeleteAppointment}
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="clinica"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          >
+      <div className="mt-3 px-safe">
         <label className="relative flex w-full items-center">
           <span className="absolute left-3 text-muted">
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -295,9 +365,10 @@ export default function HistorialPage() {
             const count = counts[key];
             if (count === 0 && key !== 'all') return null;
             return (
-              <button
+              <motion.button
                 key={key}
                 onClick={() => setFilter(key)}
+                whileTap={{ scale: 0.94 }}
                 className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition-colors ${
                   active
                     ? 'border-ink bg-ink text-white'
@@ -312,7 +383,7 @@ export default function HistorialPage() {
                 >
                   {count}
                 </span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -360,7 +431,234 @@ export default function HistorialPage() {
           </section>
         ))}
       </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+function apptTimestamp(a: Appointment): number {
+  return appointmentTimestamp(a);
+}
+
+function relativeDay(iso: string): string {
+  const todayISO = localDateISO();
+  const [y, m, d] = iso.split('-').map(Number);
+  const target = new Date(y, (m ?? 1) - 1, d ?? 1);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (iso === todayISO) return 'Hoy';
+  if (diff === 1) return 'Mañana';
+  if (diff === -1) return 'Ayer';
+  if (diff > 1 && diff < 7) {
+    const n = target.toLocaleDateString('es-MX', { weekday: 'long' });
+    return n.charAt(0).toUpperCase() + n.slice(1);
+  }
+  if (diff > -7 && diff < -1) {
+    const n = target.toLocaleDateString('es-MX', { weekday: 'long' });
+    return `${n.charAt(0).toUpperCase() + n.slice(1)} pasado`;
+  }
+  return target.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function AgendaView({
+  appointments,
+  loading,
+  onDelete,
+}: {
+  appointments: Appointment[];
+  loading: boolean;
+  onDelete: (id: string) => void;
+}) {
+  const todayISO = localDateISO();
+  const upcoming = appointments
+    .filter((a) => a.date >= todayISO)
+    .sort((a, b) => apptTimestamp(a) - apptTimestamp(b));
+  const pastApts = appointments
+    .filter((a) => a.date < todayISO)
+    .sort((a, b) => apptTimestamp(b) - apptTimestamp(a));
+
+  const doctorStats = useMemo(() => {
+    const map = new Map<string, { name: string; count: number; last: string }>();
+    for (const a of appointments) {
+      const key = a.title.trim().toLowerCase();
+      if (!key) continue;
+      const current = map.get(key);
+      if (current) {
+        current.count++;
+        if (a.date > current.last) current.last = a.date;
+      } else {
+        map.set(key, { name: a.title.trim(), count: 1, last: a.date });
+      }
+    }
+    return [...map.values()].sort((a, b) => b.count - a.count).slice(0, 6);
+  }, [appointments]);
+
+  return (
+    <div className="px-safe mt-4">
+      {loading ? (
+        <p className="py-12 text-center text-sm text-muted">Cargando…</p>
+      ) : appointments.length === 0 ? (
+        <div className="py-14 text-center">
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-coral/10 text-coral"
+          >
+            <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M7 3v3M17 3v3M4 8h16M5 6h14a1 1 0 011 1v12a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1z" strokeLinejoin="round" />
+              <path d="M12 13v4M10 15h4" strokeLinecap="round" />
+            </svg>
+          </motion.div>
+          <p className="font-serif text-[18px] italic text-ink">Sin citas agendadas</p>
+          <p className="mt-1 text-[12px] text-muted/80">Cuando agendes una cita aparecerá aquí.</p>
+          <Link
+            href="/registrar?type=appointment"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-coral px-4 py-2 text-[12px] font-semibold text-white shadow-soft transition-transform active:scale-95"
+          >
+            + Agendar primera cita
+          </Link>
+        </div>
+      ) : (
+        <>
+          {/* Resumen de doctores */}
+          {doctorStats.length > 0 && (
+            <section className="mb-5">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+                Tus doctores · últimas citas
+              </p>
+              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 no-scrollbar">
+                {doctorStats.map((doc, i) => (
+                  <motion.div
+                    key={doc.name}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.04 * i, duration: 0.3 }}
+                    className="flex min-w-[160px] shrink-0 items-center gap-2 rounded-2xl border border-hairline/70 bg-white/90 px-3 py-2 shadow-soft"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage/15 text-[14px] font-serif italic text-sage">
+                      {doc.name.slice(0, 2).toUpperCase()}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[12.5px] font-semibold leading-tight text-ink">
+                        {doc.name}
+                      </p>
+                      <p className="mt-0.5 text-[10.5px] text-muted">
+                        {doc.count} {doc.count === 1 ? 'cita' : 'citas'} · {relativeDay(doc.last)}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Próximas */}
+          {upcoming.length > 0 && (
+            <section className="mb-6">
+              <h2 className="mb-3 flex items-center gap-2 font-serif text-[16px] italic text-coral">
+                <span className="h-1.5 w-1.5 rounded-full bg-coral" />
+                Próximas ({upcoming.length})
+              </h2>
+              <ul className="space-y-2.5">
+                {upcoming.map((apt, i) => (
+                  <AppointmentCard key={apt.id} apt={apt} index={i} upcoming onDelete={onDelete} />
+                ))}
+              </ul>
+              <Link
+                href="/registrar?type=appointment"
+                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-coral/40 bg-coral/5 px-3 py-2.5 text-[12.5px] font-semibold text-coral transition-colors hover:bg-coral/10"
+              >
+                <span className="text-[15px] leading-none">+</span>
+                Agendar otra cita
+              </Link>
+            </section>
+          )}
+
+          {/* Pasadas */}
+          {pastApts.length > 0 && (
+            <section className="mb-4">
+              <h2 className="mb-3 flex items-center gap-2 font-serif text-[16px] italic text-muted">
+                <span className="h-1.5 w-1.5 rounded-full bg-muted/60" />
+                Pasadas ({pastApts.length})
+              </h2>
+              <ul className="space-y-2">
+                {pastApts.map((apt, i) => (
+                  <AppointmentCard key={apt.id} apt={apt} index={i} upcoming={false} onDelete={onDelete} />
+                ))}
+              </ul>
+            </section>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function AppointmentCard({
+  apt,
+  index,
+  upcoming,
+  onDelete,
+}: {
+  apt: Appointment;
+  index: number;
+  upcoming: boolean;
+  onDelete: (id: string) => void;
+}) {
+  const parsed = parseAppointmentNotes(apt.notes);
+  return (
+    <motion.li
+      initial={{ opacity: 0, x: -12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.03 * index, duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+      className={`flex items-start gap-3 rounded-2xl border px-3 py-3 shadow-soft ${
+        upcoming
+          ? 'border-coral/25 bg-white/95'
+          : 'border-hairline/60 bg-white/75'
+      }`}
+    >
+      <div
+        className={`flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl ${
+          upcoming ? 'bg-coral/12 text-coral' : 'bg-muted/10 text-muted'
+        }`}
+      >
+        <span className="text-[9px] font-bold uppercase leading-none tracking-[0.14em]">
+          {relativeDay(apt.date).slice(0, 3)}
+        </span>
+        <span className="mt-0.5 font-serif text-[20px] italic leading-none text-ink">
+          {apt.time ?? '—'}
+        </span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[14px] font-semibold leading-tight text-ink">{apt.title}</p>
+        <p className="mt-0.5 truncate text-[11.5px] leading-snug text-muted">
+          {relativeDay(apt.date)} · {APPT_TYPE_LABELS[apt.type]}
+          {parsed.specialty ? ` · ${parsed.specialty}` : ''}
+        </p>
+        {upcoming && parsed.bring && (
+          <div className="mt-1.5 rounded-lg border border-coral/15 bg-coral/5 px-2.5 py-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-coral/90">
+              Recuerda llevar
+            </p>
+            <p className="mt-0.5 text-[11.5px] italic leading-snug text-muted">{parsed.bring}</p>
+          </div>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={() => onDelete(apt.id)}
+        aria-label="Eliminar cita"
+        className="ml-1 text-muted/50 transition-colors hover:text-coral"
+      >
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+        </svg>
+      </button>
+    </motion.li>
   );
 }
 

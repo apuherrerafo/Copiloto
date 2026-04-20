@@ -12,6 +12,7 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut, getSession } from 'next-auth/react';
+import { AnimatePresence, motion } from 'framer-motion';
 import BottomNav from '@/components/layout/BottomNav';
 import HealthDisclaimerGate from '@/components/legal/HealthDisclaimerGate';
 import { clearSession, readSession, type HypoSession } from '@/lib/auth/session';
@@ -147,7 +148,17 @@ export default function AppShell({ children }: { children: ReactNode }) {
       ) : (
         <>
           {status === 'authenticated' ? <HealthDisclaimerGate /> : null}
-          {children}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 14, filter: 'blur(6px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: -8, filter: 'blur(4px)' }}
+              transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
           {showNav ? <BottomNav /> : null}
         </>
       )}

@@ -8,12 +8,18 @@ import NotificationBell from '@/components/ui/NotificationBell';
 import { useHypoSession } from '@/components/layout/AppShell';
 import { getMotivationalMessage } from '@/lib/content/motivational';
 
-function todayShort() {
+function todayParts() {
   const d = new Date();
-  const day = d.toLocaleDateString('es-MX', { weekday: 'long' });
-  const n = d.getDate();
-  const mon = d.toLocaleDateString('es-MX', { month: 'short' }).replace('.', '');
-  return `${day}, ${n} ${mon}`.toUpperCase();
+  const dayName = d.toLocaleDateString('es-MX', { weekday: 'long' });
+  const dayNum = d.getDate();
+  const month = d.toLocaleDateString('es-MX', { month: 'long' });
+  const year = d.getFullYear();
+  return {
+    dayName: dayName.charAt(0).toUpperCase() + dayName.slice(1),
+    dayNum,
+    month: month.charAt(0).toUpperCase() + month.slice(1),
+    year,
+  };
 }
 
 function greeting() {
@@ -57,6 +63,8 @@ export default function MotivationalHeader({ name }: { name?: string }) {
     return () => clearInterval(id);
   }, []);
 
+  const dateInfo = todayParts();
+
   return (
     <div className="pt-10 pb-2">
       {/* 1 · Perfil + saludo · campana · fecha */}
@@ -81,18 +89,54 @@ export default function MotivationalHeader({ name }: { name?: string }) {
               )}
             </span>
             <div className="min-w-0 flex-1 text-left leading-tight">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted/80">
-                {todayShort()}
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-sage">
+                {greeting()}
               </p>
               <p className="truncate font-serif text-[1.35rem] italic text-ink md:text-[1.5rem]">
-                {greeting()}, <span className="font-semibold">{displayName}</span>
+                <span className="font-semibold">{displayName}</span>
               </p>
             </div>
           </Link>
           <NotificationBell />
         </div>
 
-        <div className="mt-2 text-center">
+        {/* Card fecha prominente */}
+        <motion.div
+          initial={{ opacity: 0, y: 10, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 0.05, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-3 overflow-hidden rounded-[18px] border border-white/70 bg-gradient-to-br from-sage/20 via-white/70 to-amber/15 px-4 py-3 shadow-soft backdrop-blur-sm"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-white/95 shadow-[0_6px_16px_-8px_rgba(91,122,101,0.35)] ring-1 ring-sage/20">
+              <span className="text-[9px] font-bold uppercase tracking-[0.16em] leading-none text-coral">
+                {dateInfo.month.slice(0, 3).toUpperCase()}
+              </span>
+              <motion.span
+                key={dateInfo.dayNum}
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 280, damping: 16, delay: 0.15 }}
+                className="mt-0.5 font-serif text-[26px] italic leading-none text-ink"
+              >
+                {dateInfo.dayNum}
+              </motion.span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-sage/90">
+                Hoy es
+              </p>
+              <p className="mt-0.5 font-serif text-[1.2rem] italic leading-tight text-ink">
+                {dateInfo.dayName}
+              </p>
+              <p className="mt-0.5 text-[11px] text-muted">
+                {dateInfo.dayNum} de {dateInfo.month.toLowerCase()} · {dateInfo.year}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        <div className="mt-3 text-center">
           <AnimatePresence mode="wait">
             {visible && msg ? (
               <motion.p

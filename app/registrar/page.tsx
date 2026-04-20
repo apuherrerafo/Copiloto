@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { addLog, getLogsByDate, type SymptomTag } from '@/lib/store/db';
 import { addAppointment } from '@/lib/store/appointments';
 import { localDateISO, addDaysLocal } from '@/lib/dates';
@@ -284,76 +285,140 @@ function RegistrarInner() {
           </label>
           <div className="grid grid-cols-3 gap-2">
             {TYPES.map((t) => (
-              <button
+              <motion.button
                 key={t.key}
                 onClick={() => handleTypeChange(t.key)}
-                className={`flex items-center gap-2 px-3 py-3 rounded-2xl border transition-all text-sm font-medium ${
-                  type === t.key ? t.color : 'bg-surface border-gray-100 text-gray-400'
+                whileTap={{ scale: 0.94 }}
+                animate={type === t.key ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className={`flex items-center gap-2 px-3 py-3 rounded-2xl border transition-colors text-sm font-medium ${
+                  type === t.key ? `${t.color} shadow-soft` : 'bg-surface border-gray-100 text-gray-400'
                 }`}
               >
                 <span className="text-lg">{t.icon}</span>
                 <span className="truncate">{t.label}</span>
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
 
-        {/* Walking-specific: duration picker */}
-        {type === 'walking' && (
-          <div>
-            <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
-              Duración
-            </label>
-            <p className="text-[11px] text-muted mb-2 leading-snug">
-              10–15 min post-almuerzo o 15–20 min post-cena activan GLUT4 y reducen picos glucémicos un 12–18 %.
-            </p>
-            <div className="flex gap-2">
-              {WALK_DURATIONS.map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => setWalkDuration(d)}
-                  className={`flex-1 py-2 rounded-xl border text-sm font-medium transition-all ${
-                    walkDuration === d
-                      ? 'bg-sky-100 border-sky-300 text-sky-700'
-                      : 'bg-surface border-gray-100 text-gray-400'
-                  }`}
-                >
-                  {d} min
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Type-specific sections con animación al cambiar */}
+        <AnimatePresence mode="wait">
+          {type === 'walking' && (
+            <motion.div
+              key="walking-dur"
+              initial={{ opacity: 0, y: 12, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, y: -8, height: 0 }}
+              transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+              className="overflow-hidden"
+            >
+              <div>
+                <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
+                  Duración
+                </label>
+                <p className="text-[11px] text-muted mb-2 leading-snug">
+                  10–15 min post-almuerzo o 15–20 min post-cena activan GLUT4 y reducen picos glucémicos un 12–18 %.
+                </p>
+                <div className="flex gap-2">
+                  {WALK_DURATIONS.map((d) => (
+                    <motion.button
+                      key={d}
+                      type="button"
+                      onClick={() => setWalkDuration(d)}
+                      whileTap={{ scale: 0.9 }}
+                      className={`flex-1 py-2 rounded-xl border text-sm font-medium transition-colors ${
+                        walkDuration === d
+                          ? 'bg-sky-100 border-sky-300 text-sky-700'
+                          : 'bg-surface border-gray-100 text-gray-400'
+                      }`}
+                    >
+                      {d} min
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
 
-        {/* Symptom tags */}
-        {type === 'symptom' && (
-          <div>
-            <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
-              ¿Qué sientes? (puedes elegir varios)
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {SYMPTOM_TAGS.map((st) => (
-                <button
-                  key={st.key}
-                  type="button"
-                  onClick={() => toggleSymptomTag(st.key)}
-                  className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
-                    selectedSymptomTags.includes(st.key)
-                      ? 'bg-coral/10 border-coral/40 text-coral'
-                      : 'bg-surface border-gray-100 text-gray-400'
-                  }`}
-                >
-                  {st.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+          {type === 'symptom' && (
+            <motion.div
+              key="symptom-tags"
+              initial={{ opacity: 0, y: 12, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, y: -8, height: 0 }}
+              transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+              className="overflow-hidden"
+            >
+              <div>
+                <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
+                  ¿Qué sientes? (puedes elegir varios)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {SYMPTOM_TAGS.map((st, i) => (
+                    <motion.button
+                      key={st.key}
+                      type="button"
+                      onClick={() => toggleSymptomTag(st.key)}
+                      initial={{ opacity: 0, scale: 0.85 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.02 * i, duration: 0.22 }}
+                      whileTap={{ scale: 0.92 }}
+                      className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
+                        selectedSymptomTags.includes(st.key)
+                          ? 'bg-coral/10 border-coral/40 text-coral'
+                          : 'bg-surface border-gray-100 text-gray-400'
+                      }`}
+                    >
+                      {st.label}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
 
-        {/* Cita médica: quién, especialidad, hora, qué llevar */}
-        {type === 'appointment' && (
-          <div className="space-y-4 rounded-2xl border border-coral/20 bg-coral/5 p-4">
+          {type === 'appointment' && (
+            <motion.div
+              key="appt-fields"
+              initial={{ opacity: 0, y: 16, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.97 }}
+              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+              className="space-y-4 rounded-2xl border border-coral/25 bg-gradient-to-br from-coral/12 via-coral/5 to-white/60 p-4 shadow-soft"
+            >
+              {/* Hero animado: icono de calendario rebotando */}
+              <div className="flex items-center gap-3 rounded-xl bg-white/75 px-3 py-2.5 backdrop-blur-sm">
+                <motion.span
+                  initial={{ rotate: -20, scale: 0.6 }}
+                  animate={{ rotate: [0, -8, 8, -4, 0], scale: [0.6, 1.1, 1] }}
+                  transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-coral/15 text-coral"
+                >
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6">
+                    <path d="M7 3v3M17 3v3M4 8h16M5 6h14a1 1 0 011 1v12a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1z" strokeLinejoin="round" />
+                    <path d="M12 13v4M10 15h4" strokeLinecap="round" />
+                  </svg>
+                </motion.span>
+                <div className="min-w-0 flex-1">
+                  <motion.p
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1, duration: 0.4 }}
+                    className="text-[10px] font-bold uppercase tracking-[0.16em] text-coral"
+                  >
+                    Nueva cita médica
+                  </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.18, duration: 0.4 }}
+                    className="mt-0.5 font-serif text-[14px] italic leading-snug text-ink"
+                  >
+                    Cuéntame quién, cuándo y qué llevar.
+                  </motion.p>
+                </div>
+              </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-coral">
                 Quién te atiende
@@ -403,29 +468,38 @@ function RegistrarInner() {
                 className="w-full rounded-xl border border-hairline bg-white/90 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-coral resize-none"
               />
             </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Label (hidden for walking/appointment) */}
-        {type !== 'walking' && type !== 'appointment' && (
-          <div>
-            <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
-              {type === 'meal' ? 'Qué comiste' : type === 'medication' ? 'Medicamento' : type === 'symptom' ? 'Descripción breve' : 'Nota'}
-            </label>
-            <input
-              type="text"
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              placeholder={
-                type === 'meal' ? 'Ej. Huevos con aguacate' :
-                type === 'medication' ? `Ej. Levotiroxina ${LEVO_DOSE_LABEL}` :
-                type === 'symptom' ? 'Ej. Fatiga por la tarde' :
-                'Escribe tu nota...'
-              }
-              className="w-full bg-surface border border-gray-100 rounded-2xl px-4 py-3 text-ink text-sm outline-none focus:border-sage transition-colors placeholder:text-gray-300"
-            />
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {type !== 'walking' && type !== 'appointment' && (
+            <motion.div
+              key={`label-${type}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
+                {type === 'meal' ? 'Qué comiste' : type === 'medication' ? 'Medicamento' : type === 'symptom' ? 'Descripción breve' : 'Nota'}
+              </label>
+              <input
+                type="text"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                placeholder={
+                  type === 'meal' ? 'Ej. Huevos con aguacate' :
+                  type === 'medication' ? `Ej. Levotiroxina ${LEVO_DOSE_LABEL}` :
+                  type === 'symptom' ? 'Ej. Fatiga por la tarde' :
+                  'Escribe tu nota...'
+                }
+                className="w-full bg-surface border border-gray-100 rounded-2xl px-4 py-3 text-ink text-sm outline-none focus:border-sage transition-colors placeholder:text-gray-300"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Emotional bubbles */}
         {type !== 'appointment' && (
