@@ -141,3 +141,30 @@ export function getNotificationStatus(): 'granted' | 'denied' | 'default' | 'uns
   if (typeof window === 'undefined' || !('Notification' in window)) return 'unsupported';
   return Notification.permission as 'granted' | 'denied' | 'default';
 }
+
+/**
+ * Instant smoke test: verifies OS/browser actually shows a notification.
+ * Scheduled protocol alerts use `setTimeout`, so they only fire while this tab
+ * (or PWA) can run JavaScript — closing the app means no timers until you open again.
+ */
+export function sendTestNotification():
+  | { ok: true }
+  | { ok: false; reason: 'unsupported' | 'not_granted' | 'error' } {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
+    return { ok: false, reason: 'unsupported' };
+  }
+  if (Notification.permission !== 'granted') {
+    return { ok: false, reason: 'not_granted' };
+  }
+  try {
+    new Notification(`Test — ${APP_NAME}`, {
+      body:
+        'If you see this, permissions are OK. Timed reminders need the app open in the background; they are not server push.',
+      icon: '/icons/icon-192.png',
+      tag: 'hypo-test-notification',
+    });
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: 'error' };
+  }
+}

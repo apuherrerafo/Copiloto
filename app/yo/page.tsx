@@ -5,6 +5,7 @@ import {
   requestNotificationPermission,
   scheduleProtocolNotifications,
   getNotificationStatus,
+  sendTestNotification,
 } from '@/lib/notifications/schedule';
 import { useHypoSession } from '@/components/layout/AppShell';
 import { readSession, saveSession } from '@/lib/auth/session';
@@ -30,7 +31,7 @@ const NOTIFICATION_SCHEDULE = [
   { time: '12:00', label: 'Break the fast + glucose', icon: '🍽️' },
   { time: '13:45', label: 'Post-lunch walk (nudge)', icon: '🚶' },
   { time: '19:45', label: 'Last meal (15 min) + circadian', icon: '⏰' },
-  { time: '20:45', label: 'Post-dinner walk (nudge)', icon: '🚶' },
+  { time: '20:15', label: 'Post-dinner walk (nudge)', icon: '🚶' },
 ];
 
 export default function YoPage() {
@@ -45,6 +46,7 @@ export default function YoPage() {
   });
   const [saved, setSaved] = useState(false);
   const [notifStatus, setNotifStatus] = useState<'granted' | 'denied' | 'default' | 'unsupported'>('default');
+  const [testNotifHint, setTestNotifHint] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -115,6 +117,18 @@ export default function YoPage() {
     setNotifStatus(granted ? 'granted' : 'denied');
     if (granted) scheduleProtocolNotifications();
     window.dispatchEvent(new Event('hypo-storage-sync'));
+  }
+
+  function handleTestNotification() {
+    const r = sendTestNotification();
+    if (r.ok) {
+      setTestNotifHint('If nothing appeared, check Focus / Do Not Disturb and the browser’s site permissions.');
+    } else if (r.reason === 'not_granted') {
+      setTestNotifHint('Enable alerts first with the button above.');
+    } else {
+      setTestNotifHint('This browser may not support notifications here.');
+    }
+    window.setTimeout(() => setTestNotifHint(null), 7000);
   }
 
   return (
@@ -308,12 +322,29 @@ export default function YoPage() {
           )}
 
           {notifStatus === 'granted' && (
-            <button
-              onClick={() => scheduleProtocolNotifications()}
-              className="w-full py-3 rounded-xl bg-sage/10 text-sage font-semibold text-sm"
-            >
-              ✓ Reschedule for today
-            </button>
+            <div className="space-y-2">
+              <p className="text-[11px] text-muted leading-relaxed">
+                Reminders use the open app: keep Copiloto in the background (or reopen before each time). Closing the app
+                completely means alerts resume only after the next launch.
+              </p>
+              <button
+                type="button"
+                onClick={handleTestNotification}
+                className="w-full py-3 rounded-xl border border-hairline text-ink font-semibold text-sm hover:bg-surface/80 transition-colors"
+              >
+                Send test notification now
+              </button>
+              <button
+                type="button"
+                onClick={() => scheduleProtocolNotifications()}
+                className="w-full py-3 rounded-xl bg-sage/10 text-sage font-semibold text-sm"
+              >
+                ✓ Reschedule for today
+              </button>
+              {testNotifHint ? (
+                <p className="text-[11px] text-muted text-center">{testNotifHint}</p>
+              ) : null}
+            </div>
           )}
 
           {notifStatus === 'denied' && (
