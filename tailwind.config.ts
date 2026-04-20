@@ -28,6 +28,9 @@ const config: Config = {
         soft: '0 1px 2px rgba(31, 36, 32, 0.06), 0 8px 24px rgba(31, 36, 32, 0.06)',
         lift: '0 4px 6px rgba(31, 36, 32, 0.04), 0 16px 40px -12px rgba(31, 36, 32, 0.12)',
         glass: '0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 12px 32px -8px rgba(31, 36, 32, 0.1)',
+        /** Separates floating panels from home-mesh (sage + peach + coral mist) */
+        'hypo-float':
+          '0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 10px 36px -10px rgba(91, 122, 101, 0.22), 0 8px 28px -12px rgba(255, 178, 132, 0.28), 0 3px 14px rgba(212, 152, 138, 0.12)',
       },
       keyframes: {
         'fade-up': {

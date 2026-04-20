@@ -5,8 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import HypoMascot from '@/components/ui/HypoMascot';
 
-/** Base size was 34px; ×3 for clearer mascot above the chat strip */
-const MASCOT = 102;
+/** One step down from full “×3” (102); 86px keeps presence without crowding */
+const MASCOT = 86;
 
 /**
  * HypoAI: barra tipo input de chat. La mascota camina fuera del componente,
@@ -54,13 +54,27 @@ export default function HypoNavFloat() {
               times: [0, 0.25, 0.5, 0.75, 1],
             }}
           >
-            <HypoMascot size={MASCOT} title="Hypo" />
+            <div className="relative h-full w-full">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute bottom-[8%] left-1/2 h-[38%] w-[95%] max-w-[7.5rem] -translate-x-1/2 rounded-[50%] opacity-[0.75] blur-[14px]"
+                style={{
+                  background:
+                    'radial-gradient(ellipse 80% 100% at 50% 100%, rgba(91, 122, 101, 0.42) 0%, rgba(255, 178, 132, 0.2) 42%, transparent 72%)',
+                }}
+              />
+              <HypoMascot
+                size={MASCOT}
+                title="Hypo"
+                className="relative z-[1] drop-shadow-[0_14px_28px_rgba(91,122,101,0.35)]"
+              />
+            </div>
           </motion.div>
         </div>
 
         <Link
           href="/copiloto"
-          className="block rounded-[1.35rem] border border-hairline/90 bg-white px-4 py-2.5 shadow-glass transition-opacity active:opacity-90"
+          className="block rounded-[1.35rem] border border-white/85 bg-white/[0.97] px-4 py-2.5 shadow-hypo-float backdrop-blur-[2px] transition-opacity active:opacity-90"
           aria-label="Open HypoAI — Ask HypoAI any curiosity you have"
         >
           <p className="text-[13px] font-medium leading-snug text-ink/90">

@@ -192,9 +192,23 @@ export default function MiniCalendar() {
   const dayChecks = checksMap[selected];
   const selApts = appointments.filter((a) => a.date === selected);
 
+  const progressHeadline =
+    !isFuture && dayChecks && TOTAL_KEYS > 0
+      ? pctLabel(dayChecks.count / TOTAL_KEYS, dayChecks.count)
+      : null;
+
   return (
     <div className="mb-1">
-      <p className="mb-1.5 text-center font-serif text-xs italic text-ink/85">My week</p>
+      {progressHeadline ? (
+        <p
+          className={`mb-1 text-center text-[11px] font-semibold leading-tight ${pctColor(
+            (dayChecks?.count ?? 0) / TOTAL_KEYS,
+          )}`}
+        >
+          {progressHeadline}
+        </p>
+      ) : null}
+      <p className="mb-1.5 text-center font-serif text-xs italic text-ink/85">My month</p>
       {/* Horizontal strip — scroll con aire lateral para que no se corten los anillos */}
       <div
         ref={stripRef}
@@ -269,8 +283,8 @@ export default function MiniCalendar() {
                       <span className="text-base leading-none shrink-0">
                         {dayChecks.count === TOTAL_KEYS ? '🌟' : dayChecks.count >= 3 ? '✅' : '🟡'}
                       </span>
-                      <span className={`text-xs font-semibold leading-tight truncate ${pctColor(dayChecks.count / TOTAL_KEYS)}`}>
-                        {pctLabel(dayChecks.count / TOTAL_KEYS, dayChecks.count)}
+                      <span className="truncate text-xs font-semibold leading-tight text-ink/85">
+                        Protocol checklist
                       </span>
                     </span>
                     <svg
