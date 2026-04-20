@@ -17,6 +17,7 @@ import HypoNavFloat from '@/components/layout/HypoNavFloat';
 import ServiceWorkerUpdateBanner from '@/components/layout/ServiceWorkerUpdateBanner';
 import FullScreenLoader from '@/components/ui/FullScreenLoader';
 import HealthDisclaimerGate from '@/components/legal/HealthDisclaimerGate';
+import { readPersistedAvatarDataUrl, writePersistedAvatarDataUrl } from '@/lib/auth/avatar-persist';
 import { clearSession, readSession, type HypoSession } from '@/lib/auth/session';
 import { clearAllLocalUserData } from '@/lib/store/clear-local';
 
@@ -53,6 +54,17 @@ export default function AppShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('hypo-storage-sync', bump);
   }, []);
 
+  /** Migra foto que solo vivía en `hypocopilot_session_v1` al almacén por email (antes del fix de logout). */
+  useEffect(() => {
+    if (status !== 'authenticated' || !authSession?.user?.email) return;
+    const email = authSession.user.email.trim();
+    if (!email) return;
+    const stored = readSession();
+    const dataUrl = stored?.avatarDataUrl;
+    if (!dataUrl || readPersistedAvatarDataUrl(email)) return;
+    writePersistedAvatarDataUrl(email, dataUrl);
+  }, [status, authSession?.user?.email]);
+
   useEffect(() => {
     if (status !== 'loading') {
       setSessionLoadTimedOut(false);
@@ -66,11 +78,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
     if (status !== 'authenticated' || !authSession?.user) return null;
     const u = authSession.user;
     const stored = typeof window !== 'undefined' ? readSession() : null;
+    const email = (u.email ?? stored?.email)?.trim() || undefined;
+    const persistedAvatar = email ? readPersistedAvatarDataUrl(email) : undefined;
     return {
       name: (stored?.name?.trim() || u.name?.trim() || 'Friend') as string,
       email: u.email ?? stored?.email,
       avatarUrl: u.image ?? undefined,
-      avatarDataUrl: stored?.avatarDataUrl,
+      avatarDataUrl: stored?.avatarDataUrl ?? persistedAvatar,
       createdAt: stored?.createdAt ?? 0,
     };
     // sessionRevision no aparece en el cuerpo, pero invalida readSession() tras hypo-storage-sync (perfil/foto).

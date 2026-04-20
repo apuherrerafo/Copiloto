@@ -9,6 +9,7 @@ import {
   getProtocolAlertScheduleRows,
 } from '@/lib/notifications/schedule';
 import { useHypoSession } from '@/components/layout/AppShell';
+import { writePersistedAvatarDataUrl } from '@/lib/auth/avatar-persist';
 import { readSession, saveSession } from '@/lib/auth/session';
 import { compressImageToDataUrl } from '@/lib/images/compress-avatar';
 import { LEVO_DOSE_LABEL } from '@/lib/brand';
@@ -163,12 +164,14 @@ export default function YoPage() {
       const dataUrl = await compressImageToDataUrl(file);
       const prev = readSession();
       const nm = profile.name.trim() || session?.name || 'You';
+      const email = (prev?.email ?? session?.email)?.trim();
       saveSession({
         name: prev?.name ?? nm,
         email: prev?.email ?? session?.email,
         avatarDataUrl: dataUrl,
         createdAt: prev?.createdAt ?? Date.now(),
       });
+      if (email) writePersistedAvatarDataUrl(email, dataUrl);
       refresh();
       window.dispatchEvent(new Event('hypo-storage-sync'));
     } catch {
