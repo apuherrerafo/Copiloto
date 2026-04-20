@@ -58,7 +58,7 @@ export default function AlarmsPanel() {
   }
 
   return (
-    <div className="px-6 mb-5">
+    <div className="mb-5 px-safe">
       {/* Header row */}
       <button
         onClick={() => setOpen((v) => !v)}

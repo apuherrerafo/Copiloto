@@ -28,6 +28,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  /** Necesario para que env(safe-area-inset-*) funcione bien en iPhone / PWA. */
+  viewportFit: 'cover',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -47,7 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <AuthSessionProvider session={session}>
           <SyncOnLogin />
           <AppShell>
-            <main className="min-h-screen pb-20">{children}</main>
+            <main className="min-h-screen pb-20 pt-[env(safe-area-inset-top,0px)]">{children}</main>
           </AppShell>
         </AuthSessionProvider>
       </body>

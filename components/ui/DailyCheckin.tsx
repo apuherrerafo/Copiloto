@@ -81,7 +81,7 @@ export default function DailyCheckin() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className="mx-5 mb-4 rounded-3xl border border-white/80 bg-white/70 px-4 py-4 shadow-soft backdrop-blur-md"
+      className="mb-4 w-full rounded-3xl border border-white/80 bg-white/70 px-4 py-4 shadow-soft backdrop-blur-md"
     >
       <div className="flex items-start justify-between gap-2">
         <div>

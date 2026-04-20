@@ -7,6 +7,16 @@
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /** Relleno horizontal que respeta notch / bordes redondos en iPhone (PWA y Safari). */
+  .px-safe {
+    padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+  }
+  /** Espacio sobre la bottom nav fija + home indicator iPhone */
+  .pb-nav-clear {
+    padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @layer base {
@@ -25,8 +35,8 @@
     background-attachment: fixed;
   }
 
-  /* Safe area insets for iPhone notch/home indicator */
+  /* Barra inferior: home indicator + un mínimo cómodo */
   .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: max(0.35rem, env(safe-area-inset-bottom, 0px));
   }
 }

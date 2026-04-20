@@ -190,12 +190,12 @@ export default function MiniCalendar() {
 
   return (
     <div className="mb-1">
-      <p className="mb-1.5 px-5 text-center font-serif text-xs italic text-ink/85">Mi semana</p>
-      {/* Horizontal strip — anillos tipo referencia */}
+      <p className="mb-1.5 text-center font-serif text-xs italic text-ink/85">Mi semana</p>
+      {/* Horizontal strip — scroll con aire lateral para que no se corten los anillos */}
       <div
         ref={stripRef}
-        className="flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-hide"
-        style={{ scrollbarWidth: 'none' }}
+        className="-mx-1 flex gap-1.5 overflow-x-auto overscroll-x-contain pb-1 pl-1 pr-1 pt-0.5 scrollbar-hide sm:gap-2 sm:-mx-0 sm:px-0"
+        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' as const }}
       >
         {days.map((d) => {
           const iso = localDateISO(d);
@@ -220,7 +220,7 @@ export default function MiniCalendar() {
                     ? 'bg-white/70 shadow-soft ring-1 ring-sage/20 backdrop-blur-sm'
                     : 'bg-white/40 text-muted ring-1 ring-transparent backdrop-blur-sm hover:bg-white/70 hover:ring-hairline'
               }`}
-              style={{ minWidth: 56 }}
+              style={{ minWidth: 52 }}
             >
               <DayProgressRing
                 dayNum={d.getDate()}
@@ -249,7 +249,7 @@ export default function MiniCalendar() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="mx-5 mt-2 space-y-1.5"
+          className="mt-2 space-y-1.5"
         >
           {/* Past or today: protocol summary */}
           {!isFuture && (

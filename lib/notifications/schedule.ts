@@ -47,7 +47,7 @@ const PROTOCOL_NOTIFICATIONS: ProtocolNotification[] = [
     hour: 19,
     minute: 45,
     title: `⏰ ${APP_NAME} — Cierra la ventana en 15 min`,
-    body: `¿Sabías que comer de noche le dice a tu cuerpo que no es de noche? Tu reloj interno se desincroniza y engorda más con la misma comida. A las 20:00 cierra. Tu hígado y tu tiroides descansan mejor cuando el ayuno empieza a su hora. Eso es biohacking sin gastar nada.`,
+    body: `¿Sabías que comer muy tarde desincroniza tu reloj circadiano? A esas horas el mismo plato puede ser más exigente para tu metabolismo. A las 20:00 cierra. Hígado y tiroides descansan mejor cuando el ayuno arranca a tiempo.`,
     tag: 'lastmeal',
   },
   {

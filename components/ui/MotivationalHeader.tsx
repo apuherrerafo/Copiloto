@@ -8,12 +8,12 @@ import NotificationBell from '@/components/ui/NotificationBell';
 import { useHypoSession } from '@/components/layout/AppShell';
 import { getMotivationalMessage } from '@/lib/content/motivational';
 
-function todayLabel() {
-  return new Date().toLocaleDateString('es-MX', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
+function todayShort() {
+  const d = new Date();
+  const day = d.toLocaleDateString('es-MX', { weekday: 'long' });
+  const n = d.getDate();
+  const mon = d.toLocaleDateString('es-MX', { month: 'short' }).replace('.', '');
+  return `${day}, ${n} ${mon}`.toUpperCase();
 }
 
 function greeting() {
@@ -58,7 +58,7 @@ export default function MotivationalHeader({ name }: { name?: string }) {
   }, []);
 
   return (
-    <div className="px-5 pt-10 pb-2">
+    <div className="pt-10 pb-2">
       {/* 1 · Perfil + saludo · campana · fecha */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -81,19 +81,18 @@ export default function MotivationalHeader({ name }: { name?: string }) {
               )}
             </span>
             <div className="min-w-0 flex-1 text-left leading-tight">
-              <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">{greeting()}</p>
-              <p className="truncate font-serif text-[1.15rem] font-semibold italic text-ink md:text-[1.25rem]">
-                {displayName} <span aria-hidden>☀️</span>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted/80">
+                {todayShort()}
+              </p>
+              <p className="truncate font-serif text-[1.35rem] italic text-ink md:text-[1.5rem]">
+                {greeting()}, <span className="font-semibold">{displayName}</span>
               </p>
             </div>
           </Link>
           <NotificationBell />
         </div>
 
-        <p className="mt-2.5 text-center font-serif text-xs italic capitalize leading-tight text-muted">
-          {todayLabel()}
-        </p>
-        <div className="mt-1 text-center">
+        <div className="mt-2 text-center">
           <AnimatePresence mode="wait">
             {visible && msg ? (
               <motion.p
@@ -116,35 +115,27 @@ export default function MotivationalHeader({ name }: { name?: string }) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.08, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="mt-4 flex gap-2.5 items-stretch"
+        className="mt-4 flex min-w-0 gap-2 items-stretch sm:gap-2.5"
       >
         <Link
           href="/copiloto"
-          className="flex min-h-[52px] flex-1 min-w-0 items-center gap-3 rounded-full border border-white/70 bg-white/65 px-4 py-2.5 shadow-glass backdrop-blur-md transition-all active:scale-[0.99] hover:bg-white/80"
+          className="flex min-h-[48px] min-w-0 flex-1 items-center gap-2 rounded-full border border-white/70 bg-white/65 px-3 py-2 shadow-glass backdrop-blur-md transition-all active:scale-[0.99] hover:bg-white/80 sm:min-h-[52px] sm:gap-3 sm:px-4 sm:py-2.5"
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sage/12 ring-1 ring-sage/15">
-            <HypoMascot size={28} title="Hypo" />
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-sage/12 ring-1 ring-sage/15 sm:h-10 sm:w-10">
+            <HypoMascot size={26} title="Hypo" />
           </span>
           <div className="min-w-0 flex-1 text-left">
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-sage">HypoAI</p>
-            <p className="truncate text-[15px] font-medium text-muted/80">Busca con HypoAI…</p>
+            <p className="truncate text-[14px] font-medium text-muted/80 sm:text-[15px]">Busca con HypoAI…</p>
           </div>
         </Link>
 
         <Link
           href="/copiloto"
           aria-label="Abrir Hypo"
-          className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-sage text-white shadow-lift transition-transform active:scale-95 hover:brightness-105"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sage text-white shadow-lift transition-transform active:scale-95 hover:brightness-105 sm:h-[52px] sm:w-[52px]"
         >
-          <SparkleIcon className="h-6 w-6 opacity-95" />
-        </Link>
-
-        <Link
-          href="/registrar"
-          aria-label="Registrar"
-          className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-hairline bg-white/80 text-xl font-light leading-none text-sage shadow-soft backdrop-blur-md transition-transform active:scale-95 hover:bg-white"
-        >
-          +
+          <SparkleIcon className="h-5 w-5 opacity-95 sm:h-6 sm:w-6" />
         </Link>
       </motion.div>
     </div>
