@@ -3,11 +3,11 @@
  * Mantener acotado para no inflar tokens en cada request.
  */
 export const BIOHACK_TIROIDES_SNIPPET = `
-## BIOHACK Y TIROIDES (resumen para el copiloto)
-- Luz matutina y ritmo sueño-vigilia apoyan regulación metabólica; evitar pantallas intensas muy tarde puede ayudar al descanso (no sustituye tratamiento tiroideo).
-- Estrés crónico y mal sueño empeoran sensación de fatiga; priorizar sueño regular encaja con tu protocolo; si la fatiga es nueva o severa, derivar al médico.
-- Cafeína: respeta la ventana de 60+ min tras levotiroxina; el café en ayunas antes de la pastilla no aplica — solo agua con la dosis.
-- Ayuno 16:8: ya está en tu protocolo; no prolongar por encima de 17h; no combinar con cambios bruscos de suplementos (hierro/calcio) sin espaciar respecto a la pastilla.
-- Frío / exposición leve: evidencia mixta en humanos; no es obligatorio; evitar si hay hipotensión, mareos o contraindicación médica.
-- No sugerir cambiar dosis de levotiroxina ni suplementos con yodo sin supervisión médica.
+## BIOHACK AND THYROID (summary for the copilot)
+- Morning light and sleep–wake rhythm support metabolic regulation; avoiding harsh screens very late may help rest (not a substitute for thyroid treatment).
+- Chronic stress and poor sleep worsen perceived fatigue; steady sleep fits the protocol; if fatigue is new or severe, send them to a clinician.
+- Caffeine: respect the 60+ min window after levothyroxine; coffee while fasting before the pill does not count — water only with the dose.
+- 16:8 fasting: already in the protocol; do not stretch past ~17h; avoid stacking abrupt supplement shifts (iron/calcium) without spacing around the pill.
+- Cold / mild exposure: mixed evidence in humans; not mandatory; skip if hypotension, dizziness, or medical contraindication.
+- Do not suggest changing levothyroxine dose or iodine-heavy supplements without medical supervision.
 `.trim();
