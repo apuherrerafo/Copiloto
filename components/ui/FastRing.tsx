@@ -64,8 +64,8 @@ function phaseFromElapsed(
     return {
       tag: 'eating',
       label: 'Eating window',
-      quote: 'Eating window open · eat clean.',
-      lead: 'Hydrate well and prioritize real protein.',
+      quote: 'Overnight fast has not started — you are in your eating window.',
+      lead: 'Everything on track. ',
     };
   }
   if (h >= maxH) {
@@ -186,10 +186,33 @@ export default function FastRing() {
 
   const target = snap.fast.durationHours;
   const maxH = snap.fast.maxHours;
-  const progress = Math.min(elapsed / target, 1);
-  const dashOffset = CIRCUMFERENCE * (1 - progress);
-  const stroke = ringStrokeColor(elapsed, maxH, target);
   const phase = phaseFromElapsed(elapsed, now, maxH, target, inEatingOrPostBreakUi);
+
+  const eatStartDt = new Date(now);
+  eatStartDt.setHours(sProt.breakFastHour, 0, 0, 0);
+  const eatEndDt = new Date(now);
+  eatEndDt.setHours(eatEndH, 0, 0, 0);
+  const totalEatingMin = Math.max(1, (eatEndDt.getTime() - eatStartDt.getTime()) / 60_000);
+  const elapsedInWindowMin = (now.getTime() - eatStartDt.getTime()) / 60_000;
+  const eatingRingProgress =
+    phase.tag === 'eating'
+      ? Math.min(1, Math.max(0, elapsedInWindowMin / totalEatingMin))
+      : null;
+
+  const progress =
+    phase.tag === 'eating' && eatingRingProgress != null
+      ? eatingRingProgress
+      : Math.min(elapsed / target, 1);
+  const dashOffset = CIRCUMFERENCE * (1 - progress);
+  const stroke =
+    phase.tag === 'eating' ? 'url(#ringStrokeAmber)' : ringStrokeColor(elapsed, maxH, target);
+
+  const minsLeftEating = Math.max(
+    0,
+    Math.round((eatEndDt.getTime() - now.getTime()) / 60_000),
+  );
+  const cdH = Math.floor(minsLeftEating / 60);
+  const cdM = minsLeftEating % 60;
 
   const displayHours = Math.floor(elapsed);
   const startLabel = isSameDay(fastStart, now) ? 'Started today' : 'Started yesterday';
@@ -199,14 +222,14 @@ export default function FastRing() {
 
   let remainingLine = '';
   if (phase.tag === 'eating') {
-    const eatingEnd = new Date(now);
-    eatingEnd.setHours(eatEndH, 0, 0, 0);
-    const minsToClose = Math.max(0, Math.round((eatingEnd.getTime() - now.getTime()) / 60_000));
+    const minsToClose = minsLeftEating;
     const { h: ceH, m: ceM } = hmFromMinutes(minsToClose);
     remainingLine =
-      minsToClose > 60
-        ? `Window closes in ${ceH} h ${ceM} min.`
-        : `Window closes in ${minsToClose} min.`;
+      minsToClose <= 0
+        ? 'Eating window closes at your last-meal time — fast will count after.'
+        : minsToClose > 60
+          ? `Last meal / window ends in ${ceH} h ${ceM} min (then the overnight fast ring applies).`
+          : `Last meal / window ends in ${minsToClose} min (then the overnight fast ring applies).`;
   } else if (phase.tag === 'complete' || phase.tag === 'over') {
     remainingLine = 'You can break the fast.';
   } else if (minutesToBreak > 60) {
@@ -315,6 +338,37 @@ export default function FastRing() {
                   {currentPhrase.tip}
                 </p>
               </motion.div>
+            ) : phase.tag === 'eating' ? (
+              <motion.div
+                key="eating-countdown"
+                initial={{ opacity: 0, scale: 0.96, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 0.95, filter: 'blur(3px)' }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="flex flex-col items-center text-center"
+              >
+                <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.2em] text-sage/90">
+                  Time in window
+                </p>
+                {minsLeftEating > 0 ? (
+                  <>
+                    <p className="font-serif text-[2.75rem] italic leading-none text-ink sm:text-[3rem]">
+                      {cdH > 0 ? `${cdH}h ` : ''}
+                      {cdM}m
+                    </p>
+                    <span className="mt-2 max-w-[11rem] text-[11px] font-medium leading-snug text-muted">
+                      left until dinner / last meal — then the {target} h fast is what the ring measures.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-serif text-2xl italic leading-tight text-ink">All set</p>
+                    <span className="mt-2 max-w-[11rem] text-[11px] leading-snug text-muted">
+                      Window at the end of the day — your overnight fast will show as hours after last meal.
+                    </span>
+                  </>
+                )}
+              </motion.div>
             ) : (
               <motion.div
                 key="hours"
@@ -333,9 +387,7 @@ export default function FastRing() {
                 >
                   {displayHours}
                 </motion.span>
-                <span className="mt-1 text-[11px] font-medium text-muted">
-                  of {target} hours
-                </span>
+                <span className="mt-1 text-[11px] font-medium text-muted">of {target} hours</span>
               </motion.div>
             )}
           </AnimatePresence>

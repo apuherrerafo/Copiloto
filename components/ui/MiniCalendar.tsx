@@ -137,6 +137,7 @@ export default function MiniCalendar() {
   const [checksMap, setChecksMap] = useState<Record<string, DayChecks>>({});
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [showAdd, setShowAdd] = useState(false);
+  const [protocolOpen, setProtocolOpen] = useState(false);
   const stripRef = useRef<HTMLDivElement>(null);
 
   function buildChecksMap() {
@@ -180,6 +181,7 @@ export default function MiniCalendar() {
 
   function selectDate(iso: string) {
     setSelected(iso);
+    setProtocolOpen(false);
     // Reload fresh checks for the newly selected date
     setChecksMap((prev) => ({
       ...prev,
@@ -259,15 +261,33 @@ export default function MiniCalendar() {
           {!isFuture && (
             <>
               {dayChecks?.hasData ? (
-                <div className="flex items-start gap-2.5 rounded-xl border border-hairline bg-white/70 px-3 py-2 shadow-soft backdrop-blur-sm">
-                  <span className="text-base leading-none shrink-0 pt-0.5">
-                    {dayChecks.count === TOTAL_KEYS ? '🌟' : dayChecks.count >= 3 ? '✅' : '🟡'}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-xs font-semibold leading-tight ${pctColor(dayChecks.count / TOTAL_KEYS)}`}>
-                      {pctLabel(dayChecks.count / TOTAL_KEYS, dayChecks.count)}
-                    </p>
-                    <div className="mt-1 flex flex-wrap gap-1">
+                <details
+                  className="rounded-xl border border-hairline bg-white/70 shadow-soft backdrop-blur-sm open:shadow-md"
+                  open={protocolOpen}
+                  onToggle={(e) => setProtocolOpen((e.target as HTMLDetailsElement).open)}
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-3 py-2.5 [&::-webkit-details-marker]:hidden">
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span className="text-base leading-none shrink-0">
+                        {dayChecks.count === TOTAL_KEYS ? '🌟' : dayChecks.count >= 3 ? '✅' : '🟡'}
+                      </span>
+                      <span className={`text-xs font-semibold leading-tight truncate ${pctColor(dayChecks.count / TOTAL_KEYS)}`}>
+                        {pctLabel(dayChecks.count / TOTAL_KEYS, dayChecks.count)}
+                      </span>
+                    </span>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      className={`h-4 w-4 shrink-0 text-muted transition-transform duration-200 ${protocolOpen ? 'rotate-180' : ''}`}
+                      aria-hidden
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </summary>
+                  <div className="border-t border-hairline/70 px-3 pb-2.5 pt-1">
+                    <div className="flex flex-wrap gap-1">
                       {PROTOCOL_EVENTS.map((ev) => (
                         <span key={ev.key} className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
                           dayChecks.keys[ev.key]
@@ -282,7 +302,7 @@ export default function MiniCalendar() {
                       ))}
                     </div>
                   </div>
-                </div>
+                </details>
               ) : (
                 <p className="rounded-lg border border-dashed border-hairline/70 bg-white/35 px-3 py-1.5 text-center text-[11px] leading-snug text-muted">
                   {isToday
