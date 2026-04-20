@@ -198,6 +198,30 @@ export const DID_YOU_KNOW: DidYouKnowItem[] = [
     hint: 'TSH variability and testing conditions',
     evidence: 'expert-consensus',
   },
+  {
+    topic: 'thyroid',
+    fact: 'Did you know untreated sleep apnea and hypothyroidism often travel together? Tissue swelling can narrow the airway, sleep breaks, oxygen drops, and recovery gets worse — a loop that feels like "only fatigue." Snoring plus daytime crashes deserves a real sleep workup.',
+    hint: 'OSA overlap · tissue edema in hypothyroidism',
+    evidence: 'expert-consensus',
+  },
+  {
+    topic: 'movement',
+    fact: 'Did you know stacking hard HIIT every day can backfire when your thyroid axis is fragile? Extreme training spikes stress hormones; some people then feel colder, foggy, or stalled — not "lazy." Strength plus easy walks usually beats daily all-out sprints for this phenotype.',
+    hint: 'Overtraining, cortisol and peripheral thyroid conversion',
+    evidence: 'physiology',
+  },
+  {
+    topic: 'biohack',
+    fact: 'Did you know breathing at about six breaths per minute (roughly five seconds in, five out) for ten minutes can shift your nervous system toward calm? It is one of the cheapest ways to take your foot off the stress gas — no supplement required.',
+    hint: 'Resonance frequency breathing · HRV',
+    evidence: 'clinical-trial',
+  },
+  {
+    topic: 'gut',
+    fact: 'Did you know some probiotic trials in thyroid patients showed more stable TSH and fewer levothyroxine dose swings — not magic, but a hint that gut health and pill absorption travel together? Fiber and ferments belong with meals, never in the same hour as the tablet.',
+    hint: 'Microbiome and levothyroxine variability',
+    evidence: 'clinical-trial',
+  },
 ];
 
 const TOPIC_LABEL: Record<DidYouKnowTopic, string> = {

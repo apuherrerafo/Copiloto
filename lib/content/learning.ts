@@ -16,6 +16,8 @@ export const LEARNING_PHRASES: LearningPhrase[] = [
   { category: 'thyroid', tip: 'Cold hands or dry skin can signal subclinical hypothyroidism.' },
   { category: 'thyroid', tip: 'Zinc, iron and iodine are the three nutrients your thyroid cannot skip.' },
   { category: 'thyroid', tip: 'Test free T3 and T4, not just TSH — TSH alone hides many cases.' },
+  { category: 'thyroid', tip: 'TSH peaks overnight — bad sleep can flatten that rhythm and skew how you feel.' },
+  { category: 'thyroid', tip: 'Selenium helps deiodinases; stay under ~400 mcg/day — more is not better.' },
 
   { category: 'fasting', tip: 'At 12h of fasting, insulin drops and fat becomes your main fuel.' },
   { category: 'fasting', tip: 'Autophagy ramps up after ~16h — cells recycle damaged parts.' },
@@ -24,6 +26,7 @@ export const LEARNING_PHRASES: LearningPhrase[] = [
   { category: 'fasting', tip: 'Hydration during a fast prevents most “hunger” signals — it is thirst.' },
   { category: 'fasting', tip: 'Electrolytes (sodium, potassium) keep your energy steady while fasting.' },
   { category: 'fasting', tip: 'Fasting beyond 18h without adapting can spike cortisol in women.' },
+  { category: 'fasting', tip: 'Strict IF can feel worse if TSH is high — fix the dose before chasing extremes.' },
 
   { category: 'biohack', tip: '10 min of morning sunlight anchors your circadian rhythm.' },
   { category: 'biohack', tip: 'Cold showers (30s) raise norepinephrine ~200% for hours of focus.' },
@@ -33,6 +36,8 @@ export const LEARNING_PHRASES: LearningPhrase[] = [
   { category: 'biohack', tip: 'No screens 60 min before bed — blue light suppresses melatonin.' },
   { category: 'biohack', tip: 'Heart rate variability (HRV) is your best daily recovery signal.' },
   { category: 'biohack', tip: 'Grounding 10 min on bare earth lowers inflammation markers.' },
+  { category: 'biohack', tip: 'Slow breathing ~6 breaths/min for 10 min can lower stress drive — free tool.' },
+  { category: 'biohack', tip: 'Ice-cold plunges: skip if your thyroid is unstable or your heart says no.' },
 
   { category: 'nutrition', tip: '30 g of protein at breakfast curbs cravings for the whole day.' },
   { category: 'nutrition', tip: 'Fiber feeds gut bacteria that help recycle thyroid hormone.' },
@@ -41,6 +46,7 @@ export const LEARNING_PHRASES: LearningPhrase[] = [
   { category: 'nutrition', tip: 'Fermented foods (kefir, kimchi) boost gut diversity and T3 conversion.' },
   { category: 'nutrition', tip: 'Added sugars spike insulin and inflame the thyroid axis.' },
   { category: 'nutrition', tip: 'Magnesium glycinate at night lowers cortisol and improves sleep.' },
+  { category: 'nutrition', tip: 'Extra iodine from kelp can flare Hashimoto in iodine-sufficient countries.' },
 ];
 
 export function pickLearningPhrase(index: number): LearningPhrase {
