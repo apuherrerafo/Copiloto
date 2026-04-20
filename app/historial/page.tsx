@@ -11,6 +11,7 @@ import {
   type Appointment,
 } from '@/lib/store/appointments';
 import { localDateISO } from '@/lib/dates';
+import MonthlyComplianceRings from '@/components/history/MonthlyComplianceRings';
 
 type Tab = 'clinica' | 'agenda';
 
@@ -314,6 +315,10 @@ export default function HistorialPage() {
             );
           })}
         </div>
+      </div>
+
+      <div className="mt-4 px-safe">
+        <MonthlyComplianceRings />
       </div>
 
       <AnimatePresence mode="wait">
