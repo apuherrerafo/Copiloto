@@ -52,7 +52,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (status === 'loading') return;
-    if (status === 'unauthenticated' && pathname !== '/entrar') {
+    const publicPaths = ['/entrar', '/registro'];
+    if (status === 'unauthenticated' && !publicPaths.includes(pathname)) {
       router.replace('/entrar');
     }
     if (status === 'authenticated' && pathname === '/entrar') {
