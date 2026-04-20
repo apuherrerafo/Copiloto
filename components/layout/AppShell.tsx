@@ -154,7 +154,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           <div className="animate-tab-in">{children}</div>
           {showNav ? (
             <>
-              <HypoNavFloat />
+              {pathname !== '/copiloto' ? <HypoNavFloat /> : null}
               <BottomNav />
             </>
           ) : null}

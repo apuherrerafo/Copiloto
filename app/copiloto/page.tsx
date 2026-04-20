@@ -16,28 +16,14 @@ interface Message {
   content: string;
 }
 
-const STARTERS = [
-  'Can I have coffee now?',
-  'What can I eat to break my fast?',
-  'I’m really hungry — what should I do?',
-  'How is my fast going today?',
-  'Does morning light or cold exposure fit my thyroid today?',
-  'Which supplements should I space from levothyroxine?',
-];
-
 const welcomeStagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.06 } },
 };
 
 const fadeUp = {
   hidden: { opacity: 0, y: 10 },
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } },
-};
-
-const startersGrid = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.06 } },
 };
 
 export default function CopilotoPage() {
@@ -53,7 +39,7 @@ function HippoAvatar({ size = 'sm' }: { size?: 'sm' | 'lg' }) {
   const mascotSize = size === 'lg' ? 52 : 22;
   return (
     <div className={`${dim} flex shrink-0 items-center justify-center rounded-full bg-sage/15 ring-1 ring-sage/15`}>
-      <HypoMascot size={mascotSize} title="Hypo" />
+      <HypoMascot size={mascotSize} title="HypoAI" />
     </div>
   );
 }
@@ -67,17 +53,14 @@ function CopilotoInner() {
   const [loading, setLoading] = useState(false);
   const [streamText, setStreamText] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
   const hasMessages = messages.length > 0 || loading;
 
-  // Scroll to bottom ONLY when there are actual messages
   useEffect(() => {
     if (hasMessages) {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, streamText, hasMessages]);
 
-  // Auto-send question from "Quiero saber más"
   useEffect(() => {
     if (autoQ) {
       const t = setTimeout(() => sendMessage(autoQ), 400);
@@ -112,7 +95,7 @@ function CopilotoInner() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+          messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
           todayLogs,
           fastElapsedHours,
           recentDigest,
@@ -136,12 +119,15 @@ function CopilotoInner() {
         }
       }
 
-      setMessages(prev => [...prev, { role: 'assistant', content: full }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: full }]);
     } catch {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'Hmm, I couldn’t connect just now 😔 Check your Anthropic API key and try again.',
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Hmm, I couldn’t connect just now 😔 Check your Anthropic API key and try again.',
+        },
+      ]);
     } finally {
       setLoading(false);
       setStreamText('');
@@ -159,39 +145,42 @@ function CopilotoInner() {
 
   return (
     <motion.div
-      className="flex flex-col h-screen bg-background"
+      className="-mb-20 flex min-h-[100dvh] flex-col bg-background"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.35 }}
     >
-      {/* Header */}
-      <div className="px-4 pt-12 pb-4 bg-background border-b border-hairline shrink-0">
+      <div className="shrink-0 border-b border-hairline bg-background px-4 pb-4 pt-12">
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => router.back()}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface transition-colors shrink-0"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-surface"
             aria-label="Back"
           >
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-muted">
-              <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd"/>
+            <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-muted">
+              <path
+                fillRule="evenodd"
+                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
             </svg>
           </button>
           <HippoAvatar />
           <div>
-            <h1 className="font-serif italic text-xl text-ink leading-none">Hypo</h1>
-            <p className="text-xs text-muted mt-0.5">Your friendly copilot · AI answers</p>
+            <h1 className="font-serif text-xl italic leading-none text-ink">HypoAI</h1>
+            <p className="mt-0.5 text-xs text-muted">Your friendly copilot · not medical advice</p>
           </div>
         </div>
-        <p className="mt-3 text-[10px] leading-snug text-muted/85 px-1">
+        <p className="mt-3 px-1 text-[10px] leading-snug text-muted/85">
           HypoAI is generative and can make mistakes. It does not replace your doctor or change your treatment.
         </p>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
         {showWelcome && (
           <motion.div
-            className="flex flex-col items-center justify-center min-h-full text-center pb-8 pt-4"
+            className="flex min-h-full flex-col items-center px-2 pb-6 pt-6 text-center"
             variants={welcomeStagger}
             initial="hidden"
             animate="show"
@@ -199,27 +188,13 @@ function CopilotoInner() {
             <motion.div variants={fadeUp}>
               <HippoAvatar size="lg" />
             </motion.div>
-            <motion.h2 variants={fadeUp} className="font-serif italic text-2xl text-ink mb-2 mt-4">
-              Hi, I’m Hypo
+            <motion.h2 variants={fadeUp} className="mb-3 mt-5 font-serif text-2xl italic text-ink">
+              Hi, I&apos;m HypoAI…
             </motion.h2>
-            <motion.p variants={fadeUp} className="text-muted text-sm mb-6 max-w-xs leading-relaxed">
-              I know your levothyroxine protocol, your fast, and everything you log each day. Ask me anything!
+            <motion.p variants={fadeUp} className="max-w-sm text-sm leading-relaxed text-muted">
+              I can use your levothyroxine protocol, your fast, and what you log to suggest ideas and wording — but I am
+              not a clinician. Think of me as a study buddy and checklist helper, not a diagnosis or a prescription.
             </motion.p>
-            <motion.div variants={startersGrid} className="grid grid-cols-1 gap-2 w-full max-w-xs">
-              {STARTERS.map((s) => (
-                <motion.button
-                  key={s}
-                  type="button"
-                  variants={fadeUp}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => void sendMessage(s)}
-                  className="text-left px-4 py-3 bg-surface border border-hairline rounded-card text-sm text-ink hover:border-sage/40 hover:bg-sage/5 transition-colors shadow-soft"
-                >
-                  {s}
-                </motion.button>
-              ))}
-            </motion.div>
           </motion.div>
         )}
 
@@ -229,29 +204,32 @@ function CopilotoInner() {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} items-end gap-2`}
+            className={`flex items-end gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {msg.role === 'assistant' && <HippoAvatar />}
-            <div className={`max-w-[82%] px-4 py-3 rounded-card text-sm leading-relaxed whitespace-pre-wrap ${
-              msg.role === 'user'
-                ? 'bg-sage text-white rounded-br-sm'
-                : 'bg-surface border border-hairline text-ink rounded-bl-sm shadow-soft'
-            }`}>
+            <div
+              className={`max-w-[82%] whitespace-pre-wrap rounded-card px-4 py-3 text-sm leading-relaxed ${
+                msg.role === 'user'
+                  ? 'rounded-br-sm bg-sage text-white'
+                  : 'rounded-bl-sm border border-hairline bg-surface text-ink shadow-soft'
+              }`}
+            >
               {msg.role === 'assistant' ? stripMarkdownForDisplay(msg.content) : msg.content}
             </div>
           </motion.div>
         ))}
 
-        {/* Streaming */}
         {loading && (
-          <div className="flex justify-start items-end gap-2">
+          <div className="flex items-end justify-start gap-2">
             <HippoAvatar />
-            <div className="max-w-[82%] px-4 py-3 rounded-card rounded-bl-sm bg-surface border border-hairline text-ink text-sm leading-relaxed shadow-soft">
-              {streamText ? stripMarkdownForDisplay(streamText) : (
-                <span className="flex gap-1 items-center h-4">
-                  <span className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{animationDelay:'0ms'}}/>
-                  <span className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{animationDelay:'150ms'}}/>
-                  <span className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{animationDelay:'300ms'}}/>
+            <div className="max-w-[82%] rounded-card rounded-bl-sm border border-hairline bg-surface px-4 py-3 text-sm leading-relaxed text-ink shadow-soft">
+              {streamText ? (
+                stripMarkdownForDisplay(streamText)
+              ) : (
+                <span className="flex h-4 items-center gap-1">
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-sage" style={{ animationDelay: '0ms' }} />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-sage" style={{ animationDelay: '150ms' }} />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-sage" style={{ animationDelay: '300ms' }} />
                 </span>
               )}
             </div>
@@ -261,30 +239,31 @@ function CopilotoInner() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <div className="px-4 pb-24 pt-2 bg-background border-t border-hairline shrink-0">
-        <div className="flex items-end gap-2 bg-surface border border-hairline rounded-card px-4 py-3 focus-within:border-sage focus-within:ring-2 focus-within:ring-sage/15 transition-all shadow-soft">
+      <div className="shrink-0 border-t border-hairline bg-background px-4 pb-chat-dock pt-2">
+        <div className="flex items-end gap-2 rounded-card border border-hairline bg-surface px-4 py-3 shadow-soft transition-all focus-within:border-sage focus-within:ring-2 focus-within:ring-sage/15">
           <textarea
-            ref={inputRef}
             value={input}
-            onChange={e => setInput(e.target.value)}
+            onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask Hypo…"
+            placeholder=""
+            aria-label="Write your message to HypoAI"
             rows={1}
-            className="flex-1 resize-none bg-transparent text-ink text-sm outline-none placeholder:text-muted/50 max-h-24"
+            className="max-h-24 flex-1 resize-none bg-transparent text-sm text-ink outline-none placeholder:text-muted/40"
             style={{ lineHeight: '1.5' }}
           />
           <button
+            type="button"
             onClick={() => void sendMessage(input)}
             disabled={!input.trim() || loading}
-            className="w-8 h-8 bg-sage rounded-xl flex items-center justify-center shrink-0 disabled:opacity-30 transition-opacity"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sage transition-opacity disabled:opacity-30"
+            aria-label="Send"
           >
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-white rotate-90">
-              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+            <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 rotate-90 text-white">
+              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
             </svg>
           </button>
         </div>
-        <p className="text-center text-xs text-muted/60 mt-2">Enter to send · Shift+Enter for new line</p>
+        <p className="mt-2 text-center text-xs text-muted/60">Enter to send · Shift+Enter for new line</p>
       </div>
     </motion.div>
   );

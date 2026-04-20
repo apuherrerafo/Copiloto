@@ -25,6 +25,13 @@
     /* barra inferior + FAB + banda HypoAI (margen superior extra) */
     padding-bottom: calc(12rem + env(safe-area-inset-bottom, 0px));
   }
+
+  /**
+   * /copiloto: espacio sobre bottom nav + FAB (la página usa -mb-20 para anular el pb-20 del main).
+   */
+  .pb-chat-dock {
+    padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @layer base {
