@@ -10,48 +10,51 @@ interface ProtocolNotification {
   tag: string;
 }
 
-/** Cada aviso: acción + micro-lección clínica (matriz Gemini Deep Research). */
+/**
+ * Notificaciones estilo "¿Sabías que?" — lenguaje accesible, tono Ray Ramis
+ * (biohacking práctico + conexión al hipotiroidismo, sin jerga técnica).
+ */
 const PROTOCOL_NOTIFICATIONS: ProtocolNotification[] = [
   {
     hour: 8,
     minute: 0,
-    title: `🌅 ${APP_NAME} — Buenos días`,
-    body: `Revisa el resumen de ayer. La adherencia diaria acumula: cada toma puntual de levotiroxina sostiene niveles estables de T4 sérica y, tras ~4 semanas, TSH dentro de rango. Un día perfecto no existe, pero la constancia sí.`,
+    title: `🌅 ${APP_NAME} — ¡Buenos días!`,
+    body: `¿Sabías que 10 minutos de sol por la mañana suben la vitamina D, bajan el cortisol y mejoran el ánimo? Con hipotiroidismo esto importa el doble: el cortisol alto bloquea que tu pastilla funcione bien. Sal aunque sea al balcón. Revisa tu protocolo de hoy.`,
     tag: 'morning-open',
   },
   {
     hour: 10,
     minute: 55,
-    title: `💊 ${APP_NAME} — Pastilla en 5 min`,
-    body: `Levotiroxina ${LEVO_DOSE_LABEL} con 200 ml de agua. Sin cafeína ni calcio por 60 min. ¿Por qué? El ambiente gástrico ácido sin competidores puede llevar la absorción hasta el 80 %; el café la reduce un 27–36 %.`,
+    title: `💊 ${APP_NAME} — Tu pastilla en 5 min`,
+    body: `¿Sabías que tomar la levotiroxina con el estómago vacío puede doblar la cantidad que absorbe tu cuerpo vs. tomarla con café? Sin cafeína, sin leche, sin suplementos por 60 min. Solo agua. Un pequeño hábito que hace una diferencia enorme en cómo te sientes todo el día.`,
     tag: 'levotiroxina',
   },
   {
     hour: 12,
     minute: 0,
-    title: `🍽️ ${APP_NAME} — Ventana abierta`,
-    body: 'Rompe el ayuno. Proteínas y grasas saludables apoyan la conversión periférica T4→T3 (activa). Evita carbohidratos simples solos: elevan insulina sin soporte de macros y generan el "crash" que sientes a las 2 h.',
+    title: `🍽️ ${APP_NAME} — Abre tu ventana`,
+    body: `¿Sabías que después de horas de ayuno tu cuerpo está listo para aprovechar bien los nutrientes? Come proteína + grasa sana primero. Eso le da a tu tiroides los "ladrillos" que necesita para convertir la pastilla en energía real. Evita solo carbohidratos: el bajón de las 2 h es real.`,
     tag: 'fastbreak',
   },
   {
     hour: 13,
     minute: 45,
-    title: `🚶 ${APP_NAME} — Caminata post-almuerzo`,
-    body: '10–15 min ahora. La contracción muscular transloca transportadores GLUT4 a la membrana celular de forma independiente a la insulina, bajando el pico glucémico posprandial un 12–18 %. Sin zapatillas especiales.',
+    title: `🚶 ${APP_NAME} — Camina 10 minutos`,
+    body: `¿Sabías que caminar justo después de comer hace que tus músculos absorban el azúcar sin depender de insulina? Con hipotiroidismo el metabolismo ya va lento — esta caminata es como darle un turbo express a tu energía de la tarde. Sin zapatillas especiales, sin excusas.`,
     tag: 'walk-lunch-nudge',
   },
   {
     hour: 19,
     minute: 45,
-    title: `⏰ ${APP_NAME} — Cierre de ventana en 15 min`,
-    body: 'A las 20:00 empieza el ayuno. Cerrar a tiempo sincroniza insulina con el reloj circadiano periférico del hígado. Después de las 20 h la sensibilidad insulínica baja fisiológicamente: comer tarde tiene mayor impacto glucémico.',
+    title: `⏰ ${APP_NAME} — Cierra la ventana en 15 min`,
+    body: `¿Sabías que comer de noche le dice a tu cuerpo que no es de noche? Tu reloj interno se desincroniza y engorda más con la misma comida. A las 20:00 cierra. Tu hígado y tu tiroides descansan mejor cuando el ayuno empieza a su hora. Eso es biohacking sin gastar nada.`,
     tag: 'lastmeal',
   },
   {
     hour: 20,
     minute: 15,
-    title: `🚶 ${APP_NAME} — Caminata post-cena`,
-    body: '15–20 min de caminata suave. Estimula el sistema parasimpático, mejora la digestión y reduce la glucosa residual antes del ayuno nocturno. Evita intensidad alta: elevaría cortisol y dificultaría el inicio del sueño.',
+    title: `🚶 ${APP_NAME} — Caminata suave post-cena`,
+    body: `¿Sabías que una caminata tranquila de 15 min activa el "modo descanso" de tu sistema nervioso? Mejora la digestión, estabiliza el azúcar para el ayuno nocturno y prepara el sueño profundo. No corras, no te agites — eso elevaría el cortisol y tardarías más en dormirte.`,
     tag: 'walk-dinner-nudge',
   },
 ];
