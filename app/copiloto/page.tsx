@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { getLogsByDate } from '@/lib/store/db';
 import { getFastElapsed } from '@/lib/protocols/julio';
 import { localDateISO } from '@/lib/dates';
-import GeneIcon from '@/components/ui/GeneIcon';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -18,15 +17,13 @@ const STARTERS = [
   '¿Qué puedo comer para romper el ayuno?',
   'Tengo mucho hambre, ¿qué hago?',
   '¿Cómo va mi ayuno hoy?',
-  '¿Luz matutina o frío leve encajan con mi tiroides hoy?',
-  '¿Qué suplementos o cafeína debo espaciar respecto a la levotiroxina?',
+  '¿Luz matutina o frío encajan con mi tiroides hoy?',
+  '¿Qué suplementos debo espaciar respecto a la levotiroxina?',
 ];
 
 const welcomeStagger = {
   hidden: {},
-  show: {
-    transition: { staggerChildren: 0.07, delayChildren: 0.05 },
-  },
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
 };
 
 const fadeUp = {
@@ -36,10 +33,7 @@ const fadeUp = {
 
 const startersGrid = {
   hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05, delayChildren: 0.06 },
-  },
+  show: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.06 } },
 };
 
 export default function CopilotoPage() {
@@ -47,6 +41,17 @@ export default function CopilotoPage() {
     <Suspense>
       <CopilotoInner />
     </Suspense>
+  );
+}
+
+function HippoAvatar({ size = 'sm' }: { size?: 'sm' | 'lg' }) {
+  const cls = size === 'lg'
+    ? 'w-16 h-16 text-4xl'
+    : 'w-7 h-7 text-base';
+  return (
+    <div className={`${cls} rounded-full bg-sage/15 flex items-center justify-center shrink-0`}>
+      🦛
+    </div>
   );
 }
 
@@ -59,20 +64,24 @@ function CopilotoInner() {
   const [streamText, setStreamText] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const hasMessages = messages.length > 0 || loading;
 
+  // Scroll to bottom ONLY when there are actual messages
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, streamText]);
+    if (hasMessages) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, streamText, hasMessages]);
 
-  // Auto-send question coming from "Quiero saber más" in DidYouKnowBanner
+  // Auto-send question from "Quiero saber más"
   useEffect(() => {
     if (autoQ) {
-      // Small delay so the page finishes mounting before sending
       const t = setTimeout(() => sendMessage(autoQ), 400);
       return () => clearTimeout(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   async function sendMessage(text: string) {
     if (!text.trim() || loading) return;
 
@@ -107,17 +116,16 @@ function CopilotoInner() {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          full += chunk;
+          full += decoder.decode(value, { stream: true });
           setStreamText(full);
         }
       }
 
       setMessages(prev => [...prev, { role: 'assistant', content: full }]);
-    } catch (e) {
+    } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Lo siento, no pude conectarme. Verifica tu API key de Anthropic en `.env.local`.',
+        content: 'Uy, no pude conectarme ahora mismo 😔 Verifica tu API key de Anthropic y vuelve a intentarlo.',
       }]);
     } finally {
       setLoading(false);
@@ -128,7 +136,7 @@ function CopilotoInner() {
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage(input);
+      void sendMessage(input);
     }
   }
 
@@ -141,19 +149,14 @@ function CopilotoInner() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.35 }}
     >
-      {/* Header */}
+      {/* Header — sin badge de modelo */}
       <div className="px-6 pt-12 pb-4 bg-background border-b border-hairline shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-sage flex items-center justify-center shadow-soft">
-            <span className="text-white text-sm font-bold">C</span>
-          </div>
+          <HippoAvatar />
           <div>
-            <h1 className="font-serif italic text-xl text-ink leading-none">HypoCopilot</h1>
-            <p className="text-xs text-muted mt-0.5">Chat con tu protocolo y la ciencia</p>
+            <h1 className="font-serif italic text-xl text-ink leading-none">Hypo</h1>
+            <p className="text-xs text-muted mt-0.5">Tu copiloto de salud 🦛</p>
           </div>
-          <span className="ml-auto text-xs bg-sage/10 text-sage px-2 py-1 rounded-full font-medium">
-            Claude Haiku
-          </span>
         </div>
       </div>
 
@@ -161,19 +164,19 @@ function CopilotoInner() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {showWelcome && (
           <motion.div
-            className="flex flex-col items-center justify-center h-full text-center pb-8"
+            className="flex flex-col items-center justify-center min-h-full text-center pb-8 pt-4"
             variants={welcomeStagger}
             initial="hidden"
             animate="show"
           >
-            <motion.div variants={fadeUp} className="w-16 h-16 rounded-full bg-sage/10 flex items-center justify-center mb-4">
-              <GeneIcon className="w-9 h-9 text-sage" />
+            <motion.div variants={fadeUp}>
+              <HippoAvatar size="lg" />
             </motion.div>
-            <motion.h2 variants={fadeUp} className="font-serif italic text-2xl text-ink mb-2">
-              Hola, Julio
+            <motion.h2 variants={fadeUp} className="font-serif italic text-2xl text-ink mb-2 mt-4">
+              ¡Hola, Julio! Soy Hypo 🦛
             </motion.h2>
-            <motion.p variants={fadeUp} className="text-muted text-sm mb-6 max-w-xs">
-              Conozco tu protocolo, levotiroxina, ayuno y tu historial del día. Pregúntame lo que necesites.
+            <motion.p variants={fadeUp} className="text-muted text-sm mb-6 max-w-xs leading-relaxed">
+              Conozco tu protocolo de levotiroxina, tu ayuno y todo lo que registras cada día. ¡Pregúntame lo que quieras!
             </motion.p>
             <motion.div variants={startersGrid} className="grid grid-cols-1 gap-2 w-full max-w-xs">
               {STARTERS.map((s) => (
@@ -183,7 +186,7 @@ function CopilotoInner() {
                   variants={fadeUp}
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => sendMessage(s)}
+                  onClick={() => void sendMessage(s)}
                   className="text-left px-4 py-3 bg-surface border border-hairline rounded-card text-sm text-ink hover:border-sage/40 hover:bg-sage/5 transition-colors shadow-soft"
                 >
                   {s}
@@ -199,13 +202,9 @@ function CopilotoInner() {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} items-end gap-2`}
           >
-            {msg.role === 'assistant' && (
-              <div className="w-7 h-7 rounded-full bg-sage shrink-0 flex items-center justify-center mr-2 mt-1">
-                <span className="text-white text-xs font-bold">C</span>
-              </div>
-            )}
+            {msg.role === 'assistant' && <HippoAvatar />}
             <div className={`max-w-[82%] px-4 py-3 rounded-card text-sm leading-relaxed whitespace-pre-wrap ${
               msg.role === 'user'
                 ? 'bg-sage text-white rounded-br-sm'
@@ -218,13 +217,11 @@ function CopilotoInner() {
 
         {/* Streaming */}
         {loading && (
-          <div className="flex justify-start">
-            <div className="w-7 h-7 rounded-full bg-sage shrink-0 flex items-center justify-center mr-2 mt-1">
-              <span className="text-white text-xs font-bold">C</span>
-            </div>
+          <div className="flex justify-start items-end gap-2">
+            <HippoAvatar />
             <div className="max-w-[82%] px-4 py-3 rounded-card rounded-bl-sm bg-surface border border-hairline text-ink text-sm leading-relaxed shadow-soft">
               {streamText || (
-                <span className="flex gap-1 items-center">
+                <span className="flex gap-1 items-center h-4">
                   <span className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{animationDelay:'0ms'}}/>
                   <span className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{animationDelay:'150ms'}}/>
                   <span className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{animationDelay:'300ms'}}/>
@@ -245,13 +242,13 @@ function CopilotoInner() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Pregúntale a tu copiloto..."
+            placeholder="Pregúntale a Hypo…"
             rows={1}
             className="flex-1 resize-none bg-transparent text-ink text-sm outline-none placeholder:text-muted/50 max-h-24"
             style={{ lineHeight: '1.5' }}
           />
           <button
-            onClick={() => sendMessage(input)}
+            onClick={() => void sendMessage(input)}
             disabled={!input.trim() || loading}
             className="w-8 h-8 bg-sage rounded-xl flex items-center justify-center shrink-0 disabled:opacity-30 transition-opacity"
           >
