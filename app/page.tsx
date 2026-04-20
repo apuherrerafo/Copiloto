@@ -6,6 +6,7 @@ import PageEnter from '@/components/ui/PageEnter';
 import GeneIcon from '@/components/ui/GeneIcon';
 import YesterdayCoach from '@/components/ui/YesterdayCoach';
 import DidYouKnowBanner from '@/components/ui/DidYouKnowBanner';
+import MiniCalendar from '@/components/ui/MiniCalendar';
 import Link from 'next/link';
 
 function todayLabel() {
@@ -28,7 +29,7 @@ export default function HoyPage() {
       <NotificationInit />
 
       {/* Header */}
-      <div className="px-6 pt-12 pb-2">
+      <div className="px-6 pt-12 pb-3">
         <p className="text-xs text-muted capitalize tracking-wide">{todayLabel()}</p>
         <div className="flex items-end justify-between mt-0.5">
           <h1 className="font-serif italic text-3xl text-ink">{greeting()}, Julio</h1>
@@ -39,14 +40,17 @@ export default function HoyPage() {
         </div>
       </div>
 
+      {/* ¿Sabías que? — banner hero principal */}
+      <DidYouKnowBanner />
+
       <YesterdayCoach />
 
-      {/* Fast Ring — compact top section */}
-      <div className="flex justify-center py-5">
+      {/* Anillo de ayuno */}
+      <div className="flex justify-center py-4">
         <FastRing />
       </div>
 
-      {/* Eating window + register row */}
+      {/* Ventana + registrar */}
       <div className="px-6 mb-5 flex gap-3">
         <div className="flex-1 bg-surface rounded-card px-4 py-3 border border-hairline shadow-soft">
           <p className="text-[10px] text-muted uppercase tracking-widest font-medium">Ventana</p>
@@ -60,24 +64,30 @@ export default function HoyPage() {
         </Link>
       </div>
 
-      {/* Protocol timeline — collapsible feel */}
+      {/* Divisor */}
+      <div className="mx-6 border-t border-hairline mb-4" />
+
+      {/* Calendario + citas */}
+      <div className="mb-1">
+        <p className="text-[10px] text-muted uppercase tracking-widest font-medium px-6 mb-2">Calendario</p>
+        <MiniCalendar />
+      </div>
+
+      <div className="mx-6 border-t border-hairline mb-4" />
+
+      {/* Protocolo del día */}
       <div className="px-6 mb-6">
         <p className="text-[10px] text-muted uppercase tracking-widest font-medium mb-2">Protocolo de hoy</p>
         <ProtocolTimeline />
       </div>
 
-      {/* Divider */}
-      <div className="mx-6 border-t border-hairline mb-5"/>
-
-      <DidYouKnowBanner />
-
-      {/* Feed RSS (puede fallar si fuentes externas no responden) */}
+      {/* Feed RSS */}
       <div className="px-6 pb-28">
         <p className="text-[10px] text-muted uppercase tracking-widest font-medium mb-1">
           Noticias (RSS)
         </p>
         <p className="text-[10px] text-muted/70 mb-3 leading-snug">
-          Complemento opcional. Lo principal arriba: ¿Sabías que? + protocolo.
+          Complemento opcional — lo principal arriba: banner + protocolo.
         </p>
         <NewsFeed />
       </div>
