@@ -22,7 +22,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'JSON inválido' }, { status: 400 });
   }
 
-  const b = body as { email?: unknown; password?: unknown; username?: unknown };
+  const b = body as {
+    email?: unknown;
+    password?: unknown;
+    username?: unknown;
+    profile?: unknown;
+  };
 
   const email = typeof b.email === 'string' ? normalizeEmail(b.email) : '';
   const password = typeof b.password === 'string' ? b.password : '';
@@ -70,15 +75,28 @@ export async function POST(req: Request) {
   const password_hash = await bcrypt.hash(password, 12);
   const user_id = randomUUID();
 
-  const { error } = await admin.from('hc_credential_users').insert({
+  const { error: insertError } = await admin.from('hc_credential_users').insert({
     user_id,
     email,
     password_hash,
     username,
   });
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (insertError) {
+    return NextResponse.json({ error: insertError.message }, { status: 500 });
+  }
+
+  // Guardar perfil inicial en hc_user_state si vienen datos
+  if (b.profile && typeof b.profile === 'object') {
+    const profileJson = {
+      name: username,
+      username,
+      ...(b.profile as Record<string, unknown>),
+    };
+    await admin.from('hc_user_state').upsert(
+      { user_id, profile_json: profileJson, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' },
+    );
   }
 
   return NextResponse.json({ ok: true });

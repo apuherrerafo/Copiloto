@@ -14,10 +14,13 @@ import { collectProtocolChecksForSync } from '@/lib/sync/protocol-collect';
 
 interface Profile {
   name: string;
+  age?: string | number | null;
   weight: string;
   height: string;
   goal: string;
   notes: string;
+  medication?: string | null;
+  medicationMcg?: string | number | null;
 }
 
 const NOTIFICATION_SCHEDULE = [
