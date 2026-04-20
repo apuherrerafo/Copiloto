@@ -5,10 +5,19 @@ import { motion } from 'framer-motion';
 import { getAllLogs, type LogEntry, type ProCheckInValue } from '@/lib/store/db';
 import { localDateISO } from '@/lib/dates';
 
-type FilterKey = 'all' | 'medication' | 'meal' | 'symptom' | 'walking' | 'checkin' | 'note';
+type FilterKey =
+  | 'all'
+  | 'medication'
+  | 'meal'
+  | 'symptom'
+  | 'walking'
+  | 'checkin'
+  | 'note'
+  | 'appointment';
 
 const FILTER_ORDER: { key: FilterKey; label: string }[] = [
   { key: 'all', label: 'Todo' },
+  { key: 'appointment', label: 'Citas' },
   { key: 'medication', label: 'Medicación' },
   { key: 'meal', label: 'Comidas' },
   { key: 'symptom', label: 'Síntomas' },
@@ -25,6 +34,7 @@ const TYPE_LABELS: Record<string, string> = {
   fast: 'Ayuno',
   walking: 'Caminata',
   checkin: 'Check-in',
+  appointment: 'Cita médica',
 };
 
 const TYPE_ICON: Record<string, (c: string) => ReactElement> = {
@@ -61,6 +71,12 @@ const TYPE_ICON: Record<string, (c: string) => ReactElement> = {
       <path d="M9 10h6M9 14h6M9 18h3" strokeLinecap="round" />
     </svg>
   ),
+  appointment: (c) => (
+    <svg viewBox="0 0 24 24" className={c} fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M12 3c-1.5 4-5 5.5-5 10a5 5 0 0010 0c0-4.5-3.5-6-5-10z" strokeLinejoin="round" />
+      <path d="M10 15h4M12 13v4" strokeLinecap="round" />
+    </svg>
+  ),
   fast: (c) => (
     <svg viewBox="0 0 24 24" className={c} fill="none" stroke="currentColor" strokeWidth="1.6">
       <circle cx="12" cy="13" r="7" />
@@ -77,6 +93,7 @@ const TYPE_TONE: Record<string, { dot: string; ring: string; tint: string; text:
   checkin: { dot: 'bg-sage', ring: 'ring-sage/20', tint: 'bg-sage/10', text: 'text-sage' },
   note: { dot: 'bg-muted', ring: 'ring-hairline', tint: 'bg-white', text: 'text-muted' },
   fast: { dot: 'bg-amber', ring: 'ring-amber/20', tint: 'bg-amber/10', text: 'text-amber' },
+  appointment: { dot: 'bg-coral', ring: 'ring-coral/20', tint: 'bg-coral/12', text: 'text-coral' },
 };
 
 function toneFor(type: string) {
@@ -138,6 +155,7 @@ export default function HistorialPage() {
   const counts = useMemo(() => {
     const c: Record<FilterKey, number> = {
       all: logs.length,
+      appointment: 0,
       medication: 0,
       meal: 0,
       symptom: 0,
@@ -166,20 +184,33 @@ export default function HistorialPage() {
     });
   }, [logs, filter, query]);
 
-  const days: GroupedDay[] = useMemo(() => {
-    const map = new Map<string, LogEntry[]>();
+  const { upcoming, past } = useMemo(() => {
+    const todayISO = localDateISO();
+    const future: LogEntry[] = [];
+    const paste: LogEntry[] = [];
     for (const log of filtered) {
-      const arr = map.get(log.date) ?? [];
-      arr.push(log);
-      map.set(log.date, arr);
+      if (log.date > todayISO) future.push(log);
+      else paste.push(log);
     }
-    return [...map.entries()]
-      .sort(([a], [b]) => b.localeCompare(a))
-      .map(([date, entries]) => ({
-        date,
-        label: formatDateLabel(date),
-        entries: entries.sort((a, b) => b.timestamp - a.timestamp),
-      }));
+    const groupBy = (arr: LogEntry[], asc: boolean) => {
+      const map = new Map<string, LogEntry[]>();
+      for (const log of arr) {
+        const a = map.get(log.date) ?? [];
+        a.push(log);
+        map.set(log.date, a);
+      }
+      return [...map.entries()]
+        .sort(([a], [b]) => (asc ? a.localeCompare(b) : b.localeCompare(a)))
+        .map(([date, entries]) => ({
+          date,
+          label: formatDateLabel(date),
+          entries: entries.sort((x, y) => (asc ? x.timestamp - y.timestamp : y.timestamp - x.timestamp)),
+        }));
+    };
+    return {
+      upcoming: groupBy(future, true),
+      past: groupBy(paste, false),
+    };
   }, [filtered]);
 
   return (
@@ -242,7 +273,7 @@ export default function HistorialPage() {
       <div className="px-safe pb-nav-clear mt-5">
         {loading && <p className="py-12 text-center text-sm text-muted">Cargando…</p>}
 
-        {!loading && days.length === 0 && (
+        {!loading && upcoming.length === 0 && past.length === 0 && (
           <div className="py-16 text-center">
             <p className="mb-3 text-4xl">📋</p>
             <p className="text-sm text-muted">Sin registros todavía</p>
@@ -250,15 +281,32 @@ export default function HistorialPage() {
           </div>
         )}
 
-        {days.map((day) => (
+        {upcoming.length > 0 && (
+          <section className="mb-7">
+            <h2 className="mb-3 font-serif text-[15px] italic text-coral">Próximamente</h2>
+            <ul className="relative">
+              <span aria-hidden className="absolute left-[52px] top-1 bottom-1 w-px bg-hairline/90" />
+              {upcoming.flatMap((day) => [
+                <li key={`hd-${day.date}`} className="mb-2 grid grid-cols-[44px_18px_1fr] gap-x-2">
+                  <span />
+                  <span />
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted/80 capitalize">
+                    {day.label}
+                  </span>
+                </li>,
+                ...day.entries.map((entry, idx) => (
+                  <TimelineRow key={entry.id ?? `${entry.date}-${entry.timestamp}-u-${idx}`} entry={entry} />
+                )),
+              ])}
+            </ul>
+          </section>
+        )}
+
+        {past.map((day) => (
           <section key={day.date} className="mb-7">
             <h2 className="mb-3 font-serif text-[15px] italic capitalize text-coral">{day.label}</h2>
-
             <ul className="relative">
-              <span
-                aria-hidden
-                className="absolute left-[52px] top-1 bottom-1 w-px bg-hairline/90"
-              />
+              <span aria-hidden className="absolute left-[52px] top-1 bottom-1 w-px bg-hairline/90" />
               {day.entries.map((entry, idx) => (
                 <TimelineRow key={entry.id ?? `${entry.date}-${entry.timestamp}-${idx}`} entry={entry} />
               ))}
@@ -270,9 +318,25 @@ export default function HistorialPage() {
   );
 }
 
+function parseAppointmentNotes(raw: string | undefined) {
+  if (!raw) return { specialty: '', bring: '', extra: '' };
+  const chunks = raw.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
+  let specialty = '';
+  let bring = '';
+  const extras: string[] = [];
+  for (const c of chunks) {
+    if (/^llevar[:\s]/i.test(c)) bring = c.replace(/^llevar[:\s]*/i, '').trim();
+    else if (!specialty) specialty = c;
+    else extras.push(c);
+  }
+  return { specialty, bring, extra: extras.join('\n\n') };
+}
+
 function TimelineRow({ entry }: { entry: LogEntry }) {
   const tone = toneFor(entry.type);
   const time = formatTime(entry.timestamp);
+  const isAppt = entry.type === 'appointment';
+  const appt = isAppt ? parseAppointmentNotes(entry.notes) : null;
   return (
     <motion.li
       initial={{ opacity: 0, y: 6 }}
@@ -296,6 +360,10 @@ function TimelineRow({ entry }: { entry: LogEntry }) {
           </span>
         </div>
         <p className="mt-1 text-[14px] font-semibold leading-snug text-ink">{entry.label}</p>
+
+        {isAppt && appt?.specialty && (
+          <p className="mt-0.5 text-[12px] leading-snug text-muted">{appt.specialty}</p>
+        )}
 
         {entry.type === 'checkin' &&
           entry.value &&
@@ -324,11 +392,24 @@ function TimelineRow({ entry }: { entry: LogEntry }) {
           </div>
         )}
 
-        {entry.notes && (
-          <div className="mt-2 rounded-lg bg-background/70 px-2.5 py-1.5">
-            <p className="whitespace-pre-wrap text-[12px] italic leading-snug text-muted">{entry.notes}</p>
+        {isAppt && appt?.bring && (
+          <div className="mt-2 rounded-lg border border-coral/15 bg-coral/5 px-2.5 py-1.5">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-coral/90">Recuerda llevar</p>
+            <p className="mt-0.5 text-[12px] italic leading-snug text-muted">{appt.bring}</p>
           </div>
         )}
+
+        {isAppt
+          ? appt?.extra && (
+              <div className="mt-2 rounded-lg bg-background/70 px-2.5 py-1.5">
+                <p className="whitespace-pre-wrap text-[12px] italic leading-snug text-muted">{appt.extra}</p>
+              </div>
+            )
+          : entry.notes && (
+              <div className="mt-2 rounded-lg bg-background/70 px-2.5 py-1.5">
+                <p className="whitespace-pre-wrap text-[12px] italic leading-snug text-muted">{entry.notes}</p>
+              </div>
+            )}
       </div>
     </motion.li>
   );

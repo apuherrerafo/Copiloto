@@ -12,14 +12,15 @@ import {
   type AbsorptionConflict,
 } from '@/lib/protocols/absorption';
 
-type EntryType = 'meal' | 'medication' | 'symptom' | 'note' | 'walking';
+type EntryType = 'meal' | 'medication' | 'symptom' | 'note' | 'walking' | 'appointment';
 
 const TYPES: { key: EntryType; label: string; icon: string; color: string }[] = [
-  { key: 'meal',       label: 'Comida',     icon: '🍽️', color: 'bg-amber/10 border-amber/40 text-amber' },
-  { key: 'medication', label: 'Medicación', icon: '💊', color: 'bg-sage/10 border-sage/40 text-sage' },
-  { key: 'walking',    label: 'Caminata',   icon: '🚶', color: 'bg-sky-100 border-sky-300 text-sky-700' },
-  { key: 'symptom',   label: 'Síntoma',    icon: '⚡', color: 'bg-coral/10 border-coral/40 text-coral' },
-  { key: 'note',      label: 'Nota',       icon: '📝', color: 'bg-gray-100 border-gray-200 text-gray-600' },
+  { key: 'meal',        label: 'Comida',     icon: '🍽️', color: 'bg-amber/10 border-amber/40 text-amber' },
+  { key: 'medication',  label: 'Medicación', icon: '💊', color: 'bg-sage/10 border-sage/40 text-sage' },
+  { key: 'walking',     label: 'Caminata',   icon: '🚶', color: 'bg-sky-100 border-sky-300 text-sky-700' },
+  { key: 'symptom',     label: 'Síntoma',    icon: '⚡', color: 'bg-coral/10 border-coral/40 text-coral' },
+  { key: 'appointment', label: 'Cita médica', icon: '🩺', color: 'bg-coral/10 border-coral/40 text-coral' },
+  { key: 'note',        label: 'Nota',       icon: '📝', color: 'bg-gray-100 border-gray-200 text-gray-600' },
 ];
 
 const MOODS: { emoji: string; label: string }[] = [
@@ -77,6 +78,7 @@ export default function RegistrarPage() {
   const router = useRouter();
   const todayISO = localDateISO();
   const oldestISO = localDateISO(addDaysLocal(new Date(), -365));
+  const farFutureISO = localDateISO(addDaysLocal(new Date(), 365));
   const [entryDate, setEntryDate] = useState(todayISO);
   const [type, setType] = useState<EntryType>('meal');
   const [label, setLabel] = useState('');
@@ -88,6 +90,10 @@ export default function RegistrarPage() {
   const [selectedSymptomTags, setSelectedSymptomTags] = useState<SymptomTag[]>([]);
   const [walkDuration, setWalkDuration] = useState<number>(15);
   const [absorptionConflict, setAbsorptionConflict] = useState<AbsorptionConflict | null>(null);
+  const [apptDoctor, setApptDoctor] = useState('');
+  const [apptSpecialty, setApptSpecialty] = useState('');
+  const [apptTime, setApptTime] = useState('10:00');
+  const [apptBring, setApptBring] = useState('');
 
   function toggleSymptomTag(tag: SymptomTag) {
     setSelectedSymptomTags((prev) =>
@@ -97,20 +103,33 @@ export default function RegistrarPage() {
 
   function handleTypeChange(t: EntryType) {
     setType(t);
-    // Pre-fill label for walking
     if (t === 'walking') {
       setLabel(label || 'Caminata');
     } else if (label === 'Caminata') {
       setLabel('');
     }
+    if (t === 'appointment' && entryDate < todayISO) {
+      setEntryDate(todayISO);
+    }
     setSelectedSymptomTags([]);
   }
 
+  function timestampForAppointment(dateISO: string, time: string): number {
+    const [y, m, d] = dateISO.split('-').map(Number);
+    const [hh, mm] = time.split(':').map(Number);
+    return new Date(y, (m ?? 1) - 1, d ?? 1, hh ?? 12, mm ?? 0, 0, 0).getTime();
+  }
+
   async function handleSave(skipAbsorptionCheck = false) {
-    const finalLabel = type === 'walking' ? (label.trim() || 'Caminata') : label.trim();
+    const isAppt = type === 'appointment';
+    const finalLabel = isAppt
+      ? apptDoctor.trim()
+      : type === 'walking'
+        ? (label.trim() || 'Caminata')
+        : label.trim();
     if (!finalLabel) return;
 
-    if (!skipAbsorptionCheck) {
+    if (!isAppt && !skipAbsorptionCheck) {
       const ts = timestampForEntryDate(entryDate);
       const logs = await getLogsByDate(entryDate);
       const conflict = getAbsorptionConflict(logs, entryDate, ts, type, finalLabel);
@@ -122,7 +141,6 @@ export default function RegistrarPage() {
 
     setSaving(true);
     try {
-      // Append emotion bubble to notes if selected
       const emotionNote = emotionBubble
         ? `[${EMOTION_BUBBLES.find((e) => e.key === emotionBubble)?.label ?? emotionBubble}] `
         : '';
@@ -130,11 +148,25 @@ export default function RegistrarPage() {
       if (skipAbsorptionCheck && absorptionConflict) {
         extra = `Nota: registro antes de ${LEVO_ABSORPTION_MINUTES} min tras levotiroxina (${absorptionConflict.levoTimeLabel}); decisión consciente del usuario.\n`;
       }
-      const finalNotes = `${extra}${emotionNote}${notes.trim()}`.trim() || undefined;
+      let finalNotes: string | undefined;
+      if (isAppt) {
+        const parts = [
+          apptSpecialty.trim(),
+          apptBring.trim() ? `Llevar: ${apptBring.trim()}` : '',
+          notes.trim(),
+        ].filter(Boolean);
+        finalNotes = parts.length ? parts.join('\n\n') : undefined;
+      } else {
+        finalNotes = `${extra}${emotionNote}${notes.trim()}`.trim() || undefined;
+      }
+
+      const ts = isAppt
+        ? timestampForAppointment(entryDate, apptTime)
+        : timestampForEntryDate(entryDate);
 
       await addLog({
         date: entryDate,
-        timestamp: timestampForEntryDate(entryDate),
+        timestamp: ts,
         type,
         label: finalLabel,
         mood: mood !== null ? ((mood + 1) as 1 | 2 | 3 | 4 | 5) : undefined,
@@ -168,7 +200,12 @@ export default function RegistrarPage() {
     );
   }
 
-  const canSave = type === 'walking' ? true : label.trim().length > 0;
+  const canSave =
+    type === 'walking'
+      ? true
+      : type === 'appointment'
+        ? apptDoctor.trim().length > 0
+        : label.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -199,20 +236,22 @@ export default function RegistrarPage() {
         {/* Fecha del registro */}
         <div>
           <label className="mb-2 block text-xs font-medium uppercase tracking-widest text-muted">
-            ¿Para qué día?
+            {type === 'appointment' ? '¿Qué día es la cita?' : '¿Para qué día?'}
           </label>
           <input
             type="date"
             value={entryDate}
-            min={oldestISO}
-            max={todayISO}
+            min={type === 'appointment' ? todayISO : oldestISO}
+            max={type === 'appointment' ? farFutureISO : todayISO}
             onChange={(e) => setEntryDate(e.target.value || todayISO)}
             className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-sage"
           />
           <p className="mt-1.5 text-[11px] leading-snug text-muted">
-            {entryDate === todayISO
-              ? 'Se guarda con la hora actual.'
-              : 'Se guarda en ese día (mediodía local) para que aparezca bien en el historial.'}
+            {type === 'appointment'
+              ? 'La cita aparecerá en “Próximamente” en tu historial hasta que llegue el día.'
+              : entryDate === todayISO
+                ? 'Se guarda con la hora actual.'
+                : 'Se guarda en ese día (mediodía local) para que aparezca bien en el historial.'}
           </p>
         </div>
 
@@ -290,8 +329,63 @@ export default function RegistrarPage() {
           </div>
         )}
 
-        {/* Label (hidden for walking if pre-filled, still editable) */}
-        {type !== 'walking' && (
+        {/* Cita médica: quién, especialidad, hora, qué llevar */}
+        {type === 'appointment' && (
+          <div className="space-y-4 rounded-2xl border border-coral/20 bg-coral/5 p-4">
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-coral">
+                Quién te atiende
+              </label>
+              <input
+                type="text"
+                value={apptDoctor}
+                onChange={(e) => setApptDoctor(e.target.value)}
+                placeholder="Ej. Dra. Alicia Núñez"
+                className="w-full rounded-xl border border-hairline bg-white/90 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-coral"
+              />
+            </div>
+            <div className="grid grid-cols-[1fr_auto] gap-2">
+              <div>
+                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-coral">
+                  Especialidad · motivo
+                </label>
+                <input
+                  type="text"
+                  value={apptSpecialty}
+                  onChange={(e) => setApptSpecialty(e.target.value)}
+                  placeholder="Ej. Endocrinología · control TSH"
+                  className="w-full rounded-xl border border-hairline bg-white/90 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-coral"
+                />
+              </div>
+              <div className="w-[110px]">
+                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-coral">
+                  Hora
+                </label>
+                <input
+                  type="time"
+                  value={apptTime}
+                  onChange={(e) => setApptTime(e.target.value || '10:00')}
+                  className="w-full rounded-xl border border-hairline bg-white/90 px-3 py-2.5 text-sm text-ink outline-none focus:border-coral"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-coral">
+                Qué llevar (opcional)
+              </label>
+              <textarea
+                value={apptBring}
+                onChange={(e) => setApptBring(e.target.value)}
+                rows={2}
+                placeholder="Análisis T3, T4 libre, TPO, TSH…"
+                className="w-full rounded-xl border border-hairline bg-white/90 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-coral resize-none"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Label (hidden for walking/appointment) */}
+        {type !== 'walking' && type !== 'appointment' && (
           <div>
             <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
               {type === 'meal' ? 'Qué comiste' : type === 'medication' ? 'Medicamento' : type === 'symptom' ? 'Descripción breve' : 'Nota'}
@@ -312,6 +406,7 @@ export default function RegistrarPage() {
         )}
 
         {/* Emotional bubbles */}
+        {type !== 'appointment' && (
         <div>
           <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
             Estado emocional rápido (opcional)
@@ -336,8 +431,10 @@ export default function RegistrarPage() {
             ))}
           </div>
         </div>
+        )}
 
         {/* Mood */}
+        {type !== 'appointment' && (
         <div>
           <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
             ¿Cómo te sentiste en general? (opcional)
@@ -360,8 +457,10 @@ export default function RegistrarPage() {
             ))}
           </div>
         </div>
+        )}
 
         {/* Notes */}
+        {type !== 'appointment' && (
         <div>
           <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
             Notas adicionales (opcional)
@@ -378,6 +477,7 @@ export default function RegistrarPage() {
             className="w-full bg-surface border border-gray-100 rounded-2xl px-4 py-3 text-ink text-sm outline-none focus:border-sage transition-colors placeholder:text-gray-300 resize-none"
           />
         </div>
+        )}
 
         {/* Save */}
         <button

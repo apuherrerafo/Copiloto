@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { APP_NAME, APP_TAGLINE } from '@/lib/brand';
 import HypoSplashHero from '@/components/ui/HypoSplashHero';
+import LoginSplash from '@/components/ui/LoginSplash';
 
 const showGoogle = process.env.NEXT_PUBLIC_GOOGLE_LOGIN === 'true';
 
@@ -17,6 +18,8 @@ export default function EntrarPage() {
   const [err, setErr] = useState('');
   const [success, setSuccess] = useState('');
   const [busy, setBusy] = useState(false);
+  const [splash, setSplash] = useState(false);
+  const [splashName, setSplashName] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const u = new URLSearchParams(window.location.search);
@@ -35,9 +38,13 @@ export default function EntrarPage() {
         setBusy(false);
         return;
       }
-      setSuccess('Sesión iniciada, cargando…');
-      router.push('/');
-      router.refresh();
+      const local = email.split('@')[0]?.replace(/[._-]+/g, ' ').trim();
+      setSplashName(local || undefined);
+      setSplash(true);
+      setTimeout(() => {
+        router.push('/');
+        router.refresh();
+      }, 1400);
     } catch {
       setErr('No se pudo iniciar sesión. Revisa tu conexión.');
       setBusy(false);
@@ -57,6 +64,9 @@ export default function EntrarPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <AnimatePresence>
+        {splash ? <LoginSplash key="login-splash" name={splashName} /> : null}
+      </AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

@@ -20,7 +20,7 @@ export interface LogEntry {
   clientId?: string;
   date: string;
   timestamp: number;
-  type: 'meal' | 'medication' | 'fast' | 'symptom' | 'note' | 'walking' | 'checkin';
+  type: 'meal' | 'medication' | 'fast' | 'symptom' | 'note' | 'walking' | 'checkin' | 'appointment';
   label: string;
   value?: string | number | ProCheckInValue;
   mood?: 1 | 2 | 3 | 4 | 5;

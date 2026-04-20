@@ -25,14 +25,23 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Fondo tipo referencia: malla suave con colores del design system */
+  /* Fondo editorial: malla orgánica cálida (peach + coral + sage) al estilo del mock. */
   .home-mesh {
-    background-color: #f7f5f3;
+    background-color: #F9F4EE;
     background-image:
-      radial-gradient(ellipse 120% 80% at 50% -20%, rgba(91, 122, 101, 0.14) 0%, transparent 55%),
-      radial-gradient(ellipse 90% 60% at 100% 30%, rgba(192, 144, 80, 0.08) 0%, transparent 50%),
-      radial-gradient(ellipse 70% 50% at 0% 80%, rgba(196, 118, 99, 0.06) 0%, transparent 45%);
+      radial-gradient(ellipse 95% 55% at 92% -2%, rgba(255, 178, 132, 0.32) 0%, transparent 58%),
+      radial-gradient(ellipse 85% 55% at 8% 14%, rgba(212, 152, 138, 0.22) 0%, transparent 55%),
+      radial-gradient(ellipse 120% 60% at 50% 108%, rgba(91, 122, 101, 0.16) 0%, transparent 60%);
     background-attachment: fixed;
+  }
+
+  /* Splash/overlay al iniciar sesión: degradado orgánico más saturado. */
+  .warm-splash {
+    background-color: #FBF1E7;
+    background-image:
+      radial-gradient(ellipse 90% 55% at 80% 0%, rgba(255, 168, 118, 0.50) 0%, transparent 55%),
+      radial-gradient(ellipse 90% 55% at 20% 100%, rgba(192, 144, 80, 0.28) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 60% 50%, rgba(91, 122, 101, 0.14) 0%, transparent 70%);
   }
 
   /* Barra inferior: home indicator + un mínimo cómodo */
