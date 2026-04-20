@@ -72,7 +72,7 @@ export async function POST(req: Request) {
 
   const supabase = getSupabaseAdmin();
   if (!supabase) {
-    return NextResponse.json({ error: 'Supabase no configurado' }, { status: 503 });
+    return NextResponse.json({ error: 'Supabase is not configured' }, { status: 503 });
   }
 
   const userId = session.user.id;

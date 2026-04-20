@@ -1,7 +1,7 @@
 {
   "name": "HypoCopilot",
   "short_name": "HypoCopilot",
-  "description": "Ciencia, protocolo y hábitos para hipotiroidismo",
+  "description": "Science, protocol and habits for hypothyroidism",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F7F5F3",

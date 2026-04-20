@@ -10,10 +10,10 @@ function normalizeEmail(raw: string): string {
 
 const credentials = CredentialsProvider({
   id: 'credentials',
-  name: 'Correo y contraseña',
+  name: 'Email and password',
   credentials: {
-    email: { label: 'Correo', type: 'email' },
-    password: { label: 'Contraseña', type: 'password' },
+    email: { label: 'Email', type: 'email' },
+    password: { label: 'Password', type: 'password' },
   },
   async authorize(creds) {
     const email = typeof creds?.email === 'string' ? normalizeEmail(creds.email) : '';

@@ -28,7 +28,7 @@ const SessionContext = createContext<Ctx | null>(null);
 
 export function useHypoSession(): Ctx {
   const v = useContext(SessionContext);
-  if (!v) throw new Error('useHypoSession fuera de AppShell');
+  if (!v) throw new Error('useHypoSession must be used within AppShell');
   return v;
 }
 
@@ -62,7 +62,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
     const u = authSession.user;
     const stored = typeof window !== 'undefined' ? readSession() : null;
     return {
-      name: (stored?.name?.trim() || u.name?.trim() || 'Usuario') as string,
+      name: (stored?.name?.trim() || u.name?.trim() || 'Friend') as string,
       email: u.email ?? stored?.email,
       avatarUrl: u.image ?? undefined,
       avatarDataUrl: stored?.avatarDataUrl,

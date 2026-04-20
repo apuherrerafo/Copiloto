@@ -84,7 +84,7 @@ export function getAbsorptionConflict(
     minutesElapsed: Math.max(0, elapsedMin),
     minutesRequired: required,
     minutesRemaining: Math.max(0, required - elapsedMin),
-    levoTimeLabel: new Date(levoAt).toLocaleTimeString('es-MX', {
+    levoTimeLabel: new Date(levoAt).toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,

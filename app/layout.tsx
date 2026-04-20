@@ -37,7 +37,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const session = (await getServerSession(authOptions)) ?? null;
 
   return (
-    <html lang="es">
+    <html lang="en">
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
