@@ -15,12 +15,12 @@ interface Message {
 }
 
 const STARTERS = [
-  '¿Puedo tomar café ahora?',
-  '¿Qué puedo comer para romper el ayuno?',
-  'Tengo mucho hambre, ¿qué hago?',
-  '¿Cómo va mi ayuno hoy?',
-  '¿Luz matutina o frío encajan con mi tiroides hoy?',
-  '¿Qué suplementos debo espaciar respecto a la levotiroxina?',
+  'Can I have coffee now?',
+  'What can I eat to break my fast?',
+  'I’m really hungry — what should I do?',
+  'How is my fast going today?',
+  'Does morning light or cold exposure fit my thyroid today?',
+  'Which supplements should I space from levothyroxine?',
 ];
 
 const welcomeStagger = {
@@ -108,7 +108,7 @@ function CopilotoInner() {
         }),
       });
 
-      if (!res.ok) throw new Error('Error del servidor');
+      if (!res.ok) throw new Error('Server error');
 
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
@@ -127,7 +127,7 @@ function CopilotoInner() {
     } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Uy, no pude conectarme ahora mismo 😔 Verifica tu API key de Anthropic y vuelve a intentarlo.',
+        content: 'Hmm, I couldn’t connect just now 😔 Check your Anthropic API key and try again.',
       }]);
     } finally {
       setLoading(false);
@@ -157,7 +157,7 @@ function CopilotoInner() {
           <button
             onClick={() => router.back()}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface transition-colors shrink-0"
-            aria-label="Volver"
+            aria-label="Back"
           >
             <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-muted">
               <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd"/>
@@ -166,11 +166,11 @@ function CopilotoInner() {
           <HippoAvatar />
           <div>
             <h1 className="font-serif italic text-xl text-ink leading-none">Hypo</h1>
-            <p className="text-xs text-muted mt-0.5">Tu copiloto amigo · respuestas por IA</p>
+            <p className="text-xs text-muted mt-0.5">Your friendly copilot · AI answers</p>
           </div>
         </div>
         <p className="mt-3 text-[10px] leading-snug text-muted/85 px-1">
-          HypoAI es generativa y puede equivocarse. No sustituye la opinión de tu médico ni cambia tu tratamiento.
+          HypoAI is generative and can make mistakes. It does not replace your doctor or change your treatment.
         </p>
       </div>
 
@@ -187,10 +187,10 @@ function CopilotoInner() {
               <HippoAvatar size="lg" />
             </motion.div>
             <motion.h2 variants={fadeUp} className="font-serif italic text-2xl text-ink mb-2 mt-4">
-              ¡Hola, Julio! Soy Hypo
+              Hi, I’m Hypo
             </motion.h2>
             <motion.p variants={fadeUp} className="text-muted text-sm mb-6 max-w-xs leading-relaxed">
-              Conozco tu protocolo de levotiroxina, tu ayuno y todo lo que registras cada día. ¡Pregúntame lo que quieras!
+              I know your levothyroxine protocol, your fast, and everything you log each day. Ask me anything!
             </motion.p>
             <motion.div variants={startersGrid} className="grid grid-cols-1 gap-2 w-full max-w-xs">
               {STARTERS.map((s) => (
@@ -256,7 +256,7 @@ function CopilotoInner() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Pregúntale a Hypo…"
+            placeholder="Ask Hypo…"
             rows={1}
             className="flex-1 resize-none bg-transparent text-ink text-sm outline-none placeholder:text-muted/50 max-h-24"
             style={{ lineHeight: '1.5' }}
@@ -271,7 +271,7 @@ function CopilotoInner() {
             </svg>
           </button>
         </div>
-        <p className="text-center text-xs text-muted/60 mt-2">Enter para enviar · Shift+Enter nueva línea</p>
+        <p className="text-center text-xs text-muted/60 mt-2">Enter to send · Shift+Enter for new line</p>
       </div>
     </motion.div>
   );

@@ -108,13 +108,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
         <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3 px-6">
           <div className="w-10 h-10 rounded-full border-2 border-sage border-t-transparent animate-spin" />
           <p className="text-xs text-ink font-medium tracking-wide">HypoCopilot</p>
-          <p className="text-[10px] text-muted text-center max-w-xs">Cargando…</p>
+          <p className="text-[10px] text-muted text-center max-w-xs">Loading…</p>
         </div>
       ) : timedOutGate ? (
         <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6">
           <p className="text-xs text-ink font-medium tracking-wide">HypoCopilot</p>
           <p className="text-sm text-muted text-center max-w-sm leading-relaxed">
-            La sesión tardó demasiado. Suele pasar con la PWA en caché viejo o sin red estable.
+            Your session is taking too long. Often a stale PWA cache or a flaky network connection.
           </p>
           <div className="flex flex-col gap-2 w-full max-w-xs">
             <button
@@ -125,24 +125,24 @@ export default function AppShell({ children }: { children: ReactNode }) {
               }}
               className="rounded-2xl bg-sage py-3 text-sm font-semibold text-white shadow-soft"
             >
-              Reintentar sesión
+              Retry session
             </button>
             <button
               type="button"
               onClick={() => window.location.reload()}
               className="rounded-2xl border border-hairline bg-surface py-3 text-sm font-semibold text-ink"
             >
-              Recargar página
+              Reload page
             </button>
             <Link
               href="/entrar"
               className="text-center text-sm font-semibold text-sage underline underline-offset-2 py-2"
             >
-              Ir a entrar
+              Go to sign in
             </Link>
           </div>
           <p className="text-[10px] text-muted text-center max-w-xs leading-relaxed">
-            Si instalaste la app en el teléfono: abre en el navegador o borra datos del sitio para esta URL, luego vuelve a entrar.
+            If you installed the app on your phone: open it in the browser or clear site data for this URL, then sign in again.
           </p>
         </div>
       ) : (

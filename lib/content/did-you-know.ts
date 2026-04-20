@@ -1,8 +1,8 @@
 import { APP_NAME } from '@/lib/brand';
 
-export type DidYouKnowTopic = 'tiroides' | 'biohack' | 'sedentarismo' | 'ayuno' | 'farmaco' | 'microbiota';
+export type DidYouKnowTopic = 'thyroid' | 'biohack' | 'movement' | 'fasting' | 'pharma' | 'gut';
 
-export type EvidenceLevel = 'meta-análisis' | 'ensayo clínico' | 'consenso expertos' | 'fisiopatología';
+export type EvidenceLevel = 'meta-analysis' | 'clinical-trial' | 'expert-consensus' | 'physiology';
 
 export type DidYouKnowItem = {
   fact: string;
@@ -12,209 +12,208 @@ export type DidYouKnowItem = {
 };
 
 /**
- * 20 micro-lecciones curadas — tono accesible, estilo "¿Sabías que?" + biohacking práctico.
- * Inspirado en el enfoque de Ray Ramis (Hackea Tu Salud): hábitos pequeños, sin jerga,
- * ligados al hipotiroidismo con levotiroxina.
- * DISCLAIMER: educativas; no reemplazan valoración endocrinológica.
+ * Curated micro-lessons — friendly "Did you know?" tone plus practical biohacking,
+ * tied to hypothyroidism and levothyroxine.
+ * DISCLAIMER: educational; does not replace endocrinology evaluation.
  */
 export const DID_YOU_KNOW: DidYouKnowItem[] = [
   {
-    topic: 'farmaco',
-    fact: '¿Sabías que hay un mineral que tu cuerpo necesita para "convertir" la pastilla de tiroides en energía real? Se llama selenio y lo encuentras en 2–3 nueces de Brasil al día. Más no es mejor — el exceso también es tóxico.',
-    hint: 'Selenio y conversión T4→T3 · Deiodinasas',
-    evidence: 'fisiopatología',
+    topic: 'pharma',
+    fact: 'Did you know there is a mineral your body needs to "convert" your thyroid pill into real energy? It is selenium, and you get it from 2–3 Brazil nuts a day. More is not better — too much is toxic.',
+    hint: 'Selenium and T4→T3 conversion · Deiodinases',
+    evidence: 'physiology',
   },
   {
-    topic: 'tiroides',
-    fact: '¿Sabías que muchas personas con hipotiroidismo duermen mal porque les falta magnesio? Este mineral relaja los músculos, baja el cortisol nocturno y mejora el sueño profundo. Fuentes: espinacas, semillas de calabaza, chocolate 85 %.',
-    hint: 'Magnesio, sueño y eje tiroideo',
-    evidence: 'consenso expertos',
+    topic: 'thyroid',
+    fact: 'Did you know many people with hypothyroidism sleep poorly because they lack magnesium? This mineral relaxes muscles, lowers nighttime cortisol and improves deep sleep. Sources: spinach, pumpkin seeds, 85% dark chocolate.',
+    hint: 'Magnesium, sleep and the thyroid axis',
+    evidence: 'expert-consensus',
   },
   {
-    topic: 'sedentarismo',
-    fact: '¿Sabías que caminar 10 minutos después de comer hace que tus músculos absorban el azúcar casi sin necesitar insulina? Con hipotiroidismo el metabolismo ya va más lento — esta caminata es el truco de biohacking más barato que existe.',
-    hint: 'Movimiento posprandial y glucosa · Ray Ramis estilo',
-    evidence: 'ensayo clínico',
+    topic: 'movement',
+    fact: 'Did you know walking 10 minutes after a meal lets your muscles absorb sugar almost without insulin? With hypothyroidism your metabolism already runs slower — this walk is the cheapest biohack out there.',
+    hint: 'Post-meal movement and glucose',
+    evidence: 'clinical-trial',
   },
   {
-    topic: 'farmaco',
-    fact: '¿Sabías que si tomas biotina (vitamina B7 o de pelo y uñas) y luego te sacas sangre, el resultado de TSH puede salir falso? Para una analítica fiable, deja de tomarla 2–3 días antes.',
-    hint: 'Biotina e interferencia en ensayos de TSH · AACE 2019',
-    evidence: 'consenso expertos',
+    topic: 'pharma',
+    fact: 'Did you know that if you take biotin (vitamin B7, hair and nail supplements) and then get blood drawn, your TSH result can come back false? For a reliable test, stop it 2–3 days before.',
+    hint: 'Biotin interference in TSH assays · AACE 2019',
+    evidence: 'expert-consensus',
   },
   {
-    topic: 'tiroides',
-    fact: '¿Sabías que el zinc no solo ayuda a producir hormona tiroidea sino que también le enseña a tus células a "escuchar" esa hormona? Sin zinc suficiente, aunque tengas la TSH normal, el cuerpo no responde bien. Fuentes: carnes rojas, semillas de calabaza, mariscos.',
-    hint: 'Zinc y receptores de hormona tiroidea',
-    evidence: 'fisiopatología',
+    topic: 'thyroid',
+    fact: 'Did you know zinc not only helps make thyroid hormone, it also teaches your cells to "listen" to it? Without enough zinc, even with normal TSH your body responds poorly. Sources: red meat, pumpkin seeds, seafood.',
+    hint: 'Zinc and thyroid hormone receptors',
+    evidence: 'physiology',
   },
   {
-    topic: 'tiroides',
-    fact: '¿Sabías que tu hormona TSH no es igual por la mañana que por la tarde? Sube de madrugada y baja a media tarde. Por eso el análisis de sangre siempre hay que hacerlo en ayunas y a primera hora — así el número es real.',
-    hint: 'Ritmo circadiano de TSH',
-    evidence: 'ensayo clínico',
+    topic: 'thyroid',
+    fact: 'Did you know your TSH is not the same in the morning and the afternoon? It rises at dawn and drops mid-afternoon. That is why blood work should always be fasting and first thing — so the number is real.',
+    hint: 'TSH circadian rhythm',
+    evidence: 'clinical-trial',
   },
   {
-    topic: 'tiroides',
-    fact: '¿Sabías que puedes tener la TSH "normal" y seguir cansado porque te falta hierro? El hierro es el combustible que necesita tu glándula tiroides para fabricar hormona. Pídele a tu médico que revise también la ferritina (no solo el hierro sérico).',
-    hint: 'Ferritina y síntesis de hormonas tiroideas',
-    evidence: 'consenso expertos',
+    topic: 'thyroid',
+    fact: 'Did you know you can have "normal" TSH and still feel tired because you are low on iron? Iron is the fuel your thyroid needs to make hormone. Ask your doctor to check ferritin too (not just serum iron).',
+    hint: 'Ferritin and thyroid hormone synthesis',
+    evidence: 'expert-consensus',
   },
   {
-    topic: 'microbiota',
-    fact: '¿Sabías que parte de la hormona tiroidea activa se produce en tu intestino, no en la glándula? Las bacterias buenas de tu microbiota ayudan en esa conversión. Por eso el ayuno intermitente bien hecho y la fibra vegetal son aliados del hipotiroidismo.',
-    hint: 'Microbiota y conversión intestinal T4→T3',
-    evidence: 'fisiopatología',
+    topic: 'gut',
+    fact: 'Did you know part of active thyroid hormone is produced in your gut, not the gland? Good gut bacteria help with that conversion. That is why a well-done intermittent fast and plant fiber are allies in hypothyroidism.',
+    hint: 'Microbiome and intestinal T4→T3 conversion',
+    evidence: 'physiology',
   },
   {
-    topic: 'tiroides',
-    fact: '¿Sabías que el hipotiroidismo puede hacer que sientas más frío que todos los demás, sobre todo en manos y pies? No es que seas raro — tu metabolismo basal va más lento de lo normal. Es una señal del cuerpo, no un defecto.',
-    hint: 'Termorregulación e hipotiroidismo',
-    evidence: 'fisiopatología',
+    topic: 'thyroid',
+    fact: 'Did you know hypothyroidism can make you feel colder than everyone else, especially hands and feet? Not weird — your resting metabolism just runs slower. It is a body signal, not a flaw.',
+    hint: 'Thermoregulation and hypothyroidism',
+    evidence: 'physiology',
   },
   {
-    topic: 'sedentarismo',
-    fact: '¿Sabías que pasar sentado más de 6 horas seguidas reduce la capacidad de tu cuerpo para usar la hormona tiroidea, aunque tomes la dosis correcta? Un pequeño descanso activo cada hora ya marca diferencia — incluso pararte 2 minutos suma.',
-    hint: 'Sedentarismo y resistencia hormonal tiroidea',
-    evidence: 'consenso expertos',
+    topic: 'movement',
+    fact: 'Did you know sitting for more than 6 hours straight reduces your body’s ability to use thyroid hormone, even on the right dose? A short active break every hour already makes a difference — even standing 2 minutes counts.',
+    hint: 'Sedentary time and thyroid hormone resistance',
+    evidence: 'expert-consensus',
   },
   {
-    topic: 'farmaco',
-    fact: '¿Sabías que los cambios bruscos de fibra en tu dieta pueden cambiar cuánta pastilla absorbes? No hay que eliminar la fibra — solo ser consistente: si un día comes mucha ensalada y otro casi nada, tu cuerpo absorbe cantidades distintas de levotiroxina.',
-    hint: 'Fibra y absorción de levotiroxina',
-    evidence: 'consenso expertos',
-  },
-  {
-    topic: 'biohack',
-    fact: '¿Sabías que el estrés crónico puede "bloquear" los efectos de tu pastilla de tiroides? Cuando el cortisol está alto, el cuerpo convierte la hormona activa en una versión inútil. Ray Ramis lo llama "la trampa del estrés hormonal": gestionar el estrés es parte del tratamiento.',
-    hint: 'Cortisol → T3 reversa (rT3) · deiodinasa tipo 3',
-    evidence: 'fisiopatología',
-  },
-  {
-    topic: 'tiroides',
-    fact: '¿Sabías que tener la vitamina D baja es muy común en hipotiroidismo autoinmune? Y lo solucionas gratis: 10–15 minutos de sol en brazos y cara entre las 10 y las 14 h. Ray Ramis dice que esos 10 minutos valen más que muchos suplementos caros.',
-    hint: 'Vitamina D y autoinmunidad tiroidea',
-    evidence: 'meta-análisis',
-  },
-  {
-    topic: 'farmaco',
-    fact: '¿Sabías que la soja (leche de soja, tofu, edamame) puede reducir la cantidad de pastilla que absorbes si la comes muy cerca de la toma? No hay que dejarla para siempre — solo esperar al menos 3 horas después de tomar la levotiroxina.',
-    hint: 'Soja e isoflavonas · absorción T4',
-    evidence: 'ensayo clínico',
-  },
-  {
-    topic: 'farmaco',
-    fact: '¿Sabías que la forma de tomar la pastilla importa tanto como la hora? Un vaso grande de agua (200 ml) ayuda a que se disuelva bien y llegue rápido al intestino. Un sorbo pequeño puede dejarla pegada y absorber menos. Detalle mínimo, efecto máximo.',
-    hint: 'Disolución oral de levotiroxina · ATA guidelines',
-    evidence: 'consenso expertos',
-  },
-  {
-    topic: 'farmaco',
-    fact: '¿Sabías que la bacteria H. pylori (que causa gastritis) puede hacer que necesites mayor dosis de levotiroxina? Reduce el ácido del estómago y la pastilla no se disuelve bien. Si llevas meses con dosis alta sin mejorar, vale la pena descartarlo con tu médico.',
-    hint: 'H. pylori y malabsorción de T4',
-    evidence: 'ensayo clínico',
-  },
-  {
-    topic: 'ayuno',
-    fact: '¿Sabías que el café solo (sin leche ni azúcar) no rompe tu ayuno metabólico? Pero si le añades leche, azúcar o crema, activa insulina y frena los beneficios del ayuno que empiezan después de las 14–16 h de no comer. Black coffee = ayuno intacto.',
-    hint: 'Autofagia y ayuno intermitente',
-    evidence: 'fisiopatología',
-  },
-  {
-    topic: 'tiroides',
-    fact: '¿Sabías que el alcohol daña directamente las células de tu glándula tiroides? A largo plazo puede reducir la cantidad de tejido tiroideo activo, lo que significa que necesitas más pastilla para lograr el mismo efecto. No hay una dosis "segura" documentada para el hipotiroidismo.',
-    hint: 'Alcohol y función tiroidea',
-    evidence: 'consenso expertos',
-  },
-  {
-    topic: 'farmaco',
-    fact: '¿Sabías que si vives en una ciudad con "agua dura" (agua del grifo con mucho calcio) y tomas la pastilla con esa agua de forma irregular, puede afectar cuánto absorbes? Tomar siempre con agua filtrada o mineral baja en calcio es la opción más estable.',
-    hint: 'Agua dura, calcio y absorción de T4',
-    evidence: 'fisiopatología',
-  },
-  {
-    topic: 'farmaco',
-    fact: '¿Sabías que cambiar de marca de levotiroxina puede hacer que te sientas diferente aunque sea "la misma dosis"? Cada marca tiene rellenos distintos que afectan la velocidad de absorción. Si cambias de marca, pide un control de TSH al mes — no esperes la revisión anual.',
-    hint: 'Bioequivalencia entre marcas de levotiroxina · ATA 2014',
-    evidence: 'consenso expertos',
-  },
-  /* ──── BIOHACK + LONGEVIDAD ──── */
-  {
-    topic: 'biohack',
-    fact: '¿Sabías que el frío activa la grasa parda — el tejido que literalmente quema calorías para producir calor? Una ducha fría de 30–90 segundos al final de tu baño puede activarla. En hipotiroidismo, donde el metabolismo ya va lento, esta es una de las herramientas más directas.',
-    hint: 'Termogénesis de grasa parda · Ray Ramis – Biohacking aplicado',
-    evidence: 'ensayo clínico',
+    topic: 'pharma',
+    fact: 'Did you know sudden changes in dietary fiber can change how much of your pill you absorb? You do not have to remove fiber — just be consistent: a big-salad day vs. almost-no-salad day absorbs different amounts of levothyroxine.',
+    hint: 'Fiber and levothyroxine absorption',
+    evidence: 'expert-consensus',
   },
   {
     topic: 'biohack',
-    fact: '¿Sabías que la luz solar en los ojos (sin gafas, sin cristal) en los primeros 30 minutos después de despertar es el reset circadiano más potente que existe? Regula el cortisol matutino, mejora el sueño nocturno y estabiliza el eje tiroideo. Gratis, 5–10 minutos al día.',
-    hint: 'Exposición lumínica y ritmo circadiano · Huberman Lab / Ray Ramis',
-    evidence: 'ensayo clínico',
+    fact: 'Did you know chronic stress can "block" the effects of your thyroid pill? When cortisol is high, your body converts active hormone into a useless version. Managing stress is part of treatment.',
+    hint: 'Cortisol → reverse T3 · type 3 deiodinase',
+    evidence: 'physiology',
+  },
+  {
+    topic: 'thyroid',
+    fact: 'Did you know low vitamin D is very common in autoimmune hypothyroidism? And you can fix it for free: 10–15 minutes of sun on arms and face between 10 am and 2 pm is often worth more than expensive supplements.',
+    hint: 'Vitamin D and thyroid autoimmunity',
+    evidence: 'meta-analysis',
+  },
+  {
+    topic: 'pharma',
+    fact: 'Did you know soy (soy milk, tofu, edamame) can reduce how much pill you absorb if eaten too close to the dose? You do not have to drop it — just wait at least 3 hours after taking levothyroxine.',
+    hint: 'Soy isoflavones · T4 absorption',
+    evidence: 'clinical-trial',
+  },
+  {
+    topic: 'pharma',
+    fact: 'Did you know how you take the pill matters as much as when? A big glass of water (200 ml) helps it dissolve and reach the intestine fast. A small sip can leave it stuck and lower absorption. Small detail, max effect.',
+    hint: 'Oral dissolution of levothyroxine · ATA guidelines',
+    evidence: 'expert-consensus',
+  },
+  {
+    topic: 'pharma',
+    fact: 'Did you know H. pylori (the gastritis bacterium) can make you need a higher levothyroxine dose? It lowers stomach acid and the pill dissolves poorly. If months go by on a high dose without improvement, rule it out with your doctor.',
+    hint: 'H. pylori and T4 malabsorption',
+    evidence: 'clinical-trial',
+  },
+  {
+    topic: 'fasting',
+    fact: 'Did you know black coffee (no milk, no sugar) does not break your metabolic fast? But adding milk, sugar or cream triggers insulin and blunts the fasting benefits that start after 14–16 h without food.',
+    hint: 'Autophagy and intermittent fasting',
+    evidence: 'physiology',
+  },
+  {
+    topic: 'thyroid',
+    fact: 'Did you know alcohol damages thyroid gland cells directly? Long term it can reduce active thyroid tissue, meaning you need more pill for the same effect. There is no documented "safe" dose for hypothyroidism.',
+    hint: 'Alcohol and thyroid function',
+    evidence: 'expert-consensus',
+  },
+  {
+    topic: 'pharma',
+    fact: 'Did you know if you live with "hard water" (tap water with lots of calcium) and take the pill with it inconsistently, absorption can swing? Always taking it with filtered or low-calcium mineral water is the most stable option.',
+    hint: 'Hard water, calcium and T4 absorption',
+    evidence: 'physiology',
+  },
+  {
+    topic: 'pharma',
+    fact: 'Did you know switching levothyroxine brands can make you feel different even on the "same dose"? Each brand has different fillers that affect absorption speed. If you switch, ask for a TSH check one month later — do not wait for the yearly visit.',
+    hint: 'Bioequivalence across levothyroxine brands · ATA 2014',
+    evidence: 'expert-consensus',
+  },
+  /* ──── BIOHACK + LONGEVITY ──── */
+  {
+    topic: 'biohack',
+    fact: 'Did you know cold activates brown fat — the tissue that literally burns calories to make heat? A 30–90 s cold finish to your shower can activate it. In hypothyroidism, where metabolism runs slow, this is one of the most direct tools.',
+    hint: 'Brown fat thermogenesis',
+    evidence: 'clinical-trial',
   },
   {
     topic: 'biohack',
-    fact: '¿Sabías que el ayuno de 16h activa un proceso llamado autofagia? Tu cuerpo "limpia" células dañadas y mitocondrias defectuosas. En hipotiroidismo, tener mitocondrias más eficientes se traduce directamente en más energía — sin cambiar la dosis.',
-    hint: 'Autofagia e hipotiroidismo · Nobel Yoshinori Ohsumi 2016',
-    evidence: 'fisiopatología',
+    fact: 'Did you know sunlight in your eyes (no glasses, no window) within 30 minutes of waking is the strongest circadian reset there is? It regulates morning cortisol, improves night sleep and stabilizes the thyroid axis. Free, 5–10 min a day.',
+    hint: 'Light exposure and circadian rhythm · Huberman Lab',
+    evidence: 'clinical-trial',
   },
   {
     topic: 'biohack',
-    fact: '¿Sabías que respirar por la boca durante el sueño (en lugar de la nariz) reduce el oxígeno en sangre y empeora la recuperación nocturna? En hipotiroidismo, donde el sueño ya tiende a ser menos reparador, tapar la boca con tape especializado durante la noche mejora el sueño profundo.',
-    hint: 'Respiración nasal y calidad de sueño · Breath, James Nestor',
-    evidence: 'consenso expertos',
+    fact: 'Did you know a 16 h fast activates autophagy? Your body "cleans" damaged cells and faulty mitochondria. In hypothyroidism, better mitochondria = more energy — without changing the dose.',
+    hint: 'Autophagy and hypothyroidism · Nobel Yoshinori Ohsumi 2016',
+    evidence: 'physiology',
   },
   {
     topic: 'biohack',
-    fact: '¿Sabías que la creatina no es solo para deportistas? Suplementar con 3–5 g/día mejora la energía celular (ATP), la función cognitiva y reduce la fatiga crónica — síntoma muy común en hipotiroidismo. Es uno de los suplementos con más respaldo científico y más económicos.',
-    hint: 'Creatina y función mitocondrial · meta-análisis ISSN 2023',
-    evidence: 'meta-análisis',
+    fact: 'Did you know mouth-breathing during sleep (instead of nasal) drops blood oxygen and worsens night recovery? In hypothyroidism, where sleep is already lighter, gentle mouth-tape at night deepens it.',
+    hint: 'Nasal breathing and sleep quality · Breath, James Nestor',
+    evidence: 'expert-consensus',
   },
   {
     topic: 'biohack',
-    fact: '¿Sabías que el 80 % de las personas con hipotiroidismo tiene el intestino permeable ("leaky gut")? Las uniones del intestino se abren y permiten que fragmentos de proteínas lleguen al torrente sanguíneo, activando respuestas autoinmunes. Colágeno, zinc y L-glutamina ayudan a repararlas.',
-    hint: 'Intestino permeable y autoinmunidad tiroidea · Ray Ramis',
-    evidence: 'fisiopatología',
+    fact: 'Did you know creatine is not just for athletes? 3–5 g/day improves cellular energy (ATP), cognition and reduces chronic fatigue — a classic hypothyroidism symptom. Cheap, well-studied and safe.',
+    hint: 'Creatine and mitochondrial function · ISSN 2023 meta-analysis',
+    evidence: 'meta-analysis',
   },
   {
     topic: 'biohack',
-    fact: '¿Sabías que el ejercicio de fuerza (pesas, bandas) aumenta la sensibilidad celular a la hormona tiroidea? Tus músculos se vuelven mejores "receptores" de T3. 2–3 sesiones de fuerza por semana pueden hacer que te sientas mejor incluso sin cambiar la dosis de levotiroxina.',
-    hint: 'Fuerza muscular y receptores T3 · Ray Ramis – Hackea Tu Salud',
-    evidence: 'ensayo clínico',
+    fact: 'Did you know around 80% of people with hypothyroidism have leaky gut? Tight junctions open and let protein fragments reach the bloodstream, priming autoimmunity. Collagen, zinc and L-glutamine help repair them.',
+    hint: 'Leaky gut and thyroid autoimmunity',
+    evidence: 'physiology',
   },
   {
     topic: 'biohack',
-    fact: '¿Sabías que el estrés oxidativo es mayor en hipotiroidismo y que los antioxidantes de los vegetales de colores lo combaten directamente? Rojo (tomate, pimiento), naranja (zanahoria, mango), verde (brócoli, espinaca): cada color es un grupo de antioxidantes distinto. El objetivo: 5 colores al día.',
-    hint: 'Estrés oxidativo e hipotiroidismo · Ray Ramis – biohack nutricional',
-    evidence: 'consenso expertos',
+    fact: 'Did you know strength training (weights, bands) raises cellular sensitivity to thyroid hormone? Muscles become better T3 "receivers". 2–3 strength sessions a week can make you feel better without changing levothyroxine.',
+    hint: 'Strength training and T3 receptors',
+    evidence: 'clinical-trial',
   },
   {
     topic: 'biohack',
-    fact: '¿Sabías que dormir menos de 7h durante 3 noches seguidas reduce la T3 activa casi como si bajaras la dosis de levotiroxina? El sueño es cuando tu hígado convierte T4 en T3 con más eficiencia. No hay pastilla ni suplemento que compense un sueño consistente.',
-    hint: 'Sueño y conversión T4→T3 hepática · Ray Ramis',
-    evidence: 'ensayo clínico',
+    fact: 'Did you know oxidative stress is higher in hypothyroidism and that colored vegetables fight it directly? Red (tomato, pepper), orange (carrot, mango), green (broccoli, spinach): each color is a different antioxidant group. Goal: 5 colors a day.',
+    hint: 'Oxidative stress and hypothyroidism',
+    evidence: 'expert-consensus',
   },
   {
-    topic: 'tiroides',
-    fact: '¿Sabías que la TSH es un promedio de semanas, no de horas? Si un día te sacas sangre estresado, después de viajar o sin haber dormido, la TSH puede salir alterada sin que tu tiroides haya cambiado. Sácatela siempre en condiciones similares: mismo horario, descansado, en ayunas.',
-    hint: 'Variabilidad de TSH y condiciones del análisis · endocrinología clínica',
-    evidence: 'consenso expertos',
+    topic: 'biohack',
+    fact: 'Did you know sleeping less than 7h for 3 nights drops active T3 almost like lowering your dose? Sleep is when your liver converts T4 to T3 best. No pill or supplement beats consistent sleep.',
+    hint: 'Sleep and hepatic T4→T3 conversion',
+    evidence: 'clinical-trial',
+  },
+  {
+    topic: 'thyroid',
+    fact: 'Did you know TSH is an average of weeks, not hours? If you get your blood drawn stressed, after travel, or sleep-deprived, TSH can shift without your thyroid changing. Always test under similar conditions: same time, rested, fasting.',
+    hint: 'TSH variability and testing conditions',
+    evidence: 'expert-consensus',
   },
 ];
 
 const TOPIC_LABEL: Record<DidYouKnowTopic, string> = {
-  tiroides: 'Tiroides',
+  thyroid: 'Thyroid',
   biohack: 'Biohack',
-  sedentarismo: 'Movimiento',
-  ayuno: 'Ayuno',
-  farmaco: 'Farmacología',
-  microbiota: 'Microbiota',
+  movement: 'Movement',
+  fasting: 'Fasting',
+  pharma: 'Pharmacology',
+  gut: 'Microbiome',
 };
 
 const EVIDENCE_LABEL: Record<EvidenceLevel, string> = {
-  'meta-análisis': '🔬 Meta-análisis',
-  'ensayo clínico': '🧪 Ensayo clínico',
-  'consenso expertos': '📋 Consenso expertos',
-  fisiopatología: '🔭 Fisiopatología',
+  'meta-analysis': '🔬 Meta-analysis',
+  'clinical-trial': '🧪 Clinical trial',
+  'expert-consensus': '📋 Expert consensus',
+  physiology: '🔭 Physiology',
 };
 
 export function getTopicLabel(t: DidYouKnowTopic): string {
@@ -225,7 +224,7 @@ export function getEvidenceLabel(e?: EvidenceLevel): string {
   return e ? EVIDENCE_LABEL[e] ?? e : '';
 }
 
-/** Índice estable por día local (rota el contenido cada día). */
+/** Stable index by local day (rotates content daily). */
 export function pickDidYouKnowIndex(): number {
   const d = new Date();
   const start = new Date(d.getFullYear(), 0, 0);
@@ -238,5 +237,5 @@ export function getTodayDidYouKnow(): DidYouKnowItem {
 }
 
 export function didYouKnowFooter(): string {
-  return `${APP_NAME} — divulgación educativa; no reemplaza tu endocrinólogo ni cambia tu dosis.`;
+  return `${APP_NAME} — educational content; does not replace your endocrinologist or change your dose.`;
 }

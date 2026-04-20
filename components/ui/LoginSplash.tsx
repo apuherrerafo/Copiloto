@@ -116,10 +116,10 @@ export default function LoginSplash({ name }: { name?: string }) {
       >
         {display ? (
           <>
-            Bienvenid@, <span className="text-sage">{display}</span>
+            Welcome, <span className="text-sage">{display}</span>
           </>
         ) : (
-          <>Bienvenid@ de vuelta</>
+          <>Welcome back</>
         )}
       </motion.h1>
 
@@ -129,7 +129,7 @@ export default function LoginSplash({ name }: { name?: string }) {
         transition={{ delay: 0.7, duration: 0.45 }}
         className="mt-2 text-center text-[13px] leading-snug text-muted"
       >
-        Tu ritmo sigue en su sitio. Respira.
+        Your rhythm is still in place. Breathe.
       </motion.p>
 
       <motion.div
@@ -143,7 +143,7 @@ export default function LoginSplash({ name }: { name?: string }) {
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
         />
-        <span>Preparando tu día</span>
+        <span>Preparing your day</span>
       </motion.div>
     </motion.div>
   );

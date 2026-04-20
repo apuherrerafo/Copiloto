@@ -10,23 +10,23 @@ import { getMotivationalMessage } from '@/lib/content/motivational';
 
 function todayParts() {
   const d = new Date();
-  const dayName = d.toLocaleDateString('es-MX', { weekday: 'long' });
+  const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
   const dayNum = d.getDate();
-  const month = d.toLocaleDateString('es-MX', { month: 'long' });
+  const month = d.toLocaleDateString('en-US', { month: 'long' });
   const year = d.getFullYear();
   return {
-    dayName: dayName.charAt(0).toUpperCase() + dayName.slice(1),
+    dayName,
     dayNum,
-    month: month.charAt(0).toUpperCase() + month.slice(1),
+    month,
     year,
   };
 }
 
 function greeting() {
   const h = new Date().getHours();
-  if (h < 12) return 'Buenos días';
-  if (h < 19) return 'Buenas tardes';
-  return 'Buenas noches';
+  if (h < 12) return 'Good morning';
+  if (h < 19) return 'Good afternoon';
+  return 'Good evening';
 }
 
 function SparkleIcon({ className }: { className?: string }) {
@@ -46,7 +46,7 @@ export default function MotivationalHeader({ name }: { name?: string }) {
   const displayName =
     session?.name?.trim().split(/\s+/)[0] ||
     name?.trim()?.split(/\s+/)[0] ||
-    'Julio';
+    'there';
   const avatarSrc = session?.avatarDataUrl ?? session?.avatarUrl;
   const [msg, setMsg] = useState('');
   const [visible, setVisible] = useState(true);
@@ -124,13 +124,13 @@ export default function MotivationalHeader({ name }: { name?: string }) {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-sage/90">
-                Hoy es
+                Today is
               </p>
               <p className="mt-0.5 font-serif text-[1.2rem] italic leading-tight text-ink">
                 {dateInfo.dayName}
               </p>
               <p className="mt-0.5 text-[11px] text-muted">
-                {dateInfo.dayNum} de {dateInfo.month.toLowerCase()} · {dateInfo.year}
+                {dateInfo.month} {dateInfo.dayNum}, {dateInfo.year}
               </p>
             </div>
           </div>
@@ -170,13 +170,13 @@ export default function MotivationalHeader({ name }: { name?: string }) {
           </span>
           <div className="min-w-0 flex-1 text-left">
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-sage">HypoAI</p>
-            <p className="truncate text-[14px] font-medium text-muted/80 sm:text-[15px]">Busca con HypoAI…</p>
+            <p className="truncate text-[14px] font-medium text-muted/80 sm:text-[15px]">Ask HypoAI…</p>
           </div>
         </Link>
 
         <Link
           href="/copiloto"
-          aria-label="Abrir Hypo"
+          aria-label="Open Hypo"
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sage text-white shadow-lift transition-transform active:scale-95 hover:brightness-105 sm:h-[52px] sm:w-[52px]"
         >
           <SparkleIcon className="h-5 w-5 opacity-95 sm:h-6 sm:w-6" />

@@ -18,43 +18,43 @@ const PROTOCOL_NOTIFICATIONS: ProtocolNotification[] = [
   {
     hour: 8,
     minute: 0,
-    title: `🌅 ${APP_NAME} — ¡Buenos días!`,
-    body: `¿Sabías que 10 minutos de sol por la mañana suben la vitamina D, bajan el cortisol y mejoran el ánimo? Con hipotiroidismo esto importa el doble: el cortisol alto bloquea que tu pastilla funcione bien. Sal aunque sea al balcón. Revisa tu protocolo de hoy.`,
+    title: `🌅 ${APP_NAME} — Good morning!`,
+    body: `Did you know 10 minutes of morning sunlight raises vitamin D, lowers cortisol and lifts your mood? With hypothyroidism this matters even more: high cortisol blocks your pill from working well. Step out onto the balcony if that’s all you can do. Check today’s protocol.`,
     tag: 'morning-open',
   },
   {
     hour: 10,
     minute: 55,
-    title: `💊 ${APP_NAME} — Tu pastilla en 5 min`,
-    body: `¿Sabías que tomar la levotiroxina con el estómago vacío puede doblar la cantidad que absorbe tu cuerpo vs. tomarla con café? Sin cafeína, sin leche, sin suplementos por 60 min. Solo agua. Un pequeño hábito que hace una diferencia enorme en cómo te sientes todo el día.`,
+    title: `💊 ${APP_NAME} — Your pill in 5 min`,
+    body: `Did you know taking levothyroxine on an empty stomach can roughly double how much your body absorbs versus taking it with coffee? No caffeine, no milk, no supplements for 60 min. Just water. A tiny habit with a huge impact on how you feel all day.`,
     tag: 'levotiroxina',
   },
   {
     hour: 12,
     minute: 0,
-    title: `🍽️ ${APP_NAME} — Abre tu ventana`,
-    body: `¿Sabías que después de horas de ayuno tu cuerpo está listo para aprovechar bien los nutrientes? Come proteína + grasa sana primero. Eso le da a tu tiroides los "ladrillos" que necesita para convertir la pastilla en energía real. Evita solo carbohidratos: el bajón de las 2 h es real.`,
+    title: `🍽️ ${APP_NAME} — Open your window`,
+    body: `Did you know after hours of fasting your body is primed to absorb nutrients well? Eat protein + healthy fat first. That gives your thyroid the "bricks" it needs to turn the pill into real energy. Avoid pure carbs — the 2-hour crash is real.`,
     tag: 'fastbreak',
   },
   {
     hour: 13,
     minute: 45,
-    title: `🚶 ${APP_NAME} — Camina 10 minutos`,
-    body: `¿Sabías que caminar justo después de comer hace que tus músculos absorban el azúcar sin depender de insulina? Con hipotiroidismo el metabolismo ya va lento — esta caminata es como darle un turbo express a tu energía de la tarde. Sin zapatillas especiales, sin excusas.`,
+    title: `🚶 ${APP_NAME} — Walk for 10 minutes`,
+    body: `Did you know walking right after a meal makes your muscles absorb glucose without needing insulin? With hypothyroidism your metabolism is already slow — this walk is like an express turbo for your afternoon energy. No special shoes, no excuses.`,
     tag: 'walk-lunch-nudge',
   },
   {
     hour: 19,
     minute: 45,
-    title: `⏰ ${APP_NAME} — Cierra la ventana en 15 min`,
-    body: `¿Sabías que comer muy tarde desincroniza tu reloj circadiano? A esas horas el mismo plato puede ser más exigente para tu metabolismo. A las 20:00 cierra. Hígado y tiroides descansan mejor cuando el ayuno arranca a tiempo.`,
+    title: `⏰ ${APP_NAME} — Close your window in 15 min`,
+    body: `Did you know eating very late desynchronizes your circadian clock? At that hour the same plate can hit your metabolism harder. Close at 8:00 PM. Your liver and thyroid rest better when the fast starts on time.`,
     tag: 'lastmeal',
   },
   {
     hour: 20,
     minute: 15,
-    title: `🚶 ${APP_NAME} — Caminata suave post-cena`,
-    body: `¿Sabías que una caminata tranquila de 15 min activa el "modo descanso" de tu sistema nervioso? Mejora la digestión, estabiliza el azúcar para el ayuno nocturno y prepara el sueño profundo. No corras, no te agites — eso elevaría el cortisol y tardarías más en dormirte.`,
+    title: `🚶 ${APP_NAME} — Gentle post-dinner walk`,
+    body: `Did you know a calm 15-minute walk activates your nervous system’s "rest mode"? It improves digestion, stabilizes blood sugar for the overnight fast and prepares deep sleep. Don’t rush or push hard — that would raise cortisol and delay sleep.`,
     tag: 'walk-dinner-nudge',
   },
 ];
@@ -126,8 +126,8 @@ export function scheduleFastLimitAlert(fastElapsedHours: number): (() => void) |
 
   const remaining = (max - fastElapsedHours) * 3600 * 1000;
   const timer = setTimeout(() => {
-    new Notification(`⚠️ ${APP_NAME} — Límite de ayuno`, {
-      body: '17 h: el hígado ya moviliza mucha glucosa endógena; rompe con algo ligero. El ayuno prolongado no sustituye valoración médica.',
+    new Notification(`⚠️ ${APP_NAME} — Fast limit`, {
+      body: '17h: your liver is already mobilizing a lot of endogenous glucose; break it with something light. Prolonged fasting is not a substitute for medical evaluation.',
       icon: '/icons/icon-192.png',
       tag: 'fast-limit',
       requireInteraction: true,

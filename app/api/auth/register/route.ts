@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: 'JSON inválido' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
   const b = body as {
@@ -34,24 +34,24 @@ export async function POST(req: Request) {
   const username = typeof b.username === 'string' ? normalizeUsername(b.username) : '';
 
   if (!email || !email.includes('@')) {
-    return NextResponse.json({ error: 'Correo no válido' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
   }
   if (password.length < MIN_PASSWORD) {
     return NextResponse.json(
-      { error: `La contraseña debe tener al menos ${MIN_PASSWORD} caracteres` },
+      { error: `Password must be at least ${MIN_PASSWORD} characters` },
       { status: 400 },
     );
   }
   if (!USERNAME_RE.test(username)) {
     return NextResponse.json(
-      { error: 'El usuario debe tener máx. 10 caracteres (letras, números o _)' },
+      { error: 'Username must be max. 10 chars (letters, numbers or _)' },
       { status: 400 },
     );
   }
 
   const admin = getSupabaseAdmin();
   if (!admin) {
-    return NextResponse.json({ error: 'Servidor sin Supabase configurado' }, { status: 503 });
+    return NextResponse.json({ error: 'Server has no Supabase configured' }, { status: 503 });
   }
 
   const { data: existingEmail } = await admin
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     .eq('email', email)
     .maybeSingle();
   if (existingEmail) {
-    return NextResponse.json({ error: 'Ese correo ya está registrado' }, { status: 409 });
+    return NextResponse.json({ error: 'That email is already registered' }, { status: 409 });
   }
 
   const { data: existingUser } = await admin
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     .eq('username', username)
     .maybeSingle();
   if (existingUser) {
-    return NextResponse.json({ error: 'Ese nombre de usuario ya existe. Elige otro.' }, { status: 409 });
+    return NextResponse.json({ error: 'That username is already taken. Please pick another.' }, { status: 409 });
   }
 
   const password_hash = await bcrypt.hash(password, 12);

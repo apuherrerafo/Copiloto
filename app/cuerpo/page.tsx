@@ -6,9 +6,9 @@ import { localDateISO } from '@/lib/dates';
 
 function formatDate(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('es-MX', {
-    day: 'numeric',
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
     month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -50,14 +50,14 @@ export default function CuerpoPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="px-6 pt-12 pb-4">
-        <h1 className="font-serif italic text-3xl text-ink">Cuerpo</h1>
+        <h1 className="font-serif italic text-3xl text-ink">Body</h1>
       </div>
 
       <div className="px-6 space-y-5 pb-8">
         {/* Latest snapshot */}
         {latest && (
           <div className="bg-surface border border-gray-100 rounded-2xl px-5 py-4">
-            <p className="text-xs text-gray-400 uppercase tracking-widest font-medium mb-3">Última medición</p>
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-medium mb-3">Latest measurement</p>
             <div className="flex gap-6">
               {latest.weight && (
                 <div>
@@ -68,7 +68,7 @@ export default function CuerpoPage() {
               {latest.waist && (
                 <div>
                   <p className="font-serif italic text-3xl text-ink">{latest.waist}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">cm cintura</p>
+                  <p className="text-xs text-gray-400 mt-0.5">cm waist</p>
                 </div>
               )}
             </div>
@@ -78,11 +78,11 @@ export default function CuerpoPage() {
 
         {/* Input form */}
         <div className="bg-surface border border-gray-100 rounded-2xl px-5 py-4 space-y-4">
-          <p className="text-xs text-gray-400 uppercase tracking-widest font-medium">Nueva medición</p>
+          <p className="text-xs text-gray-400 uppercase tracking-widest font-medium">New measurement</p>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-gray-400 block mb-1.5">Peso (kg)</label>
+              <label className="text-xs text-gray-400 block mb-1.5">Weight (kg)</label>
               <input
                 type="number"
                 inputMode="decimal"
@@ -93,7 +93,7 @@ export default function CuerpoPage() {
               />
             </div>
             <div>
-              <label className="text-xs text-gray-400 block mb-1.5">Cintura (cm)</label>
+              <label className="text-xs text-gray-400 block mb-1.5">Waist (cm)</label>
               <input
                 type="number"
                 inputMode="decimal"
@@ -109,7 +109,7 @@ export default function CuerpoPage() {
             type="text"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Notas (opcional)"
+            placeholder="Notes (optional)"
             className="w-full bg-background border border-gray-100 rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-sage transition-colors"
           />
 
@@ -122,14 +122,14 @@ export default function CuerpoPage() {
                 : 'bg-sage text-white hover:bg-sage/90 disabled:opacity-40'
             }`}
           >
-            {saved ? '✓ Guardado' : saving ? 'Guardando...' : 'Guardar medición'}
+            {saved ? '✓ Saved' : saving ? 'Saving…' : 'Save measurement'}
           </button>
         </div>
 
         {/* History */}
         {entries.length > 0 && (
           <div>
-            <p className="text-xs text-gray-400 uppercase tracking-widest font-medium mb-2">Historial</p>
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-medium mb-2">History</p>
             <div className="space-y-2">
               {entries.map((e) => (
                 <div

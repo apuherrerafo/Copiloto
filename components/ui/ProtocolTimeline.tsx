@@ -65,14 +65,14 @@ export default function ProtocolTimeline() {
     <div className="rounded-[1.75rem] border border-white/60 bg-white/70 p-5 shadow-lift backdrop-blur-md">
       <div className="mb-4 flex items-end justify-between gap-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted">Hoy</p>
-          <h2 className="font-serif text-xl italic text-ink">Plan del día</h2>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted">Today</p>
+          <h2 className="font-serif text-xl italic text-ink">Day plan</h2>
         </div>
         <Link
           href="/registrar"
           className="shrink-0 rounded-full border border-sage/25 bg-sage/10 px-3 py-1.5 text-xs font-semibold text-sage transition-colors hover:bg-sage/15"
         >
-          Registrar
+          Log
         </Link>
       </div>
 

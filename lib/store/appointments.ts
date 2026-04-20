@@ -55,8 +55,8 @@ export function getUpcomingAppointments(from = new Date()): Appointment[] {
 }
 
 export const TYPE_LABELS: Record<AppointmentType, string> = {
-  medico: '🩺 Médico',
-  examen: '🔬 Examen',
-  lab:    '🧪 Laboratorio',
-  otro:   '📅 Otro',
+  medico: '🩺 Doctor',
+  examen: '🔬 Exam',
+  lab:    '🧪 Lab',
+  otro:   '📅 Other',
 };

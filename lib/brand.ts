@@ -1,6 +1,6 @@
 export const APP_NAME = 'HypoCopilot';
 export const APP_SHORT_NAME = 'HypoCopilot';
-export const APP_TAGLINE = 'Ciencia, protocolo y hábitos para hipotiroidismo';
+export const APP_TAGLINE = 'Science, protocol and habits for hypothyroidism';
 
 /** Dosis actual de levotiroxina (fuente de verdad para UI y copiloto). */
 export const LEVO_DOSE_MCG = 200;

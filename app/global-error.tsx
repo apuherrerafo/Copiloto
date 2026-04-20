@@ -14,7 +14,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="es">
+    <html lang="en">
       <body style={{ margin: 0, background: '#fafaf8', fontFamily: 'sans-serif' }}>
         <div
           style={{
@@ -28,10 +28,10 @@ export default function GlobalError({
           }}
         >
           <p style={{ fontSize: '1.25rem', fontStyle: 'italic', marginBottom: '0.5rem' }}>
-            Algo salió mal
+            Something went wrong
           </p>
           <p style={{ fontSize: '0.875rem', color: '#888', marginBottom: '1.5rem' }}>
-            {error.message ?? 'Error inesperado. Intenta recargar.'}
+            {error.message ?? 'Unexpected error. Please try reloading.'}
           </p>
           <button
             onClick={reset}
@@ -46,7 +46,7 @@ export default function GlobalError({
               cursor: 'pointer',
             }}
           >
-            Reintentar
+            Try again
           </button>
         </div>
       </body>

@@ -9,12 +9,12 @@ import {
 } from '@/lib/notifications/schedule';
 
 const ALARMS = [
-  { time: '08:00', h: 8,  m: 0,  label: 'Buenos días',        emoji: '🌅' },
-  { time: '10:55', h: 10, m: 55, label: 'Pastilla en 5 min',  emoji: '💊' },
-  { time: '12:00', h: 12, m: 0,  label: 'Romper ayuno',       emoji: '🍽️' },
-  { time: '13:45', h: 13, m: 45, label: 'Caminata post-almuerzo', emoji: '🚶' },
-  { time: '19:45', h: 19, m: 45, label: 'Cerrar ventana (15 min)', emoji: '⏰' },
-  { time: '20:15', h: 20, m: 15, label: 'Caminata post-cena', emoji: '🌙' },
+  { time: '08:00', h: 8,  m: 0,  label: 'Good morning',            emoji: '🌅' },
+  { time: '10:55', h: 10, m: 55, label: 'Pill in 5 min',           emoji: '💊' },
+  { time: '12:00', h: 12, m: 0,  label: 'Break the fast',          emoji: '🍽️' },
+  { time: '13:45', h: 13, m: 45, label: 'Post-lunch walk',         emoji: '🚶' },
+  { time: '19:45', h: 19, m: 45, label: 'Close window (15 min)',   emoji: '⏰' },
+  { time: '20:15', h: 20, m: 15, label: 'Post-dinner walk',        emoji: '🌙' },
 ];
 
 function minutesSinceMidnight() {
@@ -66,17 +66,17 @@ export default function AlarmsPanel() {
       >
         <div className="flex items-center gap-2">
           <p className="text-[10px] text-muted uppercase tracking-widest font-medium">
-            Alarmas del protocolo
+            Protocol alarms
           </p>
           {status === 'granted' && (
             <span className="flex items-center gap-1 text-[9px] font-semibold text-sage bg-sage/10 px-1.5 py-0.5 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-sage inline-block" />
-              Activas
+              Active
             </span>
           )}
           {status !== 'granted' && (
             <span className="text-[9px] font-semibold text-coral bg-coral/10 px-1.5 py-0.5 rounded-full">
-              Inactivas
+              Inactive
             </span>
           )}
         </div>
@@ -108,11 +108,11 @@ export default function AlarmsPanel() {
                 className="mb-3 flex items-center justify-between bg-amber/8 border border-amber/25 rounded-2xl px-4 py-3"
               >
                 <div>
-                  <p className="text-xs font-semibold text-ink">Recibe tus recordatorios</p>
+                  <p className="text-xs font-semibold text-ink">Get your reminders</p>
                   <p className="text-[10px] text-muted mt-0.5">
                     {status === 'denied'
-                      ? 'Permisos denegados. Actívalos desde los ajustes del navegador.'
-                      : 'Activa las notificaciones para que Hypo te recuerde cada paso.'}
+                      ? 'Permissions denied. Enable them from your browser settings.'
+                      : 'Turn on notifications so Hypo can remind you at each step.'}
                   </p>
                 </div>
                 {status !== 'denied' && (
@@ -120,7 +120,7 @@ export default function AlarmsPanel() {
                     onClick={handleEnable}
                     className="ml-3 shrink-0 bg-sage text-white text-xs font-semibold px-3 py-1.5 rounded-full"
                   >
-                    Activar
+                    Enable
                   </button>
                 )}
               </motion.div>
@@ -170,7 +170,7 @@ export default function AlarmsPanel() {
                     </span>
                     {state === 'next' && (
                       <span className="text-[9px] font-bold uppercase tracking-wider text-sage bg-sage/12 px-2 py-0.5 rounded-full shrink-0">
-                        Próxima
+                        Next
                       </span>
                     )}
                     {state === 'past' && status === 'granted' && (

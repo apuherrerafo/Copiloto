@@ -13,7 +13,7 @@ type Tab = {
 const tabs: Tab[] = [
   {
     href: '/',
-    label: 'Hoy',
+    label: 'Today',
     icon: (active) => (
       <svg
         viewBox="0 0 24 24"
@@ -28,7 +28,7 @@ const tabs: Tab[] = [
   },
   {
     href: '/historial',
-    label: 'Historia',
+    label: 'History',
     icon: (active) => (
       <svg
         viewBox="0 0 24 24"
@@ -45,7 +45,7 @@ const tabs: Tab[] = [
   },
   {
     href: '/cuerpo',
-    label: 'Cuerpo',
+    label: 'Body',
     icon: (active) => (
       <svg
         viewBox="0 0 24 24"
@@ -61,7 +61,7 @@ const tabs: Tab[] = [
   },
   {
     href: '/yo',
-    label: 'Yo',
+    label: 'Me',
     icon: (active) => (
       <svg
         viewBox="0 0 24 24"
@@ -87,7 +87,7 @@ export default function BottomNav() {
     <>
       <Link
         href="/registrar"
-        aria-label="Registrar"
+        aria-label="Log"
         className="fixed bottom-[max(1.35rem,calc(env(safe-area-inset-bottom,0px)+0.85rem))] left-1/2 z-[60] flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-sage text-white shadow-lift ring-4 ring-background/95 transition-transform active:scale-95 hover:brightness-105"
       >
         <motion.span
@@ -101,7 +101,7 @@ export default function BottomNav() {
 
       <nav
         className="fixed bottom-0 left-0 right-0 z-50 border-t border-hairline/40 bg-background/85 backdrop-blur-md safe-bottom"
-        aria-label="Navegación principal"
+        aria-label="Main navigation"
       >
         <div className="mx-auto flex max-w-lg items-end justify-between pt-2 pb-1 pl-[max(0.75rem,env(safe-area-inset-left,0px))] pr-[max(0.75rem,env(safe-area-inset-right,0px))]">
           <div className="flex flex-1 justify-around">

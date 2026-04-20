@@ -42,7 +42,7 @@ function StatusDot({ tone }: { tone: StatusTone }) {
     return (
       <span
         className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sage text-white shadow-soft"
-        aria-label="Hecho"
+        aria-label="Done"
       >
         <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.4">
           <path d="M3.5 8.5l3 3 6-6.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -51,9 +51,9 @@ function StatusDot({ tone }: { tone: StatusTone }) {
     );
   }
   if (tone === 'pending') {
-    return <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-coral" aria-label="Pendiente" />;
+    return <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-coral" aria-label="Pending" />;
   }
-  return <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-amber animate-pulse" aria-label="En curso" />;
+  return <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-amber animate-pulse" aria-label="In progress" />;
 }
 
 export default function TodayStatusCards() {
@@ -98,23 +98,23 @@ export default function TodayStatusCards() {
   const hydRemainingL = Math.max(0, HYD_TARGET_L - hydL);
 
   const pillTone: StatusTone = pillTakenAt ? 'ok' : 'pending';
-  const pillTitle = pillTakenAt ? 'Tomada' : 'Pendiente';
-  const pillHint = pillTakenAt ? `A las ${pillTakenAt}` : `${PROTOCOL.levothyroxine.time}`;
+  const pillTitle = pillTakenAt ? 'Taken' : 'Pending';
+  const pillHint = pillTakenAt ? `At ${pillTakenAt}` : `${PROTOCOL.levothyroxine.time}`;
 
   const hydTone: StatusTone = hydRemainingL === 0 ? 'ok' : hydL > 0 ? 'progress' : 'pending';
   const hydTitle = `${hydL.toFixed(1)} L`;
   const hydHint =
-    hydRemainingL === 0 ? 'Meta cumplida' : `Faltan ${hydRemainingL.toFixed(1)} L`;
+    hydRemainingL === 0 ? 'Goal reached' : `${hydRemainingL.toFixed(1)} L to go`;
 
   const elapsed = getFastElapsed(now);
   const inKetosis = elapsed >= 12 && elapsed < PROTOCOL.fast.maxHours;
   const ketoTone: StatusTone = inKetosis ? 'ok' : 'pending';
-  const ketoTitle = inKetosis ? 'Activa' : 'Próxima';
+  const ketoTitle = inKetosis ? 'Active' : 'Upcoming';
   const ketoHint = inKetosis
-    ? 'Buen ritmo'
+    ? 'Good pace'
     : elapsed >= 8
-      ? `En ~${Math.max(0, Math.ceil(12 - elapsed))} h`
-      : 'Después de 12 h';
+      ? `In ~${Math.max(0, Math.ceil(12 - elapsed))} h`
+      : 'After 12 h';
 
   const addCup = () => {
     const next = Math.min(20, cups + 1);
@@ -133,9 +133,9 @@ export default function TodayStatusCards() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       className="w-full"
-      aria-label="Estado de hoy"
+      aria-label="Today’s status"
     >
-      <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Hoy</p>
+      <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Today</p>
 
       <div className="grid grid-cols-3 gap-2">
         {/* Medicación */}
@@ -150,7 +150,7 @@ export default function TodayStatusCards() {
             </svg>
           </div>
           <p className="text-[13px] font-semibold leading-tight text-ink">{pillTitle}</p>
-          <p className="truncate text-[11px] leading-tight text-muted">Levotiroxina</p>
+          <p className="truncate text-[11px] leading-tight text-muted">Levothyroxine</p>
           <p className="mt-0.5 text-[10px] leading-tight text-muted/80">{pillHint}</p>
         </div>
 
@@ -159,7 +159,7 @@ export default function TodayStatusCards() {
           onClick={addCup}
           onDoubleClick={resetCups}
           className="relative rounded-[18px] border border-hairline/70 bg-white/90 p-3 text-left shadow-soft transition-transform active:scale-[0.98]"
-          aria-label="Sumar 250 ml de agua"
+          aria-label="Add 250 ml of water"
         >
           <div className="absolute right-2.5 top-2.5">
             <StatusDot tone={hydTone} />
@@ -170,7 +170,7 @@ export default function TodayStatusCards() {
             </svg>
           </div>
           <p className="text-[13px] font-semibold leading-tight text-ink">{hydTitle}</p>
-          <p className="truncate text-[11px] leading-tight text-muted">Hidratación</p>
+          <p className="truncate text-[11px] leading-tight text-muted">Hydration</p>
           <p className="mt-0.5 text-[10px] leading-tight text-muted/80">{hydHint}</p>
         </button>
 
@@ -185,7 +185,7 @@ export default function TodayStatusCards() {
             </svg>
           </div>
           <p className="text-[13px] font-semibold leading-tight text-ink">{ketoTitle}</p>
-          <p className="truncate text-[11px] leading-tight text-muted">Cetosis</p>
+          <p className="truncate text-[11px] leading-tight text-muted">Ketosis</p>
           <p className="mt-0.5 text-[10px] leading-tight text-muted/80">{ketoHint}</p>
         </div>
       </div>

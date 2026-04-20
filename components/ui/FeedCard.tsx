@@ -3,12 +3,12 @@
 import { type FeedItem } from '@/app/api/news/route';
 
 const TAG_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  tiroides:   { label: 'Tiroides',   color: 'text-sage',   bg: 'bg-sage/10' },
-  ayuno:      { label: 'Ayuno IF',   color: 'text-amber',  bg: 'bg-amber/10' },
-  metabolismo:{ label: 'Metabolismo',color: 'text-coral',  bg: 'bg-coral/10' },
-  nutricion:  { label: 'Nutrición',  color: 'text-sage',   bg: 'bg-sage/10' },
+  tiroides:   { label: 'Thyroid',    color: 'text-sage',   bg: 'bg-sage/10' },
+  ayuno:      { label: 'Fasting',    color: 'text-amber',  bg: 'bg-amber/10' },
+  metabolismo:{ label: 'Metabolism', color: 'text-coral',  bg: 'bg-coral/10' },
+  nutricion:  { label: 'Nutrition',  color: 'text-sage',   bg: 'bg-sage/10' },
   biohack:    { label: 'Biohack',    color: 'text-ink',    bg: 'bg-amber/15' },
-  general:    { label: 'Salud',      color: 'text-muted', bg: 'bg-hairline' },
+  general:    { label: 'Health',     color: 'text-muted',  bg: 'bg-hairline' },
 };
 
 function timeAgo(dateStr: string): string {
@@ -16,12 +16,12 @@ function timeAgo(dateStr: string): string {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return '';
     const h = (Date.now() - d.getTime()) / 3_600_000;
-    if (h < 1)  return 'Hace menos de 1h';
-    if (h < 24) return `Hace ${Math.floor(h)}h`;
-    if (h < 48) return 'Ayer';
+    if (h < 1)  return 'Less than 1h ago';
+    if (h < 24) return `${Math.floor(h)}h ago`;
+    if (h < 48) return 'Yesterday';
     const days = Math.floor(h / 24);
-    if (days < 30) return `Hace ${days} días`;
-    return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+    if (days < 30) return `${days} days ago`;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   } catch { return ''; }
 }
 

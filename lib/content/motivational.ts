@@ -1,60 +1,60 @@
 /**
- * Mensajes motivacionales rotativos para el header de la home.
- * Se agrupan por momento del día y se seleccionan por combinación fecha+índice
- * para variar cada día sin repetir demasiado.
+ * Rotating motivational messages for the home header.
+ * Grouped by time of day and picked by date+index combo so they change
+ * through the day without repeating too often.
  */
 
-type Slot = 'manana' | 'tarde' | 'noche';
+type Slot = 'morning' | 'afternoon' | 'evening';
 
 const MESSAGES: Record<Slot, string[]> = {
-  manana: [
-    'El día empieza contigo. 🌱',
-    'Agua, sol y constancia — eso es todo. ☀️',
-    'Tu pastilla a las 11. Mientras, solo agua.',
-    'Cada mañana que registras, ganas datos. 📊',
-    'Cuerpo bien descansado = tiroides feliz.',
-    'Hoy es otro día para ser constante.',
-    'El ayuno sigue trabajando por ti.',
-    'Un día a la vez. Eso funciona.',
-    'Tu protocolo es simple. La constancia, el secreto.',
-    'Desayuno a las 12. Por ahora, a seguir. 💪',
-    'La luz matutina ya está resincronizando tu reloj interno.',
-    'Sal 5 min al sol antes de las 11. Gratis y poderoso.',
+  morning: [
+    'The day starts with you. 🌱',
+    'Water, sunlight, consistency — that is all. ☀️',
+    'Your pill at 11. Until then, water only.',
+    'Every morning you log is data you gain. 📊',
+    'A well-rested body = a happy thyroid.',
+    'Another day to stay consistent.',
+    'The fast is still working for you.',
+    'One day at a time. That is what works.',
+    'Your protocol is simple. Consistency is the secret.',
+    'Breakfast at 12. For now, keep going. 💪',
+    'Morning light is already resyncing your inner clock.',
+    '5 minutes of sunlight before 11. Free and powerful.',
   ],
-  tarde: [
-    '¿Ya caminaste después de comer? 🚶',
-    'Ventana abierta hasta las 20:00. Aprovéchala bien.',
-    'Una caminata de 10 min ahora vale mucho.',
-    'Medio día completo. ¿Cómo vas con el protocolo?',
-    'La glucosa te lo agradecerá si caminas ahora.',
-    'Tarde productiva = noche tranquila.',
-    'Tu cuerpo procesa mejor con movimiento post-comida.',
-    '¿Tomaste la pastilla esta mañana? Bien hecho. 🙌',
-    'Cada comida dentro de ventana suma. No es perfección, es tendencia.',
-    'Un vaso de agua ahora no rompe nada. Al contrario.',
-    'La constancia de hoy es la energía de mañana.',
-    'Hidratación + movimiento + ventana. La tríada.',
+  afternoon: [
+    'Did you walk after eating yet? 🚶',
+    'Eating window open until 8 pm. Use it well.',
+    'A 10-min walk right now counts a lot.',
+    'Half the day done. How is the protocol going?',
+    'Your glucose will thank you if you walk now.',
+    'Productive afternoon = calm night.',
+    'Your body processes food better when you move after meals.',
+    'Took your pill this morning? Well done. 🙌',
+    'Every meal inside the window adds up. Trend over perfection.',
+    'A glass of water now breaks nothing. Quite the opposite.',
+    'Today’s consistency is tomorrow’s energy.',
+    'Hydration + movement + window. The triad.',
   ],
-  noche: [
-    'Cierra la cocina a las 20:00 y gana 16h. 🌙',
-    'Ayuno activado. El cuerpo empieza a limpiar.',
-    'Buenas noches — mañana continúa el ritmo.',
-    'El sueño convierte T4 en T3. Duerme bien.',
-    'La constancia de hoy importa más que la perfección.',
-    'Cena terminada. Ahora solo agua y descanso.',
-    'Un ayuno bien hecho es como reiniciar el sistema. 🔄',
-    'Tu microbiota trabaja de noche. Dale fibra vegetal.',
-    '¿Caminata post-cena? Son solo 10 min. Vale la pena. 🚶',
-    'Mañana es otro día para ser constante.',
-    'El cuerpo se repara mientras duermes. Buenas noches.',
-    'Que el descanso sea tan bueno como tu protocolo.',
+  evening: [
+    'Close the kitchen at 8 pm and earn 16h. 🌙',
+    'Fast on. Your body starts cleaning up.',
+    'Good night — the rhythm continues tomorrow.',
+    'Sleep turns T4 into T3. Rest well.',
+    'Today’s consistency matters more than perfection.',
+    'Dinner done. Only water and rest now.',
+    'A clean fast is like rebooting the system. 🔄',
+    'Your microbiome works at night. Feed it plant fiber.',
+    'Walk after dinner? Just 10 min. Worth it. 🚶',
+    'Tomorrow is another day to stay consistent.',
+    'Your body repairs while you sleep. Sleep well.',
+    'May your rest be as good as your protocol.',
   ],
 };
 
 function getSlot(hour: number): Slot {
-  if (hour < 12) return 'manana';
-  if (hour < 20) return 'tarde';
-  return 'noche';
+  if (hour < 12) return 'morning';
+  if (hour < 20) return 'afternoon';
+  return 'evening';
 }
 
 function getDayOfYear(d = new Date()): number {
@@ -65,7 +65,6 @@ function getDayOfYear(d = new Date()): number {
 export function getMotivationalMessage(now = new Date()): string {
   const slot = getSlot(now.getHours());
   const pool = MESSAGES[slot];
-  // Combina día del año + minutos para variar dentro del mismo día si recargas
   const idx = (getDayOfYear(now) * 3 + Math.floor(now.getMinutes() / 20)) % pool.length;
   return pool[idx]!;
 }

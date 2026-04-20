@@ -25,7 +25,7 @@ export default function YesterdayCoach() {
   return (
     <div className="mb-4 w-full px-safe">
       <div className="rounded-card border border-sage/25 bg-sage/10 px-4 py-3 shadow-soft">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-sage mb-1">Ayer · tu copiloto</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-sage mb-1">Yesterday · your copilot</p>
         <h2 className="font-serif italic text-lg text-ink leading-snug">{recap.headline}</h2>
         <p className="text-sm text-muted leading-relaxed mt-2">{recap.lead}</p>
         <ul className="mt-3 space-y-1.5 text-xs text-ink/90 leading-snug list-disc pl-4 marker:text-sage">

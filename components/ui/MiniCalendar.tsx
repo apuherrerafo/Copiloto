@@ -42,7 +42,7 @@ function buildDays(today: Date, past = 14, future = 10): Date[] {
   return days;
 }
 
-const DAY_LETTERS = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+const DAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 /** Mini anillo de progreso por día (referencia dashboard) */
 const MINI_R = 14;
@@ -123,10 +123,10 @@ function pctColor(pct: number): string {
 }
 
 function pctLabel(pct: number, count: number): string {
-  if (count === 0) return 'Sin registros';
-  if (pct === 1) return '¡Protocolo completo!';
-  if (pct >= 0.5) return `${count}/${TOTAL_KEYS} completado`;
-  return `${count}/${TOTAL_KEYS} completado`;
+  if (count === 0) return 'No records';
+  if (pct === 1) return 'Protocol complete!';
+  if (pct >= 0.5) return `${count}/${TOTAL_KEYS} done`;
+  return `${count}/${TOTAL_KEYS} done`;
 }
 
 export default function MiniCalendar() {
@@ -190,7 +190,7 @@ export default function MiniCalendar() {
 
   return (
     <div className="mb-1">
-      <p className="mb-1.5 text-center font-serif text-xs italic text-ink/85">Mi semana</p>
+      <p className="mb-1.5 text-center font-serif text-xs italic text-ink/85">My week</p>
       {/* Horizontal strip — scroll con aire lateral para que no se corten los anillos */}
       <div
         ref={stripRef}
@@ -271,9 +271,9 @@ export default function MiniCalendar() {
                             : 'bg-ink/6 text-muted line-through'
                         }`}>
                           {ev.key === 'pill' ? 'Levo' :
-                           ev.key === 'fastBreak' ? 'Romper' :
-                           ev.key === 'walkLunch' ? 'Caminar' :
-                           ev.key === 'lastMeal' ? 'Cena' : 'Paseo'}
+                           ev.key === 'fastBreak' ? 'Break' :
+                           ev.key === 'walkLunch' ? 'Walk' :
+                           ev.key === 'lastMeal' ? 'Dinner' : 'Stroll'}
                         </span>
                       ))}
                     </div>
@@ -282,8 +282,8 @@ export default function MiniCalendar() {
               ) : (
                 <p className="rounded-lg border border-dashed border-hairline/70 bg-white/35 px-3 py-1.5 text-center text-[11px] leading-snug text-muted">
                   {isToday
-                    ? 'Sin registros de protocolo hoy · márcalos abajo en el plan del día'
-                    : 'Sin datos de protocolo este día'}
+                    ? 'No protocol entries today · check them below in your day plan'
+                    : 'No protocol data for this day'}
                 </p>
               )}
             </>
@@ -292,7 +292,7 @@ export default function MiniCalendar() {
           {/* Future: show placeholder */}
           {isFuture && !selApts.length && (
             <p className="rounded-lg border border-dashed border-hairline/70 bg-white/35 px-3 py-1.5 text-center text-[11px] text-muted">
-              Día futuro — agrega cita abajo
+              Future day — add an event below
             </p>
           )}
 
@@ -321,7 +321,7 @@ export default function MiniCalendar() {
             className="flex w-full items-center justify-center gap-1 py-0.5 text-[10px] font-semibold text-sage hover:opacity-80 transition-opacity"
           >
             <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-sage/15 text-[10px] leading-none">+</span>
-            Cita o evento
+            Appointment or event
           </button>
         </motion.div>
       </AnimatePresence>
@@ -341,10 +341,10 @@ export default function MiniCalendar() {
 }
 
 const APT_TYPES: { value: AppointmentType; label: string }[] = [
-  { value: 'medico', label: '🩺 Médico' },
-  { value: 'examen', label: '🔬 Examen' },
+  { value: 'medico', label: '🩺 Doctor' },
+  { value: 'examen', label: '🔬 Exam' },
   { value: 'lab',    label: '🧪 Lab' },
-  { value: 'otro',   label: '📅 Otro' },
+  { value: 'otro',   label: '📅 Other' },
 ];
 
 function AddAppointmentSheet({
@@ -383,16 +383,16 @@ function AddAppointmentSheet({
         className="w-full bg-background rounded-t-3xl px-6 pt-5 pb-10 space-y-4"
       >
         <div className="flex items-center justify-between">
-          <p className="font-serif italic text-lg text-ink">Nueva cita / evento</p>
+          <p className="font-serif italic text-lg text-ink">New appointment / event</p>
           <button onClick={onClose} className="text-muted text-xl leading-none">✕</button>
         </div>
 
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Título</label>
+          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Title</label>
           <input
             type="text" value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ej. Endocrinólogo, TSH, Ecosonograma"
+            placeholder="e.g. Endocrinologist, TSH, Ultrasound"
             className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink"
             autoFocus
           />
@@ -400,19 +400,19 @@ function AddAppointmentSheet({
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Fecha</label>
+            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Date</label>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
               className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink" />
           </div>
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Hora (opcional)</label>
+            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Time (optional)</label>
             <input type="time" value={time} onChange={(e) => setTime(e.target.value)}
               className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink" />
           </div>
         </div>
 
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Tipo</label>
+          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Type</label>
           <div className="grid grid-cols-4 gap-1.5">
             {APT_TYPES.map((t) => (
               <button key={t.value} type="button" onClick={() => setType(t.value)}
@@ -426,15 +426,15 @@ function AddAppointmentSheet({
         </div>
 
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Notas (opcional)</label>
+          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Notes (optional)</label>
           <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)}
-            placeholder="Ej. en ayunas, traer resultados"
+            placeholder="e.g. fasting, bring lab results"
             className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink" />
         </div>
 
         <button onClick={handleSave} disabled={!title.trim() || !date}
           className="w-full rounded-2xl bg-sage py-3.5 text-sm font-semibold text-white disabled:opacity-40 transition-opacity">
-          Guardar
+          Save
         </button>
       </motion.div>
     </motion.div>

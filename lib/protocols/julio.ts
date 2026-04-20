@@ -4,19 +4,19 @@ export const PROTOCOL = {
   levothyroxine: {
     time: '11:00',
     dose: LEVO_DOSE_LABEL,
-    label: 'Levotiroxina',
+    label: 'Levothyroxine',
   },
 
   fastBreak: {
     time: '12:00',
-    label: 'Rompe ayuno',
+    label: 'Break the fast',
     minutesAfterPill: 60,
   },
 
   lastMeal: {
     time: '20:00',
-    label: 'Última comida',
-    note: 'Inicia ayuno 16h',
+    label: 'Last meal',
+    note: 'Starts 16h fast',
   },
 
   fast: {
@@ -68,10 +68,10 @@ export function isEatingWindow(now = new Date()): boolean {
 
 export function getTodaySchedule() {
   return [
-    { time: '11:00', key: 'pill', label: `Levotiroxina ${LEVO_DOSE_LABEL}`, type: 'medication' as const },
-    { time: '12:00', key: 'fastBreak', label: 'Rompe ayuno', type: 'meal' as const },
-    { time: '14:00', key: 'walkLunch', label: 'Caminata ligera post-almuerzo (8–12 min)', type: 'activity' as const },
-    { time: '20:00', key: 'lastMeal', label: 'Última comida', type: 'meal' as const },
-    { time: '21:00', key: 'walkDinner', label: 'Caminata suave post-cena (10 min)', type: 'activity' as const },
+    { time: '11:00', key: 'pill', label: `Levothyroxine ${LEVO_DOSE_LABEL}`, type: 'medication' as const },
+    { time: '12:00', key: 'fastBreak', label: 'Break the fast', type: 'meal' as const },
+    { time: '14:00', key: 'walkLunch', label: 'Light post-lunch walk (8–12 min)', type: 'activity' as const },
+    { time: '20:00', key: 'lastMeal', label: 'Last meal', type: 'meal' as const },
+    { time: '21:00', key: 'walkDinner', label: 'Gentle post-dinner walk (10 min)', type: 'activity' as const },
   ];
 }

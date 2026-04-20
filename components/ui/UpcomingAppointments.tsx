@@ -18,13 +18,12 @@ function relativeDayLabel(iso: string): string {
   today.setHours(0, 0, 0, 0);
   const msDay = 1000 * 60 * 60 * 24;
   const diff = Math.round((target.getTime() - today.getTime()) / msDay);
-  if (iso === todayISO) return 'Hoy';
-  if (diff === 1) return 'Mañana';
+  if (iso === todayISO) return 'Today';
+  if (diff === 1) return 'Tomorrow';
   if (diff > 1 && diff < 7) {
-    const name = target.toLocaleDateString('es-MX', { weekday: 'long' });
-    return name.charAt(0).toUpperCase() + name.slice(1);
+    return target.toLocaleDateString('en-US', { weekday: 'long' });
   }
-  return target.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+  return target.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 export default function UpcomingAppointments() {
@@ -47,17 +46,17 @@ export default function UpcomingAppointments() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className="w-full"
-      aria-label="Próximas citas médicas"
+      aria-label="Upcoming medical appointments"
     >
       <div className="mb-2 flex items-end justify-between">
         <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
-          Próximas citas
+          Upcoming appointments
         </p>
         <Link
           href="/historial"
           className="text-[11px] font-medium text-sage/90 hover:text-sage"
         >
-          Ver todas →
+          See all →
         </Link>
       </div>
 
@@ -93,7 +92,7 @@ export default function UpcomingAppointments() {
               className="flex w-full items-center justify-center gap-1.5 rounded-[14px] border border-dashed border-coral/40 bg-coral/5 px-3 py-2 text-[12px] font-semibold text-coral transition-colors hover:bg-coral/10"
             >
               <span className="text-[14px] leading-none">+</span>
-              Agendar otra cita
+              Schedule another appointment
             </Link>
           </li>
         </ul>
@@ -110,10 +109,10 @@ export default function UpcomingAppointments() {
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-semibold leading-tight text-ink">
-              Agenda tu próxima cita médica
+              Schedule your next medical appointment
             </p>
             <p className="mt-0.5 text-[11px] leading-snug text-muted">
-              Aparecerá aquí y en tu historial con recordatorios.
+              It will show up here and in your history with reminders.
             </p>
           </div>
           <span className="text-[18px] font-light leading-none text-coral">+</span>

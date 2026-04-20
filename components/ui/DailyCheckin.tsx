@@ -6,8 +6,8 @@ import { addLog, getLogsByDate, type ProCheckInValue } from '@/lib/store/db';
 import { localDateISO } from '@/lib/dates';
 import { playUiSound } from '@/lib/sounds';
 
-const energyLabels = ['Muy baja', 'Baja', 'Regular', 'Buena', 'Muy buena'] as const;
-const fogLabels = ['Mucha niebla', 'Niebla', 'Regular', 'Claro', 'Muy claro'];
+const energyLabels = ['Very low', 'Low', 'Okay', 'Good', 'Great'] as const;
+const fogLabels = ['Heavy fog', 'Foggy', 'So-so', 'Clear', 'Razor-sharp'];
 
 function parseCheckIn(entry: {
   type: string;
@@ -62,7 +62,7 @@ export default function DailyCheckin() {
         date: today,
         timestamp: Date.now(),
         type: 'checkin',
-        label: 'Check-in diario (fatiga + niebla)',
+        label: 'Daily check-in (energy + brain fog)',
         value: val,
       });
       playUiSound('success');
@@ -85,18 +85,18 @@ export default function DailyCheckin() {
     >
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-sage">Cómo te sientes hoy</p>
-          <p className="mt-0.5 text-xs text-muted">Escala 1–5 · datos tuyos para ver tendencias</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-sage">How do you feel today</p>
+          <p className="mt-0.5 text-xs text-muted">Scale 1–5 · your data to spot trends</p>
         </div>
         {done ? (
-          <span className="rounded-full bg-sage/15 px-2.5 py-0.5 text-[10px] font-semibold text-sage">Guardado</span>
+          <span className="rounded-full bg-sage/15 px-2.5 py-0.5 text-[10px] font-semibold text-sage">Saved</span>
         ) : null}
       </div>
 
       <div className="mt-4 space-y-4">
         <div>
           <div className="mb-1.5 flex justify-between text-xs text-ink">
-            <span>Energía / fatiga</span>
+            <span>Energy / fatigue</span>
             <span className="text-muted">{energyLabels[energy - 1]}</span>
           </div>
           <input
@@ -112,7 +112,7 @@ export default function DailyCheckin() {
         </div>
         <div>
           <div className="mb-1.5 flex justify-between text-xs text-ink">
-            <span>Niebla mental</span>
+            <span>Brain fog</span>
             <span className="text-muted">{fogLabels[brainFog - 1]}</span>
           </div>
           <input
@@ -135,11 +135,11 @@ export default function DailyCheckin() {
           disabled={saving}
           className="mt-4 w-full rounded-2xl bg-ink py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-50"
         >
-          {saving ? 'Guardando…' : 'Guardar check-in de hoy'}
+          {saving ? 'Saving…' : 'Save today’s check-in'}
         </button>
       ) : (
         <p className="mt-3 text-center text-xs text-muted">
-          Energía {existing.proEnergy}/5 · Claridad {existing.proBrainFog}/5
+          Energy {existing.proEnergy}/5 · Clarity {existing.proBrainFog}/5
         </p>
       )}
     </motion.div>

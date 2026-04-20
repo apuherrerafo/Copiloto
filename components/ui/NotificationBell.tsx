@@ -29,7 +29,7 @@ export default function NotificationBell() {
     <Link
       href="/yo#alertas"
       className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-hairline/80 bg-white/80 text-ink shadow-soft backdrop-blur-sm transition-transform active:scale-95 hover:bg-white"
-      aria-label={needsAttention ? 'Alertas: activar notificaciones' : 'Alertas y perfil'}
+      aria-label={needsAttention ? 'Alerts: enable notifications' : 'Alerts and profile'}
     >
       <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth={1.75}>
         <path

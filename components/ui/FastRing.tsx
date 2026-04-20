@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   EATING_WINDOW,
   PROTOCOL,
@@ -10,6 +10,11 @@ import {
   getFastStart,
   isEatingWindow,
 } from '@/lib/protocols/julio';
+import {
+  CATEGORY_LABEL,
+  LEARNING_PHRASES,
+  pickLearningPhrase,
+} from '@/lib/content/learning';
 
 const R = 96;
 const CIRCUMFERENCE = 2 * Math.PI * R;
@@ -51,53 +56,57 @@ function phaseFromElapsed(h: number, now: Date): Phase {
   if (isEatingWindow(now)) {
     return {
       tag: 'eating',
-      label: 'Ventana de comida',
-      quote: 'Ventana activa · come limpio.',
-      lead: 'Hidrata bien y prioriza proteína real.',
+      label: 'Eating window',
+      quote: 'Eating window open · eat clean.',
+      lead: 'Hydrate well and prioritize real protein.',
     };
   }
   if (h >= PROTOCOL.fast.maxHours) {
     return {
       tag: 'over',
-      label: 'Límite de ayuno superado',
-      quote: 'Ya pasaste el límite, come con calma.',
-      lead: 'No esperes más, rompe con algo ligero.',
+      label: 'Fast limit exceeded',
+      quote: 'You passed the limit, eat calmly.',
+      lead: 'Do not wait, break with something light.',
     };
   }
   if (h >= PROTOCOL.fast.durationHours) {
     return {
       tag: 'complete',
-      label: 'Ayuno completo',
-      quote: '“Ayuno cumplido, cuerpo en calma.”',
-      lead: 'Ya puedes romper el ayuno cuando estés listo.',
+      label: 'Fast complete',
+      quote: '“Fast complete, body at peace.”',
+      lead: 'You can break the fast whenever you are ready.',
     };
   }
   if (h >= 12) {
     return {
       tag: 'burning',
-      label: 'Quemando grasa',
-      quote: `“Llevas ${Math.floor(h)} horas de ayuno, vas bien.”`,
-      lead: 'Tu cuerpo está quemando grasa.',
+      label: 'Burning fat',
+      quote: `“${Math.floor(h)} hours in, you are doing great.”`,
+      lead: 'Your body is burning fat.',
     };
   }
   if (h >= 8) {
     return {
       tag: 'glucoShift',
-      label: 'Cambiando el combustible',
-      quote: `“Vas bien, ${Math.floor(h)}h en calma.”`,
-      lead: 'Empiezas a pasar de glucosa a grasa.',
+      label: 'Switching fuel',
+      quote: `“Nice pace, ${Math.floor(h)}h steady.”`,
+      lead: 'You are shifting from glucose to fat.',
     };
   }
   return {
     tag: 'early',
-    label: 'Ayuno temprano',
-    quote: `“Vamos, ${Math.floor(h)}h listas.”`,
-    lead: 'Tu cuerpo va bajando insulina.',
+    label: 'Early fast',
+    quote: `“Keep going, ${Math.floor(h)}h locked in.”`,
+    lead: 'Your insulin is coming down.',
   };
 }
 
 export default function FastRing() {
   const [now, setNow] = useState<Date>(() => new Date());
+  const [showFact, setShowFact] = useState(false);
+  const [factIndex, setFactIndex] = useState(() =>
+    Math.floor(Math.random() * LEARNING_PHRASES.length),
+  );
 
   const refresh = useCallback(() => setNow(new Date()), []);
 
@@ -119,6 +128,20 @@ export default function FastRing() {
     };
   }, [refresh]);
 
+  // Learning carousel: 3.5s ring → 3.5s fact → ring → fact…
+  useEffect(() => {
+    const tick = () => {
+      setShowFact((prev) => {
+        if (!prev) {
+          setFactIndex((i) => (i + 1) % LEARNING_PHRASES.length);
+        }
+        return !prev;
+      });
+    };
+    const id = setInterval(tick, 3500);
+    return () => clearInterval(id);
+  }, []);
+
   const elapsed = getFastElapsed(now);
   const fastStart = getFastStart(now);
   const fastBreak = getFastBreak(fastStart);
@@ -130,7 +153,7 @@ export default function FastRing() {
   const phase = phaseFromElapsed(elapsed, now);
 
   const displayHours = Math.floor(elapsed);
-  const startLabel = isSameDay(fastStart, now) ? 'Empezó hoy' : 'Empezó ayer';
+  const startLabel = isSameDay(fastStart, now) ? 'Started today' : 'Started yesterday';
 
   const minutesToBreak = Math.max(0, Math.round((fastBreak.getTime() - now.getTime()) / 60_000));
   const { h: remH, m: remM } = hmFromMinutes(minutesToBreak);
@@ -143,15 +166,17 @@ export default function FastRing() {
     const { h: ceH, m: ceM } = hmFromMinutes(minsToClose);
     remainingLine =
       minsToClose > 60
-        ? `Cierra ventana en ${ceH} h ${ceM} min.`
-        : `Cierra ventana en ${minsToClose} min.`;
+        ? `Window closes in ${ceH} h ${ceM} min.`
+        : `Window closes in ${minsToClose} min.`;
   } else if (phase.tag === 'complete' || phase.tag === 'over') {
-    remainingLine = 'Ya puedes romper el ayuno.';
+    remainingLine = 'You can break the fast.';
   } else if (minutesToBreak > 60) {
-    remainingLine = `Puedes comer en ${remH} h ${remM} min.`;
+    remainingLine = `You can eat in ${remH} h ${remM} min.`;
   } else {
-    remainingLine = `Puedes comer en ${minutesToBreak} min.`;
+    remainingLine = `You can eat in ${minutesToBreak} min.`;
   }
+
+  const currentPhrase = pickLearningPhrase(factIndex);
 
   return (
     <motion.section
@@ -159,7 +184,7 @@ export default function FastRing() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="rounded-[22px] border border-white/70 bg-white/80 shadow-glass backdrop-blur-sm"
-      aria-label="Estado del ayuno"
+      aria-label="Fast status"
     >
       <div className="flex items-center justify-between px-5 pt-4">
         <div className="flex items-center gap-2 min-w-0">
@@ -175,11 +200,11 @@ export default function FastRing() {
             }`}
           />
           <p className="truncate text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
-            {phase.tag === 'eating' ? 'Ventana activa' : 'Ayuno activo'}
+            {phase.tag === 'eating' ? 'Eating window' : 'Fast in progress'}
           </p>
         </div>
         <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted/80">
-          Ventana {target}:{EATING_WINDOW.durationHours}
+          Window {target}:{EATING_WINDOW.durationHours}
         </p>
       </div>
 
@@ -211,7 +236,12 @@ export default function FastRing() {
           );
         })()}
 
-        <svg viewBox="0 0 220 220" className="h-full w-full -rotate-90">
+        <motion.svg
+          viewBox="0 0 220 220"
+          className="h-full w-full -rotate-90"
+          animate={{ opacity: showFact ? 0.15 : 1 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        >
           <defs>
             <linearGradient id="ringStrokeSage" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#B6DCBF" />
@@ -270,21 +300,51 @@ export default function FastRing() {
               },
             }}
           />
-        </svg>
+        </motion.svg>
 
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <motion.span
-            key={displayHours}
-            className="font-serif text-[5.5rem] italic leading-none text-ink"
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {displayHours}
-          </motion.span>
-          <span className="mt-1 text-[11px] font-medium text-muted">
-            de {target} horas
-          </span>
+        {/* Center content: hours display OR learning fact */}
+        <div className="absolute inset-0 flex items-center justify-center px-6">
+          <AnimatePresence mode="wait">
+            {showFact ? (
+              <motion.div
+                key={`fact-${factIndex}`}
+                initial={{ opacity: 0, scale: 0.9, filter: 'blur(6px)' }}
+                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 0.92, filter: 'blur(4px)' }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="flex flex-col items-center text-center"
+              >
+                <span className="mb-2 rounded-full bg-sage/15 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-sage">
+                  {CATEGORY_LABEL[currentPhrase.category]}
+                </span>
+                <p className="font-serif text-[13.5px] italic leading-snug text-ink sm:text-[14.5px]">
+                  {currentPhrase.tip}
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="hours"
+                initial={{ opacity: 0, scale: 0.92, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 0.95, filter: 'blur(3px)' }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="flex flex-col items-center"
+              >
+                <motion.span
+                  key={displayHours}
+                  className="font-serif text-[5.5rem] italic leading-none text-ink"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {displayHours}
+                </motion.span>
+                <span className="mt-1 text-[11px] font-medium text-muted">
+                  of {target} hours
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -310,7 +370,7 @@ export default function FastRing() {
           </div>
           <div className="min-w-0 text-right">
             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
-              Rompes a las
+              Break at
             </p>
             <p className="mt-0.5 font-serif text-xl italic text-ink">
               {formatHM(fastBreak)}

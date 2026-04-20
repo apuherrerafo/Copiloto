@@ -23,7 +23,7 @@ export default function EntrarPage() {
 
   useEffect(() => {
     const u = new URLSearchParams(window.location.search);
-    if (u.get('creado') === '1') setSuccess('¡Cuenta creada! Ahora entra con tu correo y contraseña.');
+    if (u.get('creado') === '1') setSuccess('Account created! Sign in with your email and password.');
   }, []);
 
   async function handleCredentials(e: React.FormEvent) {
@@ -34,7 +34,7 @@ export default function EntrarPage() {
     try {
       const res = await signIn('credentials', { email, password, redirect: false });
       if (res?.error) {
-        setErr('Correo o contraseña incorrectos. Revisa e intenta de nuevo.');
+        setErr('Incorrect email or password. Check and try again.');
         setBusy(false);
         return;
       }
@@ -46,7 +46,7 @@ export default function EntrarPage() {
         router.refresh();
       }, 2200);
     } catch {
-      setErr('No se pudo iniciar sesión. Revisa tu conexión.');
+      setErr('Couldn’t sign in. Check your connection.');
       setBusy(false);
     }
   }
@@ -57,7 +57,7 @@ export default function EntrarPage() {
     try {
       await signIn('google', { callbackUrl: '/' });
     } catch {
-      setErr('No se pudo abrir Google. Revisa GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET.');
+      setErr('Couldn’t open Google. Check GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.');
       setBusy(false);
     }
   }
@@ -80,7 +80,7 @@ export default function EntrarPage() {
             <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-sage mb-2 drop-shadow-sm">
               {APP_NAME}
             </p>
-            <p className="font-serif italic text-2xl text-ink leading-tight drop-shadow-sm">Ritmo suave, día a día</p>
+            <p className="font-serif italic text-2xl text-ink leading-tight drop-shadow-sm">Gentle rhythm, day by day</p>
             <p className="text-sm text-muted mt-2 max-w-sm leading-relaxed drop-shadow-sm">
               {APP_TAGLINE}
             </p>
@@ -114,7 +114,7 @@ export default function EntrarPage() {
           </AnimatePresence>
 
           <form onSubmit={(e) => void handleCredentials(e)} className="flex flex-col gap-2">
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted">Correo</label>
+            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted">Email</label>
             <input
               type="email"
               autoComplete="email"
@@ -122,9 +122,9 @@ export default function EntrarPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink"
-              placeholder="tu@correo.com"
+              placeholder="you@email.com"
             />
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted">Contraseña</label>
+            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted">Password</label>
             <input
               type="password"
               autoComplete="current-password"
@@ -139,14 +139,14 @@ export default function EntrarPage() {
               whileTap={{ scale: busy ? 1 : 0.98 }}
               className="w-full rounded-2xl bg-ink py-3.5 text-sm font-semibold text-white shadow-soft hover:opacity-95 transition-opacity disabled:opacity-50 mt-1"
             >
-              {busy ? 'Entrando…' : 'Entrar'}
+              {busy ? 'Signing in…' : 'Sign in'}
             </motion.button>
           </form>
 
           <p className="text-xs text-muted text-center pt-1">
-            ¿Primera vez?{' '}
+            First time here?{' '}
             <Link href="/registro" className="font-semibold text-ink underline-offset-2 hover:underline">
-              Crear cuenta
+              Create account
             </Link>
           </p>
 
@@ -154,7 +154,7 @@ export default function EntrarPage() {
             <>
               <div className="flex items-center gap-3 py-1">
                 <span className="h-px flex-1 bg-hairline" />
-                <span className="text-[10px] text-muted uppercase tracking-wider">o</span>
+                <span className="text-[10px] text-muted uppercase tracking-wider">or</span>
                 <span className="h-px flex-1 bg-hairline" />
               </div>
               <motion.button
@@ -170,14 +170,14 @@ export default function EntrarPage() {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
-                {busy ? 'Abriendo Google…' : 'Continuar con Google'}
+                {busy ? 'Opening Google…' : 'Continue with Google'}
               </motion.button>
             </>
           ) : null}
 
           <p className="text-[10px] text-muted/80 text-center leading-relaxed pt-1">
-            HypoCopilot es una ayuda para hábitos y educación: no diagnostica ni ajusta medicación. Al continuar, aceptas
-            los avisos legales que verás al entrar. Tus datos pueden sincronizarse en la nube si la cuenta lo permite.
+            HypoCopilot helps with habits and education: it does not diagnose or change medication. By continuing you
+            accept the notices you’ll see after signing in. Your data may sync to the cloud if your account allows it.
           </p>
         </div>
       </motion.div>

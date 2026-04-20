@@ -39,21 +39,21 @@ export default function HealthDisclaimerGate() {
     >
       <div className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-3xl border border-hairline bg-background px-5 py-5 shadow-lift">
         <p id="disclaimer-title" className="font-serif text-xl italic text-ink">
-          Antes de continuar
+          Before you continue
         </p>
         <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted">
           <p>
-            <strong className="text-ink">HypoCopilot no sustituye el criterio de tu médico o endocrinólogo.</strong> Es una
-            herramienta de educación y organización: no diagnostica ni modifica dosis de medicación.
+            <strong className="text-ink">HypoCopilot does not replace your doctor’s or endocrinologist’s judgment.</strong> It
+            is an education and organization tool: it does not diagnose or adjust medication doses.
           </p>
           <p>
-            <strong className="text-ink">HypoAI</strong> es inteligencia artificial y puede cometer errores. No tomes
-            decisiones clínicas urgentes solo por lo que diga el chat. Ante síntomas graves (p. ej. dolor torácico,
-            confusión súbita), acude a urgencias.
+            <strong className="text-ink">HypoAI</strong> is artificial intelligence and can make mistakes. Don’t make
+            urgent clinical decisions based only on what the chat says. For severe symptoms (e.g. chest pain, sudden
+            confusion), go to the emergency room.
           </p>
           <p>
-            Los datos sensibles de salud merecen cuidado: si activas sincronización en la nube, revisa la privacidad del
-            servicio. Puedes usar la app principalmente en tu dispositivo (PWA).
+            Sensitive health data deserves care: if you enable cloud sync, review the service’s privacy terms. You can
+            primarily use the app on your device (PWA).
           </p>
         </div>
         <button
@@ -61,10 +61,10 @@ export default function HealthDisclaimerGate() {
           onClick={accept}
           className="mt-5 w-full rounded-2xl bg-sage py-3.5 text-sm font-semibold text-white shadow-soft"
         >
-          Entiendo y continuar
+          I understand — continue
         </button>
         <p className="mt-3 text-center text-[11px] text-muted">
-          Más adelante podrás leer la política de privacidad completa en la app.
+          You’ll be able to read the full privacy policy in the app later.
         </p>
       </div>
     </div>

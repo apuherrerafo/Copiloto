@@ -8,11 +8,11 @@ import { type FeedItem } from '@/app/api/news/route';
 const TAG_FILTERS = ['todos', 'ayuno', 'tiroides', 'metabolismo', 'biohack'] as const;
 
 function tagLabel(t: string) {
-  if (t === 'todos') return 'Todos';
-  if (t === 'ayuno') return 'Ayuno IF';
-  if (t === 'tiroides') return 'Tiroides';
+  if (t === 'todos') return 'All';
+  if (t === 'ayuno') return 'Fasting';
+  if (t === 'tiroides') return 'Thyroid';
   if (t === 'biohack') return 'Biohack';
-  return 'Metabolismo';
+  return 'Metabolism';
 }
 
 export default function NewsFeed() {
@@ -65,7 +65,7 @@ export default function NewsFeed() {
         ))}
 
         {!loading && filtered.length === 0 && (
-          <p className="text-center text-muted/50 text-sm py-8">Sin artículos en esta categoría</p>
+          <p className="text-center text-muted/50 text-sm py-8">No articles in this category</p>
         )}
 
         {!loading && filtered.map((item, i) => (

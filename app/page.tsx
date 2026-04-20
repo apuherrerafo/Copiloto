@@ -88,7 +88,7 @@ export default function HoyPage() {
         </div>
 
         <div className="px-safe pb-nav-clear">
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted">Noticias</p>
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted">News</p>
           <NewsFeed />
         </div>
       </div>

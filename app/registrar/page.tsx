@@ -17,42 +17,42 @@ import {
 type EntryType = 'meal' | 'medication' | 'symptom' | 'note' | 'walking' | 'appointment';
 
 const TYPES: { key: EntryType; label: string; icon: string; color: string }[] = [
-  { key: 'meal',        label: 'Comida',     icon: '🍽️', color: 'bg-amber/10 border-amber/40 text-amber' },
-  { key: 'medication',  label: 'Medicación', icon: '💊', color: 'bg-sage/10 border-sage/40 text-sage' },
-  { key: 'walking',     label: 'Caminata',   icon: '🚶', color: 'bg-sky-100 border-sky-300 text-sky-700' },
-  { key: 'symptom',     label: 'Síntoma',    icon: '⚡', color: 'bg-coral/10 border-coral/40 text-coral' },
-  { key: 'appointment', label: 'Cita médica', icon: '🩺', color: 'bg-coral/10 border-coral/40 text-coral' },
-  { key: 'note',        label: 'Nota',       icon: '📝', color: 'bg-gray-100 border-gray-200 text-gray-600' },
+  { key: 'meal',        label: 'Meal',        icon: '🍽️', color: 'bg-amber/10 border-amber/40 text-amber' },
+  { key: 'medication',  label: 'Medication',  icon: '💊', color: 'bg-sage/10 border-sage/40 text-sage' },
+  { key: 'walking',     label: 'Walk',        icon: '🚶', color: 'bg-sky-100 border-sky-300 text-sky-700' },
+  { key: 'symptom',     label: 'Symptom',     icon: '⚡', color: 'bg-coral/10 border-coral/40 text-coral' },
+  { key: 'appointment', label: 'Appointment', icon: '🩺', color: 'bg-coral/10 border-coral/40 text-coral' },
+  { key: 'note',        label: 'Note',        icon: '📝', color: 'bg-gray-100 border-gray-200 text-gray-600' },
 ];
 
 const MOODS: { emoji: string; label: string }[] = [
-  { emoji: '😞', label: 'Muy mal' },
-  { emoji: '😕', label: 'Mal' },
-  { emoji: '😐', label: 'Regular' },
-  { emoji: '🙂', label: 'Bien' },
-  { emoji: '😊', label: 'Genial' },
+  { emoji: '😞', label: 'Awful' },
+  { emoji: '😕', label: 'Bad' },
+  { emoji: '😐', label: 'Okay' },
+  { emoji: '🙂', label: 'Good' },
+  { emoji: '😊', label: 'Great' },
 ];
 
-/** Burbujas emocionales rápidas (Gemini UX flow) */
+/** Quick emotion bubbles */
 const EMOTION_BUBBLES: { key: string; label: string; icon: string }[] = [
-  { key: 'impulso',  label: 'Impulso',  icon: '⚡' },
-  { key: 'culpa',    label: 'Culpa',    icon: '😔' },
-  { key: 'cansancio',label: 'Cansancio',icon: '😴' },
-  { key: 'claridad', label: 'Claridad', icon: '✨' },
-  { key: 'ansiedad', label: 'Ansiedad', icon: '😰' },
-  { key: 'orgullo',  label: 'Orgullo',  icon: '🏆' },
+  { key: 'impulso',  label: 'Impulse',   icon: '⚡' },
+  { key: 'culpa',    label: 'Guilt',     icon: '😔' },
+  { key: 'cansancio',label: 'Tired',     icon: '😴' },
+  { key: 'claridad', label: 'Clarity',   icon: '✨' },
+  { key: 'ansiedad', label: 'Anxiety',   icon: '😰' },
+  { key: 'orgullo',  label: 'Pride',     icon: '🏆' },
 ];
 
 const SYMPTOM_TAGS: { key: SymptomTag; label: string }[] = [
-  { key: 'fatiga',        label: 'Fatiga' },
-  { key: 'frio',          label: 'Frío' },
-  { key: 'niebla_mental', label: 'Niebla mental' },
-  { key: 'estreñimiento', label: 'Estreñimiento' },
-  { key: 'palpitaciones', label: 'Palpitaciones' },
-  { key: 'ansiedad',      label: 'Ansiedad' },
-  { key: 'dolor_cabeza',  label: 'Dolor de cabeza' },
-  { key: 'insomnio',      label: 'Insomnio' },
-  { key: 'otro',          label: 'Otro' },
+  { key: 'fatiga',        label: 'Fatigue' },
+  { key: 'frio',          label: 'Cold' },
+  { key: 'niebla_mental', label: 'Brain fog' },
+  { key: 'estreñimiento', label: 'Constipation' },
+  { key: 'palpitaciones', label: 'Palpitations' },
+  { key: 'ansiedad',      label: 'Anxiety' },
+  { key: 'dolor_cabeza',  label: 'Headache' },
+  { key: 'insomnio',      label: 'Insomnia' },
+  { key: 'otro',          label: 'Other' },
 ];
 
 const WALK_DURATIONS = [5, 10, 15, 20, 30];
@@ -61,12 +61,11 @@ const WALK_DURATIONS = [5, 10, 15, 20, 30];
 function formatLongDate(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);
   if (!y || !m || !d) return iso;
-  const s = new Date(y, m - 1, d).toLocaleDateString('es-MX', {
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
     weekday: 'long',
-    day: 'numeric',
     month: 'long',
+    day: 'numeric',
   });
-  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 /** Marca de tiempo: hoy = ahora; otro día = mediodía local (orden estable en el día). */
@@ -121,8 +120,8 @@ function RegistrarInner() {
   function handleTypeChange(t: EntryType) {
     setType(t);
     if (t === 'walking') {
-      setLabel(label || 'Caminata');
-    } else if (label === 'Caminata') {
+      setLabel(label || 'Walk');
+    } else if (label === 'Walk') {
       setLabel('');
     }
     if (t === 'appointment' && entryDate < todayISO) {
@@ -136,7 +135,7 @@ function RegistrarInner() {
     const finalLabel = isAppt
       ? apptDoctor.trim()
       : type === 'walking'
-        ? (label.trim() || 'Caminata')
+        ? (label.trim() || 'Walk')
         : label.trim();
     if (!finalLabel) return;
 
@@ -156,8 +155,8 @@ function RegistrarInner() {
         const specialty = apptSpecialty.trim();
         const bring = apptBring.trim();
         const noteParts = [
-          specialty ? `Especialidad: ${specialty}` : '',
-          bring ? `Llevar: ${bring}` : '',
+          specialty ? `Specialty: ${specialty}` : '',
+          bring ? `Bring: ${bring}` : '',
           notes.trim(),
         ].filter(Boolean);
         addAppointment({
@@ -181,7 +180,7 @@ function RegistrarInner() {
         : '';
       let extra = '';
       if (skipAbsorptionCheck && absorptionConflict) {
-        extra = `Nota: registro antes de ${LEVO_ABSORPTION_MINUTES} min tras levotiroxina (${absorptionConflict.levoTimeLabel}); decisión consciente del usuario.\n`;
+        extra = `Note: logged within ${LEVO_ABSORPTION_MINUTES} min after levothyroxine (${absorptionConflict.levoTimeLabel}); user acknowledged.\n`;
       }
       const finalNotes = `${extra}${emotionNote}${notes.trim()}`.trim() || undefined;
 
@@ -206,7 +205,7 @@ function RegistrarInner() {
       setTimeout(() => router.push('/'), 800);
     } catch (e) {
       console.error(e);
-      alert('No se pudo guardar en el dispositivo. Revisa espacio o permisos del navegador.');
+      alert('Could not save on this device. Check storage space or browser permissions.');
     } finally {
       setSaving(false);
     }
@@ -217,7 +216,7 @@ function RegistrarInner() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <p className="text-4xl mb-3">✓</p>
-          <p className="text-sage font-semibold">Registrado</p>
+          <p className="text-sage font-semibold">Saved</p>
         </div>
       </div>
     );
@@ -238,7 +237,7 @@ function RegistrarInner() {
             type="button"
             onClick={() => router.push('/')}
             className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface text-muted transition-colors hover:bg-surface/80 hover:text-ink"
-            aria-label="Ir al inicio"
+            aria-label="Back to home"
           >
             <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
               <path
@@ -249,8 +248,8 @@ function RegistrarInner() {
             </svg>
           </button>
           <div className="min-w-0 flex-1">
-            <h1 className="font-serif italic text-3xl text-ink leading-tight">Registrar</h1>
-            <p className="mt-1 text-xs text-muted capitalize">{formatLongDate(entryDate)}</p>
+            <h1 className="font-serif italic text-3xl text-ink leading-tight">Log</h1>
+            <p className="mt-1 text-xs text-muted">{formatLongDate(entryDate)}</p>
           </div>
         </div>
       </div>
@@ -259,7 +258,7 @@ function RegistrarInner() {
         {/* Fecha del registro */}
         <div>
           <label className="mb-2 block text-xs font-medium uppercase tracking-widest text-muted">
-            {type === 'appointment' ? '¿Qué día es la cita?' : '¿Para qué día?'}
+            {type === 'appointment' ? 'When is the appointment?' : 'For which day?'}
           </label>
           <input
             type="date"
@@ -271,17 +270,17 @@ function RegistrarInner() {
           />
           <p className="mt-1.5 text-[11px] leading-snug text-muted">
             {type === 'appointment'
-              ? 'La cita aparecerá en “Próximamente” en tu historial hasta que llegue el día.'
+              ? 'It will show up under “Coming up” in your history until the day arrives.'
               : entryDate === todayISO
-                ? 'Se guarda con la hora actual.'
-                : 'Se guarda en ese día (mediodía local) para que aparezca bien en el historial.'}
+                ? 'Saved with the current time.'
+                : 'Saved at local noon so it sits cleanly on that day in your history.'}
           </p>
         </div>
 
         {/* Type selector */}
         <div>
           <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
-            Tipo
+            Type
           </label>
           <div className="grid grid-cols-3 gap-2">
             {TYPES.map((t) => (
@@ -315,10 +314,10 @@ function RegistrarInner() {
             >
               <div>
                 <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
-                  Duración
+                  Duration
                 </label>
                 <p className="text-[11px] text-muted mb-2 leading-snug">
-                  10–15 min post-almuerzo o 15–20 min post-cena activan GLUT4 y reducen picos glucémicos un 12–18 %.
+                  10–15 min post-lunch or 15–20 min post-dinner activate GLUT4 and reduce glucose spikes by 12–18%.
                 </p>
                 <div className="flex gap-2">
                   {WALK_DURATIONS.map((d) => (
@@ -352,7 +351,7 @@ function RegistrarInner() {
             >
               <div>
                 <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
-                  ¿Qué sientes? (puedes elegir varios)
+                  What are you feeling? (pick several)
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {SYMPTOM_TAGS.map((st, i) => (
@@ -407,7 +406,7 @@ function RegistrarInner() {
                     transition={{ delay: 0.1, duration: 0.4 }}
                     className="text-[10px] font-bold uppercase tracking-[0.16em] text-coral"
                   >
-                    Nueva cita médica
+                    New medical appointment
                   </motion.p>
                   <motion.p
                     initial={{ opacity: 0, x: -8 }}
@@ -415,38 +414,38 @@ function RegistrarInner() {
                     transition={{ delay: 0.18, duration: 0.4 }}
                     className="mt-0.5 font-serif text-[14px] italic leading-snug text-ink"
                   >
-                    Cuéntame quién, cuándo y qué llevar.
+                    Tell me who, when and what to bring.
                   </motion.p>
                 </div>
               </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-coral">
-                Quién te atiende
+                Who will you see
               </label>
               <input
                 type="text"
                 value={apptDoctor}
                 onChange={(e) => setApptDoctor(e.target.value)}
-                placeholder="Ej. Dra. Alicia Núñez"
+                placeholder="e.g. Dr. Alice Smith"
                 className="w-full rounded-xl border border-hairline bg-white/90 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-coral"
               />
             </div>
             <div className="grid grid-cols-[1fr_auto] gap-2">
               <div>
                 <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-coral">
-                  Especialidad · motivo
+                  Specialty · reason
                 </label>
                 <input
                   type="text"
                   value={apptSpecialty}
                   onChange={(e) => setApptSpecialty(e.target.value)}
-                  placeholder="Ej. Endocrinología · control TSH"
+                  placeholder="e.g. Endocrinology · TSH follow-up"
                   className="w-full rounded-xl border border-hairline bg-white/90 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-coral"
                 />
               </div>
               <div className="w-[110px]">
                 <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-coral">
-                  Hora
+                  Time
                 </label>
                 <input
                   type="time"
@@ -458,13 +457,13 @@ function RegistrarInner() {
             </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-coral">
-                Qué llevar (opcional)
+                What to bring (optional)
               </label>
               <textarea
                 value={apptBring}
                 onChange={(e) => setApptBring(e.target.value)}
                 rows={2}
-                placeholder="Análisis T3, T4 libre, TPO, TSH…"
+                placeholder="Labs: T3, free T4, TPO, TSH…"
                 className="w-full rounded-xl border border-hairline bg-white/90 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-coral resize-none"
               />
             </div>
@@ -483,17 +482,17 @@ function RegistrarInner() {
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             >
               <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
-                {type === 'meal' ? 'Qué comiste' : type === 'medication' ? 'Medicamento' : type === 'symptom' ? 'Descripción breve' : 'Nota'}
+                {type === 'meal' ? 'What did you eat' : type === 'medication' ? 'Medication' : type === 'symptom' ? 'Brief description' : 'Note'}
               </label>
               <input
                 type="text"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder={
-                  type === 'meal' ? 'Ej. Huevos con aguacate' :
-                  type === 'medication' ? `Ej. Levotiroxina ${LEVO_DOSE_LABEL}` :
-                  type === 'symptom' ? 'Ej. Fatiga por la tarde' :
-                  'Escribe tu nota...'
+                  type === 'meal' ? 'e.g. Eggs with avocado' :
+                  type === 'medication' ? `e.g. Levothyroxine ${LEVO_DOSE_LABEL}` :
+                  type === 'symptom' ? 'e.g. Afternoon fatigue' :
+                  'Write your note…'
                 }
                 className="w-full bg-surface border border-gray-100 rounded-2xl px-4 py-3 text-ink text-sm outline-none focus:border-sage transition-colors placeholder:text-gray-300"
               />
@@ -505,10 +504,10 @@ function RegistrarInner() {
         {type !== 'appointment' && (
         <div>
           <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
-            Estado emocional rápido (opcional)
+            Quick emotional state (optional)
           </label>
           <p className="text-[11px] text-muted mb-2 leading-snug">
-            Se guarda en el historial para que mañana tu copiloto entienda el contexto sin que lo expliques de nuevo.
+            Saved in your history so tomorrow your copilot has context without you having to re-explain it.
           </p>
           <div className="flex flex-wrap gap-2">
             {EMOTION_BUBBLES.map((eb) => (
@@ -533,7 +532,7 @@ function RegistrarInner() {
         {type !== 'appointment' && (
         <div>
           <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
-            ¿Cómo te sentiste en general? (opcional)
+            How did you feel overall? (optional)
           </label>
           <div className="flex gap-2">
             {MOODS.map((m, i) => (
@@ -559,7 +558,7 @@ function RegistrarInner() {
         {type !== 'appointment' && (
         <div>
           <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
-            Notas adicionales (opcional)
+            Additional notes (optional)
           </label>
           <textarea
             value={notes}
@@ -567,8 +566,8 @@ function RegistrarInner() {
             rows={3}
             placeholder={
               type === 'walking'
-                ? 'Ej. Salí después del almuerzo, llovizna pero lo hice 💪'
-                : 'Ej. Me sentí triste porque compré fuera de plan…'
+                ? 'e.g. Went out after lunch, drizzling but I made it 💪'
+                : 'e.g. I felt sad because I snacked off plan…'
             }
             className="w-full bg-surface border border-gray-100 rounded-2xl px-4 py-3 text-ink text-sm outline-none focus:border-sage transition-colors placeholder:text-gray-300 resize-none"
           />
@@ -582,7 +581,7 @@ function RegistrarInner() {
           disabled={!canSave || saving}
           className="w-full bg-sage text-white py-4 rounded-2xl font-semibold text-sm tracking-wide disabled:opacity-40 transition-all hover:bg-sage/90"
         >
-          {saving ? 'Guardando...' : 'Guardar'}
+          {saving ? 'Saving…' : 'Save'}
         </button>
       </div>
 
@@ -595,17 +594,17 @@ function RegistrarInner() {
         >
           <div className="w-full max-w-md rounded-3xl border border-hairline bg-background px-5 py-5 shadow-lift">
             <p id="absorption-title" className="font-serif text-lg italic text-ink">
-              Ventana de absorción
+              Absorption window
             </p>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Registraste levotiroxina a las {absorptionConflict.levoTimeLabel}. Para favorecer la absorción, lo habitual
-              es esperar al menos <strong>{LEVO_ABSORPTION_MINUTES} min</strong> antes de comida o café (
-              sólo <strong>{absorptionConflict.minutesElapsed.toFixed(0)} min</strong> han pasado; faltan ~{' '}
-              {Math.ceil(absorptionConflict.minutesRemaining)} min ).
+              You took levothyroxine at {absorptionConflict.levoTimeLabel}. For best absorption, it’s common to wait at
+              least <strong>{LEVO_ABSORPTION_MINUTES} min</strong> before food or coffee (only{' '}
+              <strong>{absorptionConflict.minutesElapsed.toFixed(0)} min</strong> have passed; ~{' '}
+              {Math.ceil(absorptionConflict.minutesRemaining)} min to go).
             </p>
             <p className="mt-2 text-xs leading-relaxed text-muted/90">
-              HypoCopilot no cambia tu medicación: esto es un recordatorio educativo. Si tu endocrinólogo indicó otra
-              pauta, prevalece eso.
+              HypoCopilot does not change your medication — this is an educational reminder. If your endocrinologist
+              gave different guidance, follow theirs.
             </p>
             <div className="mt-5 flex flex-col gap-2">
               <button
@@ -613,7 +612,7 @@ function RegistrarInner() {
                 onClick={() => setAbsorptionConflict(null)}
                 className="w-full rounded-2xl bg-sage py-3 text-sm font-semibold text-white shadow-soft"
               >
-                Entendido, esperaré
+                Got it, I’ll wait
               </button>
               <button
                 type="button"
@@ -621,7 +620,7 @@ function RegistrarInner() {
                 disabled={saving}
                 className="w-full rounded-2xl border border-hairline bg-surface py-3 text-sm font-semibold text-ink"
               >
-                {saving ? 'Guardando…' : 'Guardar igual (lo tengo claro)'}
+                {saving ? 'Saving…' : 'Save anyway (I understand)'}
               </button>
             </div>
           </div>

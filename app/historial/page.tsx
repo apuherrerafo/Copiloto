@@ -25,25 +25,25 @@ type FilterKey =
   | 'note';
 
 const FILTER_ORDER: { key: FilterKey; label: string }[] = [
-  { key: 'all', label: 'Todo' },
-  { key: 'appointment', label: 'Citas' },
-  { key: 'medication', label: 'Medicación' },
-  { key: 'meal', label: 'Comidas' },
-  { key: 'symptom', label: 'Síntomas' },
-  { key: 'walking', label: 'Caminatas' },
+  { key: 'all', label: 'All' },
+  { key: 'appointment', label: 'Appointments' },
+  { key: 'medication', label: 'Medication' },
+  { key: 'meal', label: 'Meals' },
+  { key: 'symptom', label: 'Symptoms' },
+  { key: 'walking', label: 'Walks' },
   { key: 'checkin', label: 'Check-in' },
-  { key: 'note', label: 'Notas' },
+  { key: 'note', label: 'Notes' },
 ];
 
 const TYPE_LABELS: Record<string, string> = {
-  meal: 'Comida',
-  medication: 'Medicación',
-  symptom: 'Síntoma',
-  note: 'Nota',
-  fast: 'Ayuno',
-  walking: 'Caminata',
+  meal: 'Meal',
+  medication: 'Medication',
+  symptom: 'Symptom',
+  note: 'Note',
+  fast: 'Fast',
+  walking: 'Walk',
   checkin: 'Check-in',
-  appointment: 'Cita médica',
+  appointment: 'Appointment',
 };
 
 const TYPE_ICON: Record<string, (c: string) => ReactElement> = {
@@ -127,22 +127,22 @@ function formatDateLabel(iso: string): string {
   const tomISO = localDateISO(tomorrow);
 
   if (iso === todayISO) {
-    const rest = date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
-    return `Hoy, ${rest}`;
+    const rest = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    return `Today, ${rest}`;
   }
   if (iso === yestISO) {
-    const rest = date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
-    return `Ayer, ${rest}`;
+    const rest = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    return `Yesterday, ${rest}`;
   }
   if (iso === tomISO) {
-    const rest = date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
-    return `Mañana, ${rest}`;
+    const rest = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    return `Tomorrow, ${rest}`;
   }
-  return date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
 function formatTime(ts: number): string {
-  return new Date(ts).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
+  return new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 function appointmentTimestamp(apt: Appointment): number {
@@ -278,9 +278,9 @@ export default function HistorialPage() {
   return (
     <div className="home-mesh min-h-screen">
       <div className="px-safe pt-10 pb-3">
-        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted/80">Tu historia</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted/80">Your story</p>
         <h1 className="mt-1 font-serif text-[2.25rem] italic leading-[1.05] text-ink">
-          Todo lo que <span className="text-sage">cuidaste de ti</span>
+          Everything you <span className="text-sage">did for yourself</span>
         </h1>
       </div>
 
@@ -288,8 +288,8 @@ export default function HistorialPage() {
       <div className="px-safe">
         <div className="flex rounded-full border border-hairline/80 bg-white/85 p-1 shadow-soft">
           {([
-            { key: 'clinica', label: 'Historia clínica' },
-            { key: 'agenda', label: 'Agenda' },
+            { key: 'clinica', label: 'Clinical history' },
+            { key: 'agenda', label: 'Schedule' },
           ] as { key: Tab; label: string }[]).map((t) => {
             const active = tab === t.key;
             return (
@@ -352,7 +352,7 @@ export default function HistorialPage() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar en tu historial…"
+            placeholder="Search your history…"
             className="h-11 w-full rounded-full border border-hairline/80 bg-white/90 pl-9 pr-4 text-[13px] text-ink placeholder:text-muted/80 shadow-soft outline-none focus:ring-2 focus:ring-sage/30"
           />
         </label>
@@ -390,19 +390,19 @@ export default function HistorialPage() {
       </div>
 
       <div className="px-safe pb-nav-clear mt-5">
-        {loading && <p className="py-12 text-center text-sm text-muted">Cargando…</p>}
+        {loading && <p className="py-12 text-center text-sm text-muted">Loading…</p>}
 
         {!loading && upcoming.length === 0 && past.length === 0 && (
           <div className="py-16 text-center">
             <p className="mb-3 text-4xl">📋</p>
-            <p className="text-sm text-muted">Sin registros todavía</p>
-            <p className="mt-1 text-xs text-muted/70">Empieza tocando el + verde para registrar</p>
+            <p className="text-sm text-muted">No entries yet</p>
+            <p className="mt-1 text-xs text-muted/70">Tap the green + to log your first one</p>
           </div>
         )}
 
         {upcoming.length > 0 && (
           <section className="mb-7">
-            <h2 className="mb-3 font-serif text-[15px] italic text-coral">Próximamente</h2>
+            <h2 className="mb-3 font-serif text-[15px] italic text-coral">Coming up</h2>
             <ul className="relative">
               <span aria-hidden className="absolute left-[52px] top-1 bottom-1 w-px bg-hairline/90" />
               {upcoming.flatMap((day) => [
@@ -449,18 +449,17 @@ function relativeDay(iso: string): string {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diff = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (iso === todayISO) return 'Hoy';
-  if (diff === 1) return 'Mañana';
-  if (diff === -1) return 'Ayer';
+  if (iso === todayISO) return 'Today';
+  if (diff === 1) return 'Tomorrow';
+  if (diff === -1) return 'Yesterday';
   if (diff > 1 && diff < 7) {
-    const n = target.toLocaleDateString('es-MX', { weekday: 'long' });
-    return n.charAt(0).toUpperCase() + n.slice(1);
+    return target.toLocaleDateString('en-US', { weekday: 'long' });
   }
   if (diff > -7 && diff < -1) {
-    const n = target.toLocaleDateString('es-MX', { weekday: 'long' });
-    return `${n.charAt(0).toUpperCase() + n.slice(1)} pasado`;
+    const n = target.toLocaleDateString('en-US', { weekday: 'long' });
+    return `Last ${n}`;
   }
-  return target.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+  return target.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function AgendaView({
@@ -499,7 +498,7 @@ function AgendaView({
   return (
     <div className="px-safe mt-4">
       {loading ? (
-        <p className="py-12 text-center text-sm text-muted">Cargando…</p>
+        <p className="py-12 text-center text-sm text-muted">Loading…</p>
       ) : appointments.length === 0 ? (
         <div className="py-14 text-center">
           <motion.div
@@ -513,13 +512,13 @@ function AgendaView({
               <path d="M12 13v4M10 15h4" strokeLinecap="round" />
             </svg>
           </motion.div>
-          <p className="font-serif text-[18px] italic text-ink">Sin citas agendadas</p>
-          <p className="mt-1 text-[12px] text-muted/80">Cuando agendes una cita aparecerá aquí.</p>
+          <p className="font-serif text-[18px] italic text-ink">No appointments scheduled</p>
+          <p className="mt-1 text-[12px] text-muted/80">When you schedule one it will appear here.</p>
           <Link
             href="/registrar?type=appointment"
             className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-coral px-4 py-2 text-[12px] font-semibold text-white shadow-soft transition-transform active:scale-95"
           >
-            + Agendar primera cita
+            + Schedule first appointment
           </Link>
         </div>
       ) : (
@@ -528,7 +527,7 @@ function AgendaView({
           {doctorStats.length > 0 && (
             <section className="mb-5">
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
-                Tus doctores · últimas citas
+                Your doctors · recent visits
               </p>
               <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 no-scrollbar">
                 {doctorStats.map((doc, i) => (
@@ -547,7 +546,7 @@ function AgendaView({
                         {doc.name}
                       </p>
                       <p className="mt-0.5 text-[10.5px] text-muted">
-                        {doc.count} {doc.count === 1 ? 'cita' : 'citas'} · {relativeDay(doc.last)}
+                        {doc.count} {doc.count === 1 ? 'visit' : 'visits'} · {relativeDay(doc.last)}
                       </p>
                     </div>
                   </motion.div>
@@ -561,7 +560,7 @@ function AgendaView({
             <section className="mb-6">
               <h2 className="mb-3 flex items-center gap-2 font-serif text-[16px] italic text-coral">
                 <span className="h-1.5 w-1.5 rounded-full bg-coral" />
-                Próximas ({upcoming.length})
+                Upcoming ({upcoming.length})
               </h2>
               <ul className="space-y-2.5">
                 {upcoming.map((apt, i) => (
@@ -573,7 +572,7 @@ function AgendaView({
                 className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-coral/40 bg-coral/5 px-3 py-2.5 text-[12.5px] font-semibold text-coral transition-colors hover:bg-coral/10"
               >
                 <span className="text-[15px] leading-none">+</span>
-                Agendar otra cita
+                Schedule another appointment
               </Link>
             </section>
           )}
@@ -583,7 +582,7 @@ function AgendaView({
             <section className="mb-4">
               <h2 className="mb-3 flex items-center gap-2 font-serif text-[16px] italic text-muted">
                 <span className="h-1.5 w-1.5 rounded-full bg-muted/60" />
-                Pasadas ({pastApts.length})
+                Past ({pastApts.length})
               </h2>
               <ul className="space-y-2">
                 {pastApts.map((apt, i) => (
@@ -642,7 +641,7 @@ function AppointmentCard({
         {upcoming && parsed.bring && (
           <div className="mt-1.5 rounded-lg border border-coral/15 bg-coral/5 px-2.5 py-1.5">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-coral/90">
-              Recuerda llevar
+              Remember to bring
             </p>
             <p className="mt-0.5 text-[11.5px] italic leading-snug text-muted">{parsed.bring}</p>
           </div>
@@ -651,7 +650,7 @@ function AppointmentCard({
       <button
         type="button"
         onClick={() => onDelete(apt.id)}
-        aria-label="Eliminar cita"
+        aria-label="Delete appointment"
         className="ml-1 text-muted/50 transition-colors hover:text-coral"
       >
         <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -672,8 +671,8 @@ function parseAppointmentNotes(raw: string | undefined) {
   let bring = '';
   const extras: string[] = [];
   for (const p of parts) {
-    if (/^especialidad[:\s]/i.test(p)) specialty = p.replace(/^especialidad[:\s]*/i, '').trim();
-    else if (/^llevar[:\s]/i.test(p)) bring = p.replace(/^llevar[:\s]*/i, '').trim();
+    if (/^(especialidad|specialty)[:\s]/i.test(p)) specialty = p.replace(/^(especialidad|specialty)[:\s]*/i, '').trim();
+    else if (/^(llevar|bring)[:\s]/i.test(p)) bring = p.replace(/^(llevar|bring)[:\s]*/i, '').trim();
     else if (!specialty) specialty = p;
     else extras.push(p);
   }
@@ -705,7 +704,7 @@ function TimelineRow({ item }: { item: TimelineItem }) {
             <span className={`flex h-5 w-5 items-center justify-center rounded-md ${tone.tint} ${tone.text}`}>
               {iconFor('appointment', 'h-3 w-3')}
             </span>
-            <span className={`text-[10px] font-semibold uppercase tracking-wide ${tone.text}`}>Cita médica</span>
+            <span className={`text-[10px] font-semibold uppercase tracking-wide ${tone.text}`}>Appointment</span>
           </div>
           <p className="mt-1 text-[14px] font-semibold leading-snug text-ink">{apt.title}</p>
           {parsed.specialty && (
@@ -713,7 +712,7 @@ function TimelineRow({ item }: { item: TimelineItem }) {
           )}
           {parsed.bring && (
             <div className="mt-2 rounded-lg border border-coral/15 bg-coral/5 px-2.5 py-1.5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-coral/90">Recuerda llevar</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-coral/90">Remember to bring</p>
               <p className="mt-0.5 text-[12px] italic leading-snug text-muted">{parsed.bring}</p>
             </div>
           )}
@@ -755,7 +754,7 @@ function TimelineRow({ item }: { item: TimelineItem }) {
           typeof entry.value === 'object' &&
           'proEnergy' in entry.value && (
             <p className="mt-1 text-[12px] text-sage">
-              Energía {(entry.value as ProCheckInValue).proEnergy}/5 · Niebla{' '}
+              Energy {(entry.value as ProCheckInValue).proEnergy}/5 · Fog{' '}
               {(entry.value as ProCheckInValue).proBrainFog}/5
             </p>
           )}

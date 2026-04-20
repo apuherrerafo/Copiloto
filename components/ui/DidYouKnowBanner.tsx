@@ -17,7 +17,7 @@ export default function DidYouKnowBanner({ compact = false }: { compact?: boolea
   const [open, setOpen] = useState(false);
 
   function handleLearnMore() {
-    const question = `Quiero saber más sobre esto que leí hoy: "${item.fact.slice(0, 200)}…" ¿Puedes explicármelo con más detalle y conectarlo con mi protocolo de hipotiroidismo y levotiroxina?`;
+    const question = `I want to know more about this I read today: "${item.fact.slice(0, 200)}…" Can you explain it in more detail and connect it to my hypothyroidism and levothyroxine protocol?`;
     router.push(`/copiloto?q=${encodeURIComponent(question)}`);
   }
 
@@ -34,7 +34,7 @@ export default function DidYouKnowBanner({ compact = false }: { compact?: boolea
           className="mx-auto flex items-center gap-1 bg-amber/12 border border-amber/20 rounded-full px-2.5 py-0.5 text-[10px] font-semibold text-amber backdrop-blur-sm active:scale-95 transition-transform"
         >
           <span>💡</span>
-          <span>¿Sabías que?</span>
+          <span>Did you know?</span>
           <span className="text-amber/60 text-[10px] max-w-[140px] truncate hidden sm:inline">
             {item.fact.slice(0, 38)}…
           </span>
@@ -69,7 +69,7 @@ export default function DidYouKnowBanner({ compact = false }: { compact?: boolea
                 className="fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-3xl px-6 pt-5 pb-10 shadow-2xl"
               >
                 <div className="w-10 h-1 bg-ink/12 rounded-full mx-auto mb-4" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-amber mb-1">💡 ¿Sabías que?</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-amber mb-1">💡 Did you know?</p>
                 {item.evidence && (
                   <span className="inline-block text-[10px] font-medium text-muted bg-surface border border-hairline px-2 py-0.5 rounded-full mb-3">
                     {getEvidenceLabel(item.evidence)}
@@ -77,7 +77,7 @@ export default function DidYouKnowBanner({ compact = false }: { compact?: boolea
                 )}
                 <p className="text-base text-ink leading-relaxed font-medium">{item.fact}</p>
                 {item.hint && (
-                  <p className="text-[10px] text-muted mt-3">Referencia: {item.hint}</p>
+                  <p className="text-[10px] text-muted mt-3">Reference: {item.hint}</p>
                 )}
                 <div className="flex gap-3 mt-5">
                   <button
@@ -85,13 +85,13 @@ export default function DidYouKnowBanner({ compact = false }: { compact?: boolea
                     className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-sage py-3 text-sm font-semibold text-white"
                   >
                     <HypoMascot size={20} />
-                    Preguntarle a Hypo
+                    Ask Hypo
                   </button>
                   <button
                     onClick={() => setOpen(false)}
                     className="px-5 rounded-2xl border border-hairline text-sm text-muted"
                   >
-                    Cerrar
+                    Close
                   </button>
                 </div>
               </motion.div>
@@ -117,7 +117,7 @@ export default function DidYouKnowBanner({ compact = false }: { compact?: boolea
       >
         <span className="text-base shrink-0">💡</span>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-amber leading-none mb-0.5">¿Sabías que?</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-amber leading-none mb-0.5">Did you know?</p>
           <p className="text-xs text-ink font-medium leading-snug line-clamp-1 truncate">
             {item.fact.slice(0, 72)}…
           </p>
@@ -155,13 +155,13 @@ export default function DidYouKnowBanner({ compact = false }: { compact?: boolea
               )}
               <p className="text-sm text-ink leading-relaxed font-medium">{item.fact}</p>
               {item.hint && (
-                <p className="text-[10px] text-muted mt-2">Referencia: {item.hint}</p>
+                <p className="text-[10px] text-muted mt-2">Reference: {item.hint}</p>
               )}
               <button
                 onClick={handleLearnMore}
                 className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-sage hover:text-sage/80 transition-colors group"
               >
-                <span className="underline underline-offset-2 group-hover:no-underline">Preguntarle a Hypo →</span>
+                <span className="underline underline-offset-2 group-hover:no-underline">Ask Hypo →</span>
               </button>
             </div>
           </motion.div>
