@@ -80,6 +80,7 @@ export async function addLog(entry: Omit<LogEntry, 'id'>) {
   const row = { ...entry, clientId };
   const db = await getDB();
   const id = await db.add('logs', row as LogEntry);
+  invalidateLogsCache();
   if (typeof window !== 'undefined') {
     void import('@/lib/sync/push').then(({ pushLogEntry }) =>
       pushLogEntry({ ...(row as LogEntry), id: id as number }),
@@ -93,9 +94,21 @@ export async function getLogsByDate(date: string): Promise<LogEntry[]> {
   return db.getAllFromIndex('logs', 'by-date', date);
 }
 
+let _logsCache: { data: LogEntry[]; at: number } | null = null;
+const LOGS_CACHE_TTL = 30_000;
+
 export async function getAllLogs(): Promise<LogEntry[]> {
+  if (_logsCache && Date.now() - _logsCache.at < LOGS_CACHE_TTL) {
+    return _logsCache.data;
+  }
   const db = await getDB();
-  return db.getAll('logs');
+  const data = await db.getAll('logs');
+  _logsCache = { data, at: Date.now() };
+  return data;
+}
+
+export function invalidateLogsCache(): void {
+  _logsCache = null;
 }
 
 export async function addBodyEntry(entry: Omit<BodyEntry, 'id'>) {
