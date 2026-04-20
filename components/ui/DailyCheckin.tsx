@@ -2,21 +2,18 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { addLog, getLogsByDate, type ProCheckInValue } from '@/lib/store/db';
+import { addLog, getLogsByDate, type LogEntry, type ProCheckInValue } from '@/lib/store/db';
 import { localDateISO } from '@/lib/dates';
 import { playUiSound } from '@/lib/sounds';
 
 const energyLabels = ['Very low', 'Low', 'Okay', 'Good', 'Great'] as const;
 const fogLabels = ['Heavy fog', 'Foggy', 'So-so', 'Clear', 'Razor-sharp'];
 
-function parseCheckIn(entry: {
-  type: string;
-  value?: string | number | ProCheckInValue;
-}): ProCheckInValue | null {
+function parseCheckIn(entry: LogEntry): ProCheckInValue | null {
   if (entry.type !== 'checkin' || !entry.value || typeof entry.value !== 'object') return null;
-  const v = entry.value as ProCheckInValue;
+  const v = entry.value as Record<string, unknown>;
   if (typeof v.proEnergy !== 'number' || typeof v.proBrainFog !== 'number') return null;
-  return v;
+  return { proEnergy: v.proEnergy, proBrainFog: v.proBrainFog };
 }
 
 export default function DailyCheckin() {
@@ -29,7 +26,9 @@ export default function DailyCheckin() {
 
   const load = useCallback(async () => {
     const logs = await getLogsByDate(today);
-    const checkins = logs.filter((l) => l.type === 'checkin');
+    const checkins = logs.filter(
+      (l) => l.type === 'checkin' && l.label === 'Daily check-in (energy + brain fog)',
+    );
     const latest = checkins.sort((a, b) => b.timestamp - a.timestamp)[0];
     const parsed = latest ? parseCheckIn(latest) : null;
     if (parsed) {

@@ -1,7 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import AbsorptionRing from '@/components/ui/AbsorptionRing';
 import FastRing from '@/components/ui/FastRing';
+import EveningPROM from '@/components/ui/EveningPROM';
 import ProtocolTimeline from '@/components/ui/ProtocolTimeline';
 import NewsFeed from '@/components/ui/NewsFeed';
 import NotificationInit from '@/components/ui/NotificationInit';
@@ -33,6 +35,11 @@ export default function HoyPage() {
           <div className="px-safe">
             <MotivationalHeader />
 
+            {/* 0 · Post-pill absorption window (60 min from logged dose) */}
+            <div className="mt-3">
+              <AbsorptionRing />
+            </div>
+
             {/* 1 · Hero: estado del ayuno */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -51,6 +58,10 @@ export default function HoyPage() {
             {/* 3 · Check-in diario */}
             <div className="mt-5">
               <DailyCheckin />
+            </div>
+
+            <div className="mt-5">
+              <EveningPROM />
             </div>
 
             {/* 3 · Mi semana */}

@@ -64,6 +64,23 @@ export type AbsorptionConflict = {
  * Si hay levotiroxina reciente, avisa al guardar comida u otros fármacos que interfieren
  * antes de cumplir la ventana (p. ej. 60 min).
  */
+/** Latest levothyroxine log timestamp for a calendar day, or null if none. */
+export function getLastLevothyroxineTimestampForDay(logs: LogEntry[], date: string): number | null {
+  let best: number | null = null;
+  for (const e of logs) {
+    if (e.date !== date) continue;
+    if (e.type !== 'medication') continue;
+    if (!isLevothyroxineEntry(e.label)) continue;
+    if (best === null || e.timestamp > best) best = e.timestamp;
+  }
+  return best;
+}
+
+/** End of the post-pill absorption window (coffee / food per protocol). */
+export function getAbsorptionWindowEndMs(levoTakenAtMs: number): number {
+  return levoTakenAtMs + LEVO_ABSORPTION_MINUTES * 60_000;
+}
+
 export function getAbsorptionConflict(
   logs: LogEntry[],
   date: string,

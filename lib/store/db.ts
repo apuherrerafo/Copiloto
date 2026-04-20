@@ -1,4 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
+import { addDaysLocal, localDateISO } from '@/lib/dates';
 
 export type SymptomTag =
   | 'fatiga'
@@ -14,6 +15,9 @@ export type SymptomTag =
 /** Valor estructurado para check-in PRO (sincroniza en value_json). */
 export type ProCheckInValue = { proEnergy: number; proBrainFog: number };
 
+/** Evening PROM: digestive + perceived energy + clarity (1–5). */
+export type EveningPROMValue = { pmDigestive: number; pmEnergy: number; pmClarity: number };
+
 export interface LogEntry {
   id?: number;
   /** UUID estable para sincronizar con Supabase (misma fila en todos los dispositivos) */
@@ -22,7 +26,7 @@ export interface LogEntry {
   timestamp: number;
   type: 'meal' | 'medication' | 'fast' | 'symptom' | 'note' | 'walking' | 'checkin';
   label: string;
-  value?: string | number | ProCheckInValue;
+  value?: string | number | ProCheckInValue | EveningPROMValue;
   mood?: 1 | 2 | 3 | 4 | 5;
   notes?: string;
   durationMin?: number;
@@ -92,6 +96,17 @@ export async function addLog(entry: Omit<LogEntry, 'id'>) {
 export async function getLogsByDate(date: string): Promise<LogEntry[]> {
   const db = await getDB();
   return db.getAllFromIndex('logs', 'by-date', date);
+}
+
+/** Last N calendar days including today (local), merged log list (newest days first in iteration). */
+export async function getLogsForLastNDays(n: number, now = new Date()): Promise<LogEntry[]> {
+  const out: LogEntry[] = [];
+  for (let i = 0; i < n; i++) {
+    const iso = localDateISO(addDaysLocal(now, -i));
+    const day = await getLogsByDate(iso);
+    out.push(...day);
+  }
+  return out;
 }
 
 let _logsCache: { data: LogEntry[]; at: number } | null = null;

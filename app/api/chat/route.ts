@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest } from 'next/server';
-import { JULIO_SYSTEM_PROMPT, buildContextBlock } from '@/lib/protocols/julio-profile';
+import { JULIO_SYSTEM_PROMPT, buildContextBlock, buildRecentDaysBlock } from '@/lib/protocols/julio-profile';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -49,14 +49,14 @@ function sanitizeTodayLogs(raw: unknown): Array<{ type: string; label: string; t
 }
 
 export async function POST(request: NextRequest) {
-  let body: { messages?: unknown; todayLogs?: unknown; fastElapsedHours?: unknown };
+  let body: { messages?: unknown; todayLogs?: unknown; fastElapsedHours?: unknown; recentDigest?: unknown };
   try {
     body = await request.json();
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
   }
 
-  const { messages: rawMessages, todayLogs, fastElapsedHours } = body;
+  const { messages: rawMessages, todayLogs, fastElapsedHours, recentDigest } = body;
   const messages = windowMessages(normalizeMessages(rawMessages), CHAT_MESSAGE_WINDOW);
 
   if (messages.length === 0) {
@@ -67,7 +67,11 @@ export async function POST(request: NextRequest) {
   const fastRaw = typeof fastElapsedHours === 'number' ? fastElapsedHours : Number(fastElapsedHours);
   const fastNum = Number.isFinite(fastRaw) ? Math.min(48, Math.max(0, fastRaw)) : 0;
 
-  const systemPrompt = JULIO_SYSTEM_PROMPT + buildContextBlock(logs, fastNum);
+  const digestRaw = typeof recentDigest === 'string' ? recentDigest : '';
+  const digest = digestRaw.length > 14_000 ? digestRaw.slice(0, 14_000) : digestRaw;
+
+  const systemPrompt =
+    JULIO_SYSTEM_PROMPT + buildContextBlock(logs, fastNum) + buildRecentDaysBlock(digest);
 
   const model = process.env.ANTHROPIC_CHAT_MODEL?.trim() || DEFAULT_MODEL;
 

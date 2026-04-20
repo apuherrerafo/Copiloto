@@ -3,9 +3,10 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { getLogsByDate } from '@/lib/store/db';
+import { getLogsByDate, getLogsForLastNDays } from '@/lib/store/db';
 import { getFastElapsed } from '@/lib/protocols/julio';
 import { localDateISO } from '@/lib/dates';
+import { buildRecentLogsDigest } from '@/lib/chat/recent-digest';
 import { stripMarkdownForDisplay } from '@/lib/chat/sanitize-display';
 import HypoMascot from '@/components/ui/HypoMascot';
 
@@ -95,8 +96,12 @@ function CopilotoInner() {
     setStreamText('');
 
     try {
-      const todayLogs = await getLogsByDate(localDateISO());
+      const [todayLogs, weekLogs] = await Promise.all([
+        getLogsByDate(localDateISO()),
+        getLogsForLastNDays(7),
+      ]);
       const fastElapsedHours = getFastElapsed();
+      const recentDigest = buildRecentLogsDigest(weekLogs);
 
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -105,6 +110,7 @@ function CopilotoInner() {
           messages: newMessages.map(m => ({ role: m.role, content: m.content })),
           todayLogs,
           fastElapsedHours,
+          recentDigest,
         }),
       });
 

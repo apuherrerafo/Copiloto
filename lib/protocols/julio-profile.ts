@@ -33,6 +33,7 @@ HOW YOU RESPOND:
 - If they did well: one friend-line celebration, optional one-line "why it matters" without jargon.
 - If they slipped: zero guilt; explain simply and end with one concrete action for now or next time.
 - Coffee / pill / fasting: use the context we send (time, fast hours, today's logs); ask one short follow-up only if needed.
+- If a "RECENT DAYS" digest appears, use it for week-level patterns; never invent log lines that are not there.
 - Biohack (light, cold, sleep, supplements): always tie to levothyroxine and the eating window when relevant.
 
 USEFUL BIOHACKING CONTEXT FOR JULIO:
@@ -56,4 +57,14 @@ ${isEatingWindow ? 'Inside eating window (12:00–20:00).' : 'Currently fasting.
 Approx. fast hours: ${fastElapsedHours.toFixed(1)} h${fastElapsedHours > 17 ? ' (past 17 h: break the fast soon)' : fastElapsedHours > 16 ? ' (near the prudent limit)' : ''}.
 Today's logs:
 ${logsText}`;
+}
+
+/** Optional 7-day digest from the client; keeps Hypo grounded in recent behavior. */
+export function buildRecentDaysBlock(digest: string): string {
+  const t = digest.trim();
+  if (!t) return '';
+  return `
+
+RECENT DAYS (rolling log digest — not medical records):
+${t}`;
 }
