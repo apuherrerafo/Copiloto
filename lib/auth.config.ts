@@ -13,6 +13,12 @@ export const authOptions: NextAuthOptions = {
     signIn: '/entrar',
   },
   callbacks: {
+    async session({ session, token }) {
+      if (session.user && token.sub) {
+        session.user.id = token.sub;
+      }
+      return session;
+    },
     async redirect({ url, baseUrl }) {
       if (url.startsWith('/')) return `${baseUrl}${url}`;
       try {

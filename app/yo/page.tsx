@@ -9,6 +9,8 @@ import {
 import { useHypoSession } from '@/components/layout/AppShell';
 import { readSession, saveSession } from '@/lib/auth/session';
 import { LEVO_DOSE_LABEL } from '@/lib/brand';
+import { pushProfileAndProtocol } from '@/lib/sync/push';
+import { collectProtocolChecksForSync } from '@/lib/sync/protocol-collect';
 
 interface Profile {
   name: string;
@@ -53,6 +55,19 @@ export default function YoPage() {
     }
   }, [session?.name]);
 
+  useEffect(() => {
+    function onStorageSync() {
+      try {
+        const stored = localStorage.getItem('copiloto_profile');
+        if (stored) setProfile(JSON.parse(stored));
+      } catch {
+        /* ignore */
+      }
+    }
+    window.addEventListener('hypo-storage-sync', onStorageSync);
+    return () => window.removeEventListener('hypo-storage-sync', onStorageSync);
+  }, []);
+
   function save() {
     localStorage.setItem('copiloto_profile', JSON.stringify(profile));
     const s = readSession();
@@ -63,6 +78,7 @@ export default function YoPage() {
       });
       refresh();
     }
+    void pushProfileAndProtocol(profile, collectProtocolChecksForSync());
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
@@ -97,6 +113,13 @@ export default function YoPage() {
           <p className="text-sm font-semibold text-ink mt-2">{session?.name}</p>
           {session?.email ? <p className="text-xs text-muted">{session.email}</p> : null}
         </div>
+
+        <a
+          href="/api/report"
+          className="block w-full py-3 rounded-xl border border-hairline text-center text-sm font-medium text-sage hover:bg-sage/5 transition-colors"
+        >
+          Descargar informe (JSON) — memoria en la nube
+        </a>
 
         <button
           type="button"

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import BottomNav from '@/components/layout/BottomNav';
 import { clearSession, type HypoSession } from '@/lib/auth/session';
+import { clearAllLocalUserData } from '@/lib/store/clear-local';
 
 type Ctx = {
   session: HypoSession | null;
@@ -42,8 +43,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }, [update]);
 
   const logout = useCallback(() => {
-    clearSession();
-    void signOut({ callbackUrl: '/entrar' });
+    void (async () => {
+      clearSession();
+      await clearAllLocalUserData();
+      await signOut({ callbackUrl: '/entrar' });
+    })();
   }, []);
 
   useEffect(() => {

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getTodaySchedule } from '@/lib/protocols/julio';
 import { protocolCheckStorageKey } from '@/lib/protocol-checks';
 import { playUiSound } from '@/lib/sounds';
+import { scheduleProtocolPush } from '@/lib/sync/protocol-push';
 
 type Event = ReturnType<typeof getTodaySchedule>[number];
 
@@ -28,11 +29,20 @@ export default function ProtocolTimeline() {
   const events = getTodaySchedule();
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
+  function loadChecked() {
     try {
       const stored = localStorage.getItem(protocolCheckStorageKey());
       if (stored) setChecked(JSON.parse(stored));
-    } catch {}
+    } catch {
+      /* ignore */
+    }
+  }
+
+  useEffect(() => {
+    loadChecked();
+    const onRefresh = () => loadChecked();
+    window.addEventListener('copiloto-refresh', onRefresh);
+    return () => window.removeEventListener('copiloto-refresh', onRefresh);
   }, []);
 
   function toggle(key: string) {
@@ -45,6 +55,7 @@ export default function ProtocolTimeline() {
     } catch {}
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('copiloto-refresh'));
+      scheduleProtocolPush();
     }
   }
 
