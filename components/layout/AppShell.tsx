@@ -36,8 +36,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }, [router]);
 
   useEffect(() => {
-    setMounted(true);
     refresh();
+    setMounted(true);
   }, [refresh]);
 
   useEffect(() => {
@@ -52,31 +52,24 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
-        <div className="w-10 h-10 rounded-full border-2 border-sage/30 border-t-sage animate-spin" />
-        <p className="text-xs text-muted tracking-wide">HypoCopilot</p>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3 px-6">
+        <div className="w-10 h-10 rounded-full border-2 border-sage border-t-transparent animate-spin" />
+        <p className="text-xs text-ink font-medium tracking-wide">HypoCopilot</p>
+        <p className="text-[10px] text-muted text-center max-w-xs">Cargando…</p>
       </div>
     );
   }
 
-  const blocked = !session && pathname !== '/entrar';
+  /** Siempre renderizamos la ruta: el efecto redirige a /entrar si no hay sesión.
+   *  Antes ocultábamos `children` y muchos navegadores se quedaban en spinner en blanco. */
   const showNav = !!session && pathname !== '/entrar';
 
   const value: Ctx = { session, refresh, logout };
 
   return (
     <SessionContext.Provider value={value}>
-      {blocked ? (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
-          <div className="w-10 h-10 rounded-full border-2 border-sage/30 border-t-sage animate-spin" />
-          <p className="text-xs text-muted">Preparando tu sesión…</p>
-        </div>
-      ) : (
-        <>
-          {children}
-          {showNav ? <BottomNav /> : null}
-        </>
-      )}
+      {children}
+      {showNav ? <BottomNav /> : null}
     </SessionContext.Provider>
   );
 }
