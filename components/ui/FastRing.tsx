@@ -184,17 +184,32 @@ export default function FastRing() {
       </div>
 
       <div className="relative mx-auto mt-3 h-[16rem] w-[16rem] sm:h-[17rem] sm:w-[17rem]">
-        {(phase.tag === 'complete' || phase.tag === 'over') && (
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background:
-                'radial-gradient(circle, rgba(192,144,80,0.18) 0%, rgba(196,118,99,0.08) 45%, transparent 72%)',
-            }}
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        )}
+        {(() => {
+          const halo =
+            phase.tag === 'over' || phase.tag === 'complete'
+              ? 'rgba(192,144,80,0.24)'
+              : phase.tag === 'eating'
+                ? 'rgba(212,176,120,0.20)'
+                : 'rgba(91,122,101,0.24)';
+          return (
+            <motion.div
+              className="pointer-events-none absolute inset-0 rounded-full"
+              style={{
+                background: `radial-gradient(circle, ${halo} 0%, transparent 62%)`,
+              }}
+              animate={{
+                scale: [1, 1.07, 1.02, 1.1, 1],
+                opacity: [0.55, 1, 0.7, 1, 0.55],
+              }}
+              transition={{
+                duration: 1.4,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                times: [0, 0.12, 0.28, 0.42, 1],
+              }}
+            />
+          );
+        })()}
 
         <svg viewBox="0 0 220 220" className="h-full w-full -rotate-90">
           <defs>
@@ -213,12 +228,13 @@ export default function FastRing() {
               <stop offset="50%" stopColor="#C47663" />
               <stop offset="100%" stopColor="#8F4638" />
             </linearGradient>
-            <filter id="ringGlow" x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur stdDeviation="3.5" result="blur">
+            <filter id="ringGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="blur">
                 <animate
                   attributeName="stdDeviation"
-                  values="3;7.5;3"
-                  dur="2.8s"
+                  values="3;11;4;13;3"
+                  keyTimes="0;0.12;0.28;0.42;1"
+                  dur="1.4s"
                   repeatCount="indefinite"
                 />
               </feGaussianBlur>
@@ -239,11 +255,19 @@ export default function FastRing() {
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
             filter="url(#ringGlow)"
-            initial={{ strokeDashoffset: CIRCUMFERENCE, opacity: 0.75 }}
-            animate={{ strokeDashoffset: dashOffset, opacity: [0.75, 1, 0.75] }}
+            initial={{ strokeDashoffset: CIRCUMFERENCE, opacity: 0.8 }}
+            animate={{
+              strokeDashoffset: dashOffset,
+              opacity: [0.7, 1, 0.82, 1, 0.7],
+            }}
             transition={{
               strokeDashoffset: { duration: 1.15, ease: [0.22, 1, 0.36, 1], delay: 0.15 },
-              opacity: { duration: 2.8, repeat: Infinity, ease: 'easeInOut' },
+              opacity: {
+                duration: 1.4,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                times: [0, 0.12, 0.28, 0.42, 1],
+              },
             }}
           />
         </svg>

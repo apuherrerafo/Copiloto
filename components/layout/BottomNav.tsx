@@ -27,8 +27,8 @@ const tabs: Tab[] = [
     ),
   },
   {
-    href: '/copiloto',
-    label: 'Chat',
+    href: '/historial',
+    label: 'Historia',
     icon: (active) => (
       <svg
         viewBox="0 0 24 24"
@@ -37,8 +37,9 @@ const tabs: Tab[] = [
         stroke="currentColor"
         strokeWidth={active ? 2 : 1.5}
       >
-        <path d="M4 5h16a1 1 0 011 1v9a1 1 0 01-1 1h-9l-5 4v-4H4a1 1 0 01-1-1V6a1 1 0 011-1z" strokeLinejoin="round" strokeLinecap="round" />
-        <path d="M8 10h.01M12 10h.01M16 10h.01" strokeLinecap="round" strokeWidth="2.25" />
+        <path d="M7 4h8l4 4v12a1 1 0 01-1 1H7a1 1 0 01-1-1V5a1 1 0 011-1z" strokeLinejoin="round" />
+        <path d="M9 11h6M9 15h6M9 7h3" strokeLinecap="round" />
+        <path d="M14 4v4h4" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -124,22 +125,32 @@ export default function BottomNav() {
 
 function NavLink({ tab, active }: { tab: Tab; active: boolean }) {
   return (
-    <motion.div whileTap={{ scale: 0.92 }} className="min-w-0">
+    <motion.div
+      whileTap={{ scale: 0.86 }}
+      transition={{ type: 'spring', stiffness: 480, damping: 22 }}
+      className="min-w-0"
+    >
       <Link
         href={tab.href}
-        className="flex flex-col items-center gap-0.5 pb-1"
+        className="group flex flex-col items-center gap-0.5 pb-1 outline-none"
         aria-current={active ? 'page' : undefined}
       >
         <span
-          className={`relative flex h-11 w-11 items-center justify-center rounded-full transition-[box-shadow,background-color] duration-200 ${
-            active
-              ? 'bg-[rgba(255,236,179,0.95)] text-ink shadow-[0_0_0_1px_rgba(251,191,36,0.12),0_8px_24px_-8px_rgba(251,191,36,0.35)]'
-              : 'text-ink/55'
-          }`}
+          className={`relative flex h-11 w-11 items-center justify-center rounded-full transition-all duration-200 ease-out
+            group-active:scale-90 group-active:bg-sage/20 group-active:text-sage
+            ${
+              active
+                ? 'bg-sage text-white shadow-[0_6px_16px_-4px_rgba(91,122,101,0.5)] ring-2 ring-sage/30 ring-offset-2 ring-offset-background/0'
+                : 'text-ink/55 group-hover:text-ink/80'
+            }`}
         >
           {tab.icon(active)}
         </span>
-        <span className={`text-[10px] leading-none ${active ? 'font-semibold text-ink' : 'font-normal text-muted'}`}>
+        <span
+          className={`text-[10px] leading-none transition-colors ${
+            active ? 'font-semibold text-sage' : 'font-normal text-muted group-active:text-sage'
+          }`}
+        >
           {tab.label}
         </span>
       </Link>
