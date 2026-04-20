@@ -47,6 +47,8 @@ export const viewport: Viewport = {
   userScalable: false,
   /** Necesario para que env(safe-area-inset-*) funcione bien en iPhone / PWA. */
   viewportFit: 'cover',
+  /** Teclado reduce el layout (Chrome/Android); ayuda a que el chat no “salte” como página entera. */
+  interactiveWidget: 'resizes-content',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

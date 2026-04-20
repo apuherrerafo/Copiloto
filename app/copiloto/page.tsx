@@ -57,7 +57,7 @@ function CopilotoInner() {
 
   useEffect(() => {
     if (hasMessages) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
     }
   }, [messages, streamText, hasMessages]);
 
@@ -143,13 +143,23 @@ function CopilotoInner() {
 
   const showWelcome = messages.length === 0 && !loading;
 
+  /** Reserva altura en el flujo del `main` (pb-20 + safe top) mientras el chat real va `fixed` como WhatsApp. */
+  const shellSpacerH =
+    'h-[calc(100dvh-5rem-env(safe-area-inset-top,0px))] max-h-[calc(100dvh-5rem-env(safe-area-inset-top,0px))]';
+
   return (
-    <motion.div
-      className="-mb-20 flex min-h-[100dvh] flex-col bg-background"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.35 }}
-    >
+    <>
+      <div className={`-mb-20 ${shellSpacerH} shrink-0`} aria-hidden />
+      <motion.div
+        className="fixed left-0 right-0 z-[40] flex flex-col overflow-hidden bg-background"
+        style={{
+          top: 'env(safe-area-inset-top, 0px)',
+          bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))',
+        }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.35 }}
+      >
       <div className="shrink-0 border-b border-hairline bg-background px-4 pb-4 pt-12">
         <div className="flex items-center gap-3">
           <button
@@ -177,7 +187,7 @@ function CopilotoInner() {
         </p>
       </div>
 
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-y-contain px-4 py-4">
         {showWelcome && (
           <motion.div
             className="flex min-h-full flex-col items-center px-2 pb-6 pt-6 text-center"
@@ -245,10 +255,10 @@ function CopilotoInner() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder=""
+            placeholder="Write any question you have here…"
             aria-label="Write your message to HypoAI"
             rows={1}
-            className="max-h-24 flex-1 resize-none bg-transparent text-sm text-ink outline-none placeholder:text-muted/40"
+            className="max-h-24 flex-1 resize-none bg-transparent text-sm text-ink outline-none placeholder:text-muted/60"
             style={{ lineHeight: '1.5' }}
           />
           <button
@@ -266,5 +276,6 @@ function CopilotoInner() {
         <p className="mt-2 text-center text-xs text-muted/60">Enter to send · Shift+Enter for new line</p>
       </div>
     </motion.div>
+    </>
   );
 }
