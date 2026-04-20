@@ -30,7 +30,7 @@ const MESSAGES: Record<Slot, string[]> = {
     'Productive afternoon = calm night.',
     'Your body processes food better when you move after meals.',
     'Took your pill this morning? Well done. 🙌',
-    'Every meal inside the window adds up. Trend over perfection.',
+    'Light movement after lunch keeps glucose steadier this afternoon.',
     'A glass of water now breaks nothing. Quite the opposite.',
     'Today’s consistency is tomorrow’s energy.',
     'Hydration + movement + window. The triad.',

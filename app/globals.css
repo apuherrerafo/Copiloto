@@ -23,7 +23,7 @@
   /** Espacio sobre la bottom nav fija + home indicator iPhone */
   .pb-nav-clear {
     /* barra inferior + FAB + banda HypoAI (margen superior extra) */
-    padding-bottom: calc(11.25rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(12rem + env(safe-area-inset-bottom, 0px));
   }
 }
 

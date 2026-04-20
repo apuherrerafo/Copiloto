@@ -319,8 +319,8 @@ export default function FastRing() {
           />
         </svg>
 
-        {/* Center content: hours display OR learning fact */}
-        <div className="absolute inset-0 flex items-center justify-center px-6">
+        {/* Center content: hours display OR learning fact — keep copy inside the ring short */}
+        <div className="absolute inset-0 flex items-center justify-center px-4 py-3">
           <AnimatePresence mode="wait">
             {showFact ? (
               <motion.div
@@ -329,12 +329,12 @@ export default function FastRing() {
                 animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, scale: 0.92, filter: 'blur(4px)' }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="flex flex-col items-center text-center"
+                className="flex max-h-[11rem] max-w-[11.5rem] flex-col items-center overflow-hidden text-center"
               >
-                <span className="mb-2 rounded-full bg-sage/15 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-sage">
+                <span className="mb-1.5 shrink-0 rounded-full bg-sage/15 px-2.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.18em] text-sage">
                   {CATEGORY_LABEL[currentPhrase.category]}
                 </span>
-                <p className="font-serif text-[13.5px] italic leading-snug text-ink sm:text-[14.5px]">
+                <p className="line-clamp-5 font-serif text-[12px] italic leading-snug text-ink sm:text-[13px]">
                   {currentPhrase.tip}
                 </p>
               </motion.div>
@@ -345,27 +345,23 @@ export default function FastRing() {
                 animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, scale: 0.95, filter: 'blur(3px)' }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="flex flex-col items-center text-center"
+                className="flex max-w-[10rem] flex-col items-center gap-0.5 text-center"
               >
-                <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.2em] text-sage/90">
+                <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-sage/90">
                   Time in window
                 </p>
                 {minsLeftEating > 0 ? (
                   <>
-                    <p className="font-serif text-[2.75rem] italic leading-none text-ink sm:text-[3rem]">
+                    <p className="font-serif text-[2.35rem] italic leading-none text-ink sm:text-[2.5rem]">
                       {cdH > 0 ? `${cdH}h ` : ''}
                       {cdM}m
                     </p>
-                    <span className="mt-2 max-w-[11rem] text-[11px] font-medium leading-snug text-muted">
-                      left until dinner / last meal — then the {target} h fast is what the ring measures.
-                    </span>
+                    <p className="mt-0.5 text-[10px] leading-tight text-muted">Until last meal</p>
                   </>
                 ) : (
                   <>
-                    <p className="font-serif text-2xl italic leading-tight text-ink">All set</p>
-                    <span className="mt-2 max-w-[11rem] text-[11px] leading-snug text-muted">
-                      Window at the end of the day — your overnight fast will show as hours after last meal.
-                    </span>
+                    <p className="font-serif text-xl italic leading-tight text-ink">All set</p>
+                    <p className="mt-0.5 text-[10px] leading-tight text-muted">Fast ring starts after last meal</p>
                   </>
                 )}
               </motion.div>

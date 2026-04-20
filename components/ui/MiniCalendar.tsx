@@ -1,16 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { localDateISO, addDaysLocal } from '@/lib/dates';
 import { getTodaySchedule } from '@/lib/protocols/julio';
 import {
   loadAppointments,
-  addAppointment,
   removeAppointment,
   TYPE_LABELS,
-  type AppointmentType,
   type Appointment,
+  type AppointmentType,
 } from '@/lib/store/appointments';
 
 const PROTOCOL_EVENTS = getTodaySchedule();
@@ -136,7 +135,6 @@ export default function MiniCalendar() {
   const [days] = useState(() => buildDays(today));
   const [checksMap, setChecksMap] = useState<Record<string, DayChecks>>({});
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [showAdd, setShowAdd] = useState(false);
   const [protocolOpen, setProtocolOpen] = useState(false);
   const stripRef = useRef<HTMLDivElement>(null);
 
@@ -316,7 +314,7 @@ export default function MiniCalendar() {
           {/* Future: show placeholder */}
           {isFuture && !selApts.length && (
             <p className="rounded-lg border border-dashed border-hairline/70 bg-white/35 px-3 py-1.5 text-center text-[11px] text-muted">
-              Future day — add an event below
+              Future day
             </p>
           )}
 
@@ -339,128 +337,8 @@ export default function MiniCalendar() {
             </div>
           ))}
 
-          {/* Add appointment button */}
-          <button
-            onClick={() => setShowAdd(true)}
-            className="flex w-full items-center justify-center gap-1 py-0.5 text-[10px] font-semibold text-sage hover:opacity-80 transition-opacity"
-          >
-            <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-sage/15 text-[10px] leading-none">+</span>
-            Appointment or event
-          </button>
         </motion.div>
       </AnimatePresence>
-
-      {/* Add appointment sheet */}
-      <AnimatePresence>
-        {showAdd && (
-          <AddAppointmentSheet
-            defaultDate={selected}
-            onSave={(apt) => { addAppointment(apt); reloadApts(); setShowAdd(false); }}
-            onClose={() => setShowAdd(false)}
-          />
-        )}
-      </AnimatePresence>
     </div>
-  );
-}
-
-const APT_TYPES: { value: AppointmentType; label: string }[] = [
-  { value: 'medico', label: '🩺 Doctor' },
-  { value: 'examen', label: '🔬 Exam' },
-  { value: 'lab',    label: '🧪 Lab' },
-  { value: 'otro',   label: '📅 Other' },
-];
-
-function AddAppointmentSheet({
-  defaultDate,
-  onSave,
-  onClose,
-}: {
-  defaultDate: string;
-  onSave: (apt: Omit<Appointment, 'id'>) => void;
-  onClose: () => void;
-}) {
-  const [title, setTitle]   = useState('');
-  const [date, setDate]     = useState(defaultDate);
-  const [time, setTime]     = useState('');
-  const [type, setType]     = useState<AppointmentType>('medico');
-  const [notes, setNotes]   = useState('');
-
-  const handleSave = useCallback(() => {
-    if (!title.trim() || !date) return;
-    onSave({ title: title.trim(), date, time: time || undefined, type, notes: notes.trim() || undefined });
-  }, [title, date, time, type, notes, onSave]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-ink/40 flex items-end"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <motion.div
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-        className="w-full bg-background rounded-t-3xl px-6 pt-5 pb-10 space-y-4"
-      >
-        <div className="flex items-center justify-between">
-          <p className="font-serif italic text-lg text-ink">New appointment / event</p>
-          <button onClick={onClose} className="text-muted text-xl leading-none">✕</button>
-        </div>
-
-        <div>
-          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Title</label>
-          <input
-            type="text" value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Endocrinologist, TSH, Ultrasound"
-            className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink"
-            autoFocus
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Date</label>
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink" />
-          </div>
-          <div>
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Time (optional)</label>
-            <input type="time" value={time} onChange={(e) => setTime(e.target.value)}
-              className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink" />
-          </div>
-        </div>
-
-        <div>
-          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Type</label>
-          <div className="grid grid-cols-4 gap-1.5">
-            {APT_TYPES.map((t) => (
-              <button key={t.value} type="button" onClick={() => setType(t.value)}
-                className={`rounded-xl border py-2 text-xs font-medium transition-colors ${
-                  type === t.value ? 'border-sage bg-sage/10 text-sage' : 'border-hairline bg-white text-muted'
-                }`}>
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted block mb-1">Notes (optional)</label>
-          <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)}
-            placeholder="e.g. fasting, bring lab results"
-            className="w-full rounded-2xl border border-hairline bg-white px-4 py-3 text-sm text-ink" />
-        </div>
-
-        <button onClick={handleSave} disabled={!title.trim() || !date}
-          className="w-full rounded-2xl bg-sage py-3.5 text-sm font-semibold text-white disabled:opacity-40 transition-opacity">
-          Save
-        </button>
-      </motion.div>
-    </motion.div>
   );
 }
