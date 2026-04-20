@@ -166,7 +166,8 @@ export default function EntrarPage() {
           ) : null}
 
           <p className="text-[10px] text-muted/80 text-center leading-relaxed pt-1">
-            Tus datos se sincronizan en la nube y están disponibles desde cualquier dispositivo.
+            HypoCopilot es una ayuda para hábitos y educación: no diagnostica ni ajusta medicación. Al continuar, aceptas
+            los avisos legales que verás al entrar. Tus datos pueden sincronizarse en la nube si la cuenta lo permite.
           </p>
         </div>
       </motion.div>

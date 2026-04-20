@@ -26,6 +26,8 @@ const config: Config = {
       },
       boxShadow: {
         soft: '0 1px 2px rgba(31, 36, 32, 0.06), 0 8px 24px rgba(31, 36, 32, 0.06)',
+        lift: '0 4px 6px rgba(31, 36, 32, 0.04), 0 16px 40px -12px rgba(31, 36, 32, 0.12)',
+        glass: '0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 12px 32px -8px rgba(31, 36, 32, 0.1)',
       },
       keyframes: {
         'fade-up': {

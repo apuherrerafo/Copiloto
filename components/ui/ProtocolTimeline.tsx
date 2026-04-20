@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { getTodaySchedule } from '@/lib/protocols/julio';
 import { protocolCheckStorageKey } from '@/lib/protocol-checks';
 import { playUiSound } from '@/lib/sounds';
@@ -60,56 +62,86 @@ export default function ProtocolTimeline() {
   }
 
   return (
-    <div className="space-y-2">
-      {events.map((ev: Event, i: number) => {
-        const past = isPast(ev.time);
-        const current = isCurrent(ev.time, events[i + 1]?.time);
-        const done = !!checked[ev.key];
+    <div className="rounded-[1.75rem] border border-white/60 bg-white/70 p-5 shadow-lift backdrop-blur-md">
+      <div className="mb-4 flex items-end justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted">Hoy</p>
+          <h2 className="font-serif text-xl italic text-ink">Plan del día</h2>
+        </div>
+        <Link
+          href="/registrar"
+          className="shrink-0 rounded-full border border-sage/25 bg-sage/10 px-3 py-1.5 text-xs font-semibold text-sage transition-colors hover:bg-sage/15"
+        >
+          Registrar
+        </Link>
+      </div>
 
-        return (
-          <button
-            key={ev.key}
-            onClick={() => toggle(ev.key)}
-            className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl border transition-all text-left ${
-              done
-                ? 'bg-sage/10 border-sage/30'
-                : current
-                ? 'bg-surface border-sage shadow-sm'
-                : 'bg-surface border-gray-100'
-            }`}
-          >
-            {/* Time */}
-            <span className={`text-sm font-medium w-12 shrink-0 ${
-              current ? 'text-sage' : past ? 'text-gray-400' : 'text-gray-300'
-            }`}>
-              {ev.time}
-            </span>
+      <motion.div
+        className="space-y-2.5"
+        initial="hidden"
+        animate="show"
+        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
+      >
+        {events.map((ev: Event, i: number) => {
+          const past = isPast(ev.time);
+          const current = isCurrent(ev.time, events[i + 1]?.time);
+          const done = !!checked[ev.key];
 
-            {/* Icon */}
-            <span className="text-lg w-7 shrink-0 text-center">
-              {ICONS[ev.type]}
-            </span>
+          return (
+            <motion.button
+              key={ev.key}
+              variants={{
+                hidden: { opacity: 0, y: 12 },
+                show: { opacity: 1, y: 0, transition: { ease: [0.22, 1, 0.36, 1], duration: 0.42 } },
+              }}
+              onClick={() => toggle(ev.key)}
+              className={`flex w-full items-center gap-3 rounded-3xl border px-3.5 py-3.5 text-left shadow-soft transition-all active:scale-[0.99] ${
+                done
+                  ? 'border-sage/30 bg-sage/10'
+                  : current
+                    ? 'border-sage/40 bg-white shadow-lift'
+                    : 'border-hairline/80 bg-white/90'
+              }`}
+            >
+              <span
+                className={`flex w-11 shrink-0 justify-center font-mono text-sm font-semibold ${
+                  current ? 'text-sage' : past ? 'text-muted' : 'text-muted/25'
+                }`}
+              >
+                {ev.time}
+              </span>
 
-            {/* Label */}
-            <span className={`flex-1 text-sm font-medium ${
-              done ? 'text-sage line-through' : current ? 'text-ink' : 'text-gray-400'
-            }`}>
-              {ev.label}
-            </span>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-background text-lg ring-1 ring-hairline">
+                {ICONS[ev.type]}
+              </span>
 
-            {/* Check */}
-            <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-              done ? 'bg-sage border-sage' : 'border-gray-200'
-            }`}>
-              {done && (
-                <svg viewBox="0 0 10 10" className="w-3 h-3 text-white" stroke="currentColor" strokeWidth="1.8" fill="none">
-                  <path d="M1.5 5L4 7.5L8.5 2.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
-            </span>
-          </button>
-        );
-      })}
+              <span
+                className={`min-w-0 flex-1 text-sm font-medium leading-snug ${
+                  done ? 'text-sage line-through decoration-sage/40' : current ? 'text-ink' : 'text-muted'
+                }`}
+              >
+                {ev.label}
+              </span>
+
+              <span
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                  done ? 'border-sage bg-sage' : 'border-hairline bg-white'
+                }`}
+              >
+                {done ? (
+                  <svg viewBox="0 0 10 10" className="h-3 w-3 text-white" stroke="currentColor" strokeWidth="1.8" fill="none">
+                    <path d="M1.5 5L4 7.5L8.5 2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 8 12" className="h-3 w-2 text-muted/35" fill="none" stroke="currentColor" strokeWidth="1.6">
+                    <path d="M2 2l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </span>
+            </motion.button>
+          );
+        })}
+      </motion.div>
     </div>
   );
 }

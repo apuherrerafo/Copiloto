@@ -27,6 +27,10 @@ Thumbs.db
 .vscode/
 *.swp
 
+# TypeScript incremental (local)
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
 # next-pwa (se regeneran con `npm run build`)
 public/sw.js
 public/workbox-*.js

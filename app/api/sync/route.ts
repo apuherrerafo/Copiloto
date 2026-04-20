@@ -9,7 +9,7 @@ type LogPayload = {
   timestamp: number;
   type: string;
   label: string;
-  value?: string | number;
+  value?: string | number | Record<string, unknown>;
   mood?: number;
   notes?: string;
   durationMin?: number;

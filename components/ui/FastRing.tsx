@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { getFastElapsed, PROTOCOL } from '@/lib/protocols/julio';
 import { loadProtocolChecks } from '@/lib/protocol-checks';
 
@@ -15,10 +16,10 @@ const MILESTONES: { key: string; short: string }[] = [
   { key: 'walkDinner', short: 'Paseo' },
 ];
 
-function ringColor(hours: number) {
-  if (hours >= PROTOCOL.fast.maxHours) return '#C47663';
-  if (hours >= PROTOCOL.fast.durationHours) return '#C09050';
-  return '#5B7A65';
+function ringStrokeColor(hours: number) {
+  if (hours >= PROTOCOL.fast.maxHours) return 'url(#ringStrokeCoral)';
+  if (hours >= PROTOCOL.fast.durationHours) return 'url(#ringStrokeAmber)';
+  return 'url(#ringStrokeSage)';
 }
 
 function formatDuration(hours: number) {
@@ -58,7 +59,7 @@ export default function FastRing() {
   const max = PROTOCOL.fast.maxHours;
   const progress = Math.min(elapsed / target, 1);
   const dashOffset = CIRCUMFERENCE * (1 - progress);
-  const color = ringColor(elapsed);
+  const stroke = ringStrokeColor(elapsed);
   const { h, m } = formatDuration(elapsed);
 
   const overLimit = elapsed >= max;
@@ -72,64 +73,133 @@ export default function FastRing() {
   const doneCount = MILESTONES.filter((s) => checks[s.key]).length;
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="relative w-52 h-52">
-        <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90">
-          <circle cx="100" cy="100" r={R} fill="none" stroke="#E8E5E0" strokeWidth="10" />
-          <circle
+    <motion.div
+      className="flex flex-col items-center"
+      initial={{ opacity: 0, scale: 0.88 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="relative h-[13.5rem] w-[13.5rem] sm:h-60 sm:w-60">
+        {(atTarget || overLimit) && (
+          <motion.div
+            className="absolute inset-0 rounded-full"
+            style={{
+              background:
+                'radial-gradient(circle, rgba(91,122,101,0.18) 0%, rgba(192,144,80,0.08) 40%, transparent 70%)',
+            }}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        )}
+
+        <svg viewBox="0 0 200 200" className="h-full w-full -rotate-90">
+          <defs>
+            <linearGradient id="ringStrokeSage" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#9BB8A3" />
+              <stop offset="100%" stopColor="#5B7A65" />
+            </linearGradient>
+            <linearGradient id="ringStrokeAmber" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#D4B078" />
+              <stop offset="100%" stopColor="#C09050" />
+            </linearGradient>
+            <linearGradient id="ringStrokeCoral" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#D4988A" />
+              <stop offset="100%" stopColor="#C47663" />
+            </linearGradient>
+          </defs>
+          <circle cx="100" cy="100" r={R} fill="none" stroke="#E8E5E0" strokeWidth="11" />
+          <motion.circle
             cx="100"
             cy="100"
             r={R}
             fill="none"
-            stroke={color}
-            strokeWidth="10"
+            stroke={stroke}
+            strokeWidth="11"
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={dashOffset}
-            style={{ transition: 'stroke-dashoffset 0.6s ease, stroke 0.4s ease' }}
+            initial={{ strokeDashoffset: CIRCUMFERENCE }}
+            animate={{ strokeDashoffset: dashOffset }}
+            transition={{ duration: 1.15, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
           />
         </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-serif italic text-4xl text-ink leading-none">
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
+          <motion.span
+            className="font-serif text-4xl italic leading-none text-ink"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          >
             {h}
-            <span className="text-2xl">h</span>
-            {m > 0 && (
-              <span className="text-2xl ml-0.5">
-                {m}m
-              </span>
-            )}
+            <span className="text-2xl not-italic">h</span>
+            {m > 0 && <span className="text-2xl not-italic ml-0.5">{m}m</span>}
+          </motion.span>
+          <span className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.2em] text-muted/80">
+            ayuno
           </span>
-          <span className="text-xs text-muted mt-1 tracking-wide">ayuno</span>
+          <p className="mt-2 font-serif text-xs italic leading-snug text-muted">
+            Pequeños pasos, metabolismo en calma.
+          </p>
         </div>
       </div>
-      <p
-        className={`text-sm font-medium mt-1 ${
+
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.45, duration: 0.35 }}
+        className={`mt-2 text-sm font-semibold ${
           overLimit ? 'text-coral' : atTarget ? 'text-amber' : 'text-sage'
         }`}
       >
         {statusLabel}
-      </p>
-      <div className="flex gap-2 mt-3 justify-center flex-wrap max-w-[220px]">
+      </motion.p>
+
+      <motion.p
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.35 }}
+        className="mt-3 text-center text-[9px] font-bold uppercase tracking-[0.16em] text-muted"
+      >
+        Total completado
+      </motion.p>
+
+      <motion.div
+        className="mt-1.5 flex max-w-[260px] flex-wrap justify-center gap-1.5"
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: {},
+          show: { transition: { staggerChildren: 0.07, delayChildren: 0.48 } },
+        }}
+      >
         {MILESTONES.map((s) => {
           const on = !!checks[s.key];
           return (
-            <span
+            <motion.span
               key={s.key}
-              className={`text-[10px] font-semibold px-2 py-1 rounded-full border transition-colors ${
-                on ? 'bg-sage/15 border-sage/40 text-sage' : 'bg-surface border-hairline text-muted'
+              variants={{
+                hidden: { opacity: 0, scale: 0.82 },
+                show: { opacity: 1, scale: 1, transition: { ease: [0.22, 1, 0.36, 1], duration: 0.32 } },
+              }}
+              className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold transition-colors ${
+                on ? 'border-sage/40 bg-sage/12 text-sage' : 'border-hairline/80 bg-white/60 text-muted backdrop-blur-sm'
               }`}
             >
               {s.short}
               {on ? ' ✓' : ''}
-            </span>
+            </motion.span>
           );
         })}
-      </div>
-      {doneCount > 0 && (
-        <p className="text-[10px] text-muted mt-2 text-center max-w-xs">
-          Protocolo: {doneCount}/{MILESTONES.length} marcados hoy · el anillo sigue el reloj (última comida 20:00)
-        </p>
-      )}
-    </div>
+      </motion.div>
+
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.82 }}
+        className="mt-2 max-w-xs text-center text-[10px] font-medium text-muted"
+      >
+        {doneCount}/{MILESTONES.length} del protocolo hoy
+      </motion.p>
+    </motion.div>
   );
 }

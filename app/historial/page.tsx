@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAllLogs, type LogEntry } from '@/lib/store/db';
+import { getAllLogs, type LogEntry, type ProCheckInValue } from '@/lib/store/db';
 import { localDateISO } from '@/lib/dates';
 
 type GroupedDay = {
@@ -17,6 +17,7 @@ const TYPE_ICONS: Record<string, string> = {
   note: '📝',
   fast: '⏱️',
   walking: '🚶',
+  checkin: '📊',
 };
 
 const MOODS = ['😞', '😕', '😐', '🙂', '😊'];
@@ -29,6 +30,7 @@ const TYPE_LABELS: Record<string, string> = {
   note: 'Nota',
   fast: 'Ayuno',
   walking: 'Caminata',
+  checkin: 'Check-in PRO',
 };
 
 function formatDateLabel(iso: string): string {
@@ -119,6 +121,15 @@ export default function HistorialPage() {
                       </span>
                     </div>
                     <p className="text-ink text-sm font-medium leading-snug">{entry.label}</p>
+                    {entry.type === 'checkin' &&
+                      entry.value &&
+                      typeof entry.value === 'object' &&
+                      'proEnergy' in entry.value && (
+                        <p className="text-xs text-sage mt-1 font-medium">
+                          Energía {(entry.value as ProCheckInValue).proEnergy}/5 · Niebla/claridad{' '}
+                          {(entry.value as ProCheckInValue).proBrainFog}/5
+                        </p>
+                      )}
                     {entry.type === 'walking' && entry.durationMin != null && (
                       <p className="text-xs text-sky-600 mt-1 font-medium">⏱ {entry.durationMin} min</p>
                     )}

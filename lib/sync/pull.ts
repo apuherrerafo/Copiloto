@@ -1,5 +1,19 @@
 import { getDB } from '@/lib/store/db';
-import type { LogEntry, BodyEntry, SymptomTag } from '@/lib/store/db';
+import type { LogEntry, BodyEntry, SymptomTag, ProCheckInValue } from '@/lib/store/db';
+
+function mapValueJson(raw: unknown): LogEntry['value'] {
+  if (raw === null || raw === undefined) return undefined;
+  if (typeof raw === 'string' || typeof raw === 'number') return raw;
+  if (typeof raw === 'object' && raw !== null && 'proEnergy' in raw && 'proBrainFog' in raw) {
+    const o = raw as Record<string, unknown>;
+    const pe = Number(o.proEnergy);
+    const pb = Number(o.proBrainFog);
+    if (Number.isFinite(pe) && Number.isFinite(pb)) {
+      return { proEnergy: pe, proBrainFog: pb } as ProCheckInValue;
+    }
+  }
+  return undefined;
+}
 
 function mapLogRow(row: Record<string, unknown>): Omit<LogEntry, 'id'> {
   const tags = row.symptom_tags as string[] | null;
@@ -9,7 +23,7 @@ function mapLogRow(row: Record<string, unknown>): Omit<LogEntry, 'id'> {
     timestamp: Number(row.timestamp_ms),
     type: row.type as LogEntry['type'],
     label: String(row.label),
-    value: row.value_json === null || row.value_json === undefined ? undefined : (row.value_json as string | number),
+    value: mapValueJson(row.value_json),
     mood: row.mood != null ? (Number(row.mood) as 1 | 2 | 3 | 4 | 5) : undefined,
     notes: row.notes != null ? String(row.notes) : undefined,
     durationMin: row.duration_min != null ? Number(row.duration_min) : undefined,

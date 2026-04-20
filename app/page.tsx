@@ -1,3 +1,7 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import Link from 'next/link';
 import FastRing from '@/components/ui/FastRing';
 import ProtocolTimeline from '@/components/ui/ProtocolTimeline';
 import NewsFeed from '@/components/ui/NewsFeed';
@@ -7,63 +11,80 @@ import YesterdayCoach from '@/components/ui/YesterdayCoach';
 import DidYouKnowBanner from '@/components/ui/DidYouKnowBanner';
 import MiniCalendar from '@/components/ui/MiniCalendar';
 import MotivationalHeader from '@/components/ui/MotivationalHeader';
-import Link from 'next/link';
+import DailyCheckin from '@/components/ui/DailyCheckin';
+import AlarmsPanel from '@/components/ui/AlarmsPanel';
 
 export default function HoyPage() {
   return (
     <PageEnter>
-    <div className="min-h-screen bg-background">
-      <NotificationInit />
+      <div className="home-mesh min-h-screen">
+        <NotificationInit />
 
-      <MotivationalHeader />
+        <div className="relative overflow-hidden">
+          <div
+            className="pointer-events-none absolute inset-0 opacity-90"
+            style={{
+              background:
+                'radial-gradient(ellipse 100% 55% at 50% 100%, rgba(255,255,255,0.5) 0%, transparent 55%)',
+            }}
+          />
 
-      {/* ¿Sabías que? — banner hero principal */}
-      <DidYouKnowBanner />
+          <MotivationalHeader />
 
-      <YesterdayCoach />
+          <DailyCheckin />
 
-      {/* Calendario + citas — justo debajo del banner */}
-      <div className="mb-2">
-        <p className="text-[10px] text-muted uppercase tracking-widest font-medium px-6 mb-2">Calendario</p>
-        <MiniCalendar />
-      </div>
+          {/* 3 · Mi semana */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.06, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-0"
+          >
+            <MiniCalendar />
+          </motion.div>
 
-      <div className="mx-6 border-t border-hairline mb-4" />
+          {/* 4 · ¿Sabías que? + anillo */}
+          <div className="mt-2 flex flex-col items-center gap-2 px-5 pb-0 pt-1">
+            <DidYouKnowBanner compact />
+            <FastRing />
+          </div>
 
-      {/* Anillo de ayuno (hoy) */}
-      <div className="flex justify-center py-4">
-        <FastRing />
-      </div>
-
-      {/* Ventana de ayuno + registrar */}
-      <div className="px-6 mb-5 flex gap-3">
-        <div className="flex-1 bg-surface rounded-card px-4 py-3 border border-hairline shadow-soft">
-          <p className="text-[10px] text-muted uppercase tracking-widest font-medium">Ayuno</p>
-          <p className="text-ink font-semibold text-sm mt-0.5">20:00 → 12:00 · 16h</p>
-          <p className="text-[10px] text-muted mt-0.5">Comer: 12:00 – 20:00</p>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="mx-auto mb-5 mt-3 flex max-w-sm justify-center px-5"
+          >
+            <div className="flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-full border border-white/70 bg-white/55 px-5 py-2.5 text-center shadow-glass backdrop-blur-md">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">Ayuno</span>
+              <span className="text-[11px] font-bold text-ink">20:00 → 12:00 · 16 h</span>
+              <span className="hidden h-3 w-px bg-hairline sm:block" />
+              <span className="text-[11px] text-muted">Comer 12–20 h</span>
+              <Link
+                href="/registrar"
+                className="ml-1 rounded-full bg-sage px-3 py-1 text-[11px] font-semibold text-white shadow-soft transition-transform active:scale-95"
+              >
+                + Registrar
+              </Link>
+            </div>
+          </motion.div>
         </div>
-        <Link href="/registrar" className="flex-none bg-sage text-white px-5 rounded-card font-semibold text-sm flex items-center gap-1.5 shadow-soft active:scale-[0.98] transition-transform">
-          <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-            <path d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"/>
-          </svg>
-          Registrar
-        </Link>
-      </div>
 
-      <div className="mx-6 border-t border-hairline mb-4" />
+        <YesterdayCoach />
 
-      {/* Protocolo del día */}
-      <div className="px-6 mb-6">
-        <p className="text-[10px] text-muted uppercase tracking-widest font-medium mb-2">Protocolo de hoy</p>
-        <ProtocolTimeline />
-      </div>
+        <AlarmsPanel />
 
-      {/* Feed RSS */}
-      <div className="px-6 pb-28">
-        <p className="text-[10px] text-muted uppercase tracking-widest font-medium mb-1">Noticias</p>
-        <NewsFeed />
+        <div className="mx-5 mb-5 border-t border-hairline/80" />
+
+        <div className="mx-4 mb-8">
+          <ProtocolTimeline />
+        </div>
+
+        <div className="mx-5 pb-28">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted">Noticias</p>
+          <NewsFeed />
+        </div>
       </div>
-    </div>
     </PageEnter>
   );
 }

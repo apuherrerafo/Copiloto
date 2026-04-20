@@ -2,10 +2,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { addLog, type SymptomTag } from '@/lib/store/db';
-import { localDateISO } from '@/lib/dates';
+import { addLog, getLogsByDate, type SymptomTag } from '@/lib/store/db';
+import { localDateISO, addDaysLocal } from '@/lib/dates';
 import { LEVO_DOSE_LABEL } from '@/lib/brand';
 import { playUiSound } from '@/lib/sounds';
+import {
+  getAbsorptionConflict,
+  LEVO_ABSORPTION_MINUTES,
+  type AbsorptionConflict,
+} from '@/lib/protocols/absorption';
 
 type EntryType = 'meal' | 'medication' | 'symptom' | 'note' | 'walking';
 
@@ -49,8 +54,30 @@ const SYMPTOM_TAGS: { key: SymptomTag; label: string }[] = [
 
 const WALK_DURATIONS = [5, 10, 15, 20, 30];
 
+/** Etiqueta legible para YYYY-MM-DD en local */
+function formatLongDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  const s = new Date(y, m - 1, d).toLocaleDateString('es-MX', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/** Marca de tiempo: hoy = ahora; otro día = mediodía local (orden estable en el día). */
+function timestampForEntryDate(entryDateIso: string): number {
+  if (entryDateIso === localDateISO()) return Date.now();
+  const [y, m, d] = entryDateIso.split('-').map(Number);
+  return new Date(y, m - 1, d, 12, 0, 0, 0).getTime();
+}
+
 export default function RegistrarPage() {
   const router = useRouter();
+  const todayISO = localDateISO();
+  const oldestISO = localDateISO(addDaysLocal(new Date(), -365));
+  const [entryDate, setEntryDate] = useState(todayISO);
   const [type, setType] = useState<EntryType>('meal');
   const [label, setLabel] = useState('');
   const [mood, setMood] = useState<number | null>(null);
@@ -60,6 +87,7 @@ export default function RegistrarPage() {
   const [emotionBubble, setEmotionBubble] = useState<string | null>(null);
   const [selectedSymptomTags, setSelectedSymptomTags] = useState<SymptomTag[]>([]);
   const [walkDuration, setWalkDuration] = useState<number>(15);
+  const [absorptionConflict, setAbsorptionConflict] = useState<AbsorptionConflict | null>(null);
 
   function toggleSymptomTag(tag: SymptomTag) {
     setSelectedSymptomTags((prev) =>
@@ -78,20 +106,35 @@ export default function RegistrarPage() {
     setSelectedSymptomTags([]);
   }
 
-  async function handleSave() {
+  async function handleSave(skipAbsorptionCheck = false) {
     const finalLabel = type === 'walking' ? (label.trim() || 'Caminata') : label.trim();
     if (!finalLabel) return;
+
+    if (!skipAbsorptionCheck) {
+      const ts = timestampForEntryDate(entryDate);
+      const logs = await getLogsByDate(entryDate);
+      const conflict = getAbsorptionConflict(logs, entryDate, ts, type, finalLabel);
+      if (conflict) {
+        setAbsorptionConflict(conflict);
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       // Append emotion bubble to notes if selected
       const emotionNote = emotionBubble
         ? `[${EMOTION_BUBBLES.find((e) => e.key === emotionBubble)?.label ?? emotionBubble}] `
         : '';
-      const finalNotes = `${emotionNote}${notes.trim()}`.trim() || undefined;
+      let extra = '';
+      if (skipAbsorptionCheck && absorptionConflict) {
+        extra = `Nota: registro antes de ${LEVO_ABSORPTION_MINUTES} min tras levotiroxina (${absorptionConflict.levoTimeLabel}); decisión consciente del usuario.\n`;
+      }
+      const finalNotes = `${extra}${emotionNote}${notes.trim()}`.trim() || undefined;
 
       await addLog({
-        date: localDateISO(),
-        timestamp: Date.now(),
+        date: entryDate,
+        timestamp: timestampForEntryDate(entryDate),
         type,
         label: finalLabel,
         mood: mood !== null ? ((mood + 1) as 1 | 2 | 3 | 4 | 5) : undefined,
@@ -104,6 +147,7 @@ export default function RegistrarPage() {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('copiloto-refresh'));
       }
+      setAbsorptionConflict(null);
       setTimeout(() => router.push('/'), 800);
     } catch (e) {
       console.error(e);
@@ -128,11 +172,50 @@ export default function RegistrarPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="px-6 pt-12 pb-4">
-        <h1 className="font-serif italic text-3xl text-ink">Registrar</h1>
+      <div className="px-6 pt-12 pb-3">
+        <div className="flex items-start gap-3">
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface text-muted transition-colors hover:bg-surface/80 hover:text-ink"
+            aria-label="Ir al inicio"
+          >
+            <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+              <path
+                fillRule="evenodd"
+                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+          <div className="min-w-0 flex-1">
+            <h1 className="font-serif italic text-3xl text-ink leading-tight">Registrar</h1>
+            <p className="mt-1 text-xs text-muted capitalize">{formatLongDate(entryDate)}</p>
+          </div>
+        </div>
       </div>
 
       <div className="px-6 space-y-5 pb-8">
+        {/* Fecha del registro */}
+        <div>
+          <label className="mb-2 block text-xs font-medium uppercase tracking-widest text-muted">
+            ¿Para qué día?
+          </label>
+          <input
+            type="date"
+            value={entryDate}
+            min={oldestISO}
+            max={todayISO}
+            onChange={(e) => setEntryDate(e.target.value || todayISO)}
+            className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-sage"
+          />
+          <p className="mt-1.5 text-[11px] leading-snug text-muted">
+            {entryDate === todayISO
+              ? 'Se guarda con la hora actual.'
+              : 'Se guarda en ese día (mediodía local) para que aparezca bien en el historial.'}
+          </p>
+        </div>
+
         {/* Type selector */}
         <div>
           <label className="text-xs text-gray-400 uppercase tracking-widest font-medium block mb-2">
@@ -298,13 +381,56 @@ export default function RegistrarPage() {
 
         {/* Save */}
         <button
-          onClick={handleSave}
+          type="button"
+          onClick={() => void handleSave(false)}
           disabled={!canSave || saving}
           className="w-full bg-sage text-white py-4 rounded-2xl font-semibold text-sm tracking-wide disabled:opacity-40 transition-all hover:bg-sage/90"
         >
           {saving ? 'Guardando...' : 'Guardar'}
         </button>
       </div>
+
+      {absorptionConflict ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 px-4 pb-8 pt-10 sm:items-center"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="absorption-title"
+        >
+          <div className="w-full max-w-md rounded-3xl border border-hairline bg-background px-5 py-5 shadow-lift">
+            <p id="absorption-title" className="font-serif text-lg italic text-ink">
+              Ventana de absorción
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              Registraste levotiroxina a las {absorptionConflict.levoTimeLabel}. Para favorecer la absorción, lo habitual
+              es esperar al menos <strong>{LEVO_ABSORPTION_MINUTES} min</strong> antes de comida o café (
+              sólo <strong>{absorptionConflict.minutesElapsed.toFixed(0)} min</strong> han pasado; faltan ~{' '}
+              {Math.ceil(absorptionConflict.minutesRemaining)} min ).
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-muted/90">
+              HypoCopilot no cambia tu medicación: esto es un recordatorio educativo. Si tu endocrinólogo indicó otra
+              pauta, prevalece eso.
+            </p>
+            <div className="mt-5 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => setAbsorptionConflict(null)}
+                className="w-full rounded-2xl bg-sage py-3 text-sm font-semibold text-white shadow-soft"
+              >
+                Entendido, esperaré
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleSave(true)}
+                disabled={saving}
+                className="w-full rounded-2xl border border-hairline bg-surface py-3 text-sm font-semibold text-ink"
+              >
+                {saving ? 'Guardando…' : 'Guardar igual (lo tengo claro)'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

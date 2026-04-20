@@ -11,15 +11,18 @@ export type SymptomTag =
   | 'insomnio'
   | 'otro';
 
+/** Valor estructurado para check-in PRO (sincroniza en value_json). */
+export type ProCheckInValue = { proEnergy: number; proBrainFog: number };
+
 export interface LogEntry {
   id?: number;
   /** UUID estable para sincronizar con Supabase (misma fila en todos los dispositivos) */
   clientId?: string;
   date: string;
   timestamp: number;
-  type: 'meal' | 'medication' | 'fast' | 'symptom' | 'note' | 'walking';
+  type: 'meal' | 'medication' | 'fast' | 'symptom' | 'note' | 'walking' | 'checkin';
   label: string;
-  value?: string | number;
+  value?: string | number | ProCheckInValue;
   mood?: 1 | 2 | 3 | 4 | 5;
   notes?: string;
   durationMin?: number;

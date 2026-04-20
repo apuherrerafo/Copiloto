@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, type ChangeEvent } from 'react';
 import {
   requestNotificationPermission,
   scheduleProtocolNotifications,
@@ -8,6 +8,7 @@ import {
 } from '@/lib/notifications/schedule';
 import { useHypoSession } from '@/components/layout/AppShell';
 import { readSession, saveSession } from '@/lib/auth/session';
+import { compressImageToDataUrl } from '@/lib/images/compress-avatar';
 import { LEVO_DOSE_LABEL } from '@/lib/brand';
 import { pushProfileAndProtocol } from '@/lib/sync/push';
 import { collectProtocolChecksForSync } from '@/lib/sync/protocol-collect';
@@ -34,6 +35,7 @@ const NOTIFICATION_SCHEDULE = [
 
 export default function YoPage() {
   const { session, refresh, logout } = useHypoSession();
+  const fileRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<Profile>({
     name: 'Julio Herrera',
     weight: '',
@@ -81,15 +83,38 @@ export default function YoPage() {
       });
       refresh();
     }
+    window.dispatchEvent(new Event('hypo-storage-sync'));
     void pushProfileAndProtocol(profile, collectProtocolChecksForSync());
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  }
+
+  async function onAvatarPick(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !file.type.startsWith('image/')) return;
+    try {
+      const dataUrl = await compressImageToDataUrl(file);
+      const prev = readSession();
+      const nm = profile.name.trim() || session?.name || 'Usuario';
+      saveSession({
+        name: prev?.name ?? nm,
+        email: prev?.email ?? session?.email,
+        avatarDataUrl: dataUrl,
+        createdAt: prev?.createdAt ?? Date.now(),
+      });
+      refresh();
+      window.dispatchEvent(new Event('hypo-storage-sync'));
+    } catch {
+      /* ignore */
+    }
   }
 
   async function handleNotifications() {
     const granted = await requestNotificationPermission();
     setNotifStatus(granted ? 'granted' : 'denied');
     if (granted) scheduleProtocolNotifications();
+    window.dispatchEvent(new Event('hypo-storage-sync'));
   }
 
   return (
@@ -101,18 +126,39 @@ export default function YoPage() {
 
       <div className="px-6 space-y-5 pb-8">
         <div className="flex flex-col items-center py-2">
-          {session?.avatarUrl || session?.avatarDataUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={session.avatarUrl ?? session.avatarDataUrl}
-              alt=""
-              className="w-24 h-24 rounded-full object-cover border-2 border-hairline shadow-soft"
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-sage/15 border border-sage/25 flex items-center justify-center text-sage font-serif italic text-2xl">
-              {(session?.name ?? 'Tú').slice(0, 1).toUpperCase()}
-            </div>
-          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={onAvatarPick}
+          />
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="relative rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/40"
+            aria-label="Cambiar foto de perfil"
+          >
+            {session?.avatarDataUrl || session?.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={session.avatarDataUrl ?? session.avatarUrl}
+                alt=""
+                className="w-24 h-24 rounded-full object-cover border-2 border-hairline shadow-soft"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-sage/15 border border-sage/25 flex items-center justify-center text-sage font-serif italic text-2xl">
+                {(session?.name ?? 'Tú').slice(0, 1).toUpperCase()}
+              </div>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="mt-2 text-xs font-medium text-sage underline-offset-2 hover:underline"
+          >
+            Cambiar foto
+          </button>
           <p className="text-sm font-semibold text-ink mt-2">{session?.name}</p>
           {session?.email ? <p className="text-xs text-muted">{session.email}</p> : null}
         </div>
@@ -228,7 +274,7 @@ export default function YoPage() {
         </div>
 
         {/* Notifications */}
-        <div className="bg-surface border border-gray-100 rounded-2xl px-5 py-4">
+        <div id="alertas" className="bg-surface border border-gray-100 rounded-2xl px-5 py-4 scroll-mt-24">
           <div className="flex items-center justify-between mb-4">
             <p className="text-xs text-gray-400 uppercase tracking-widest font-medium">Alertas del protocolo</p>
             <span className={`text-xs px-2 py-1 rounded-full font-medium ${

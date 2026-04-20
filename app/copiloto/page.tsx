@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { getLogsByDate } from '@/lib/store/db';
 import { getFastElapsed } from '@/lib/protocols/julio';
 import { localDateISO } from '@/lib/dates';
+import { stripMarkdownForDisplay } from '@/lib/chat/sanitize-display';
+import HypoMascot from '@/components/ui/HypoMascot';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -45,12 +47,11 @@ export default function CopilotoPage() {
 }
 
 function HippoAvatar({ size = 'sm' }: { size?: 'sm' | 'lg' }) {
-  const cls = size === 'lg'
-    ? 'w-16 h-16 text-4xl'
-    : 'w-7 h-7 text-base';
+  const dim = size === 'lg' ? 'w-16 h-16' : 'w-7 h-7';
+  const mascotSize = size === 'lg' ? 52 : 22;
   return (
-    <div className={`${cls} rounded-full bg-sage/15 flex items-center justify-center shrink-0`}>
-      🦛
+    <div className={`${dim} flex shrink-0 items-center justify-center rounded-full bg-sage/15 ring-1 ring-sage/15`}>
+      <HypoMascot size={mascotSize} title="Hypo" />
     </div>
   );
 }
@@ -165,9 +166,12 @@ function CopilotoInner() {
           <HippoAvatar />
           <div>
             <h1 className="font-serif italic text-xl text-ink leading-none">Hypo</h1>
-            <p className="text-xs text-muted mt-0.5">Tu copiloto de salud 🦛</p>
+            <p className="text-xs text-muted mt-0.5">Tu copiloto amigo · respuestas por IA</p>
           </div>
         </div>
+        <p className="mt-3 text-[10px] leading-snug text-muted/85 px-1">
+          HypoAI es generativa y puede equivocarse. No sustituye la opinión de tu médico ni cambia tu tratamiento.
+        </p>
       </div>
 
       {/* Messages */}
@@ -183,7 +187,7 @@ function CopilotoInner() {
               <HippoAvatar size="lg" />
             </motion.div>
             <motion.h2 variants={fadeUp} className="font-serif italic text-2xl text-ink mb-2 mt-4">
-              ¡Hola, Julio! Soy Hypo 🦛
+              ¡Hola, Julio! Soy Hypo
             </motion.h2>
             <motion.p variants={fadeUp} className="text-muted text-sm mb-6 max-w-xs leading-relaxed">
               Conozco tu protocolo de levotiroxina, tu ayuno y todo lo que registras cada día. ¡Pregúntame lo que quieras!
@@ -220,7 +224,7 @@ function CopilotoInner() {
                 ? 'bg-sage text-white rounded-br-sm'
                 : 'bg-surface border border-hairline text-ink rounded-bl-sm shadow-soft'
             }`}>
-              {msg.content}
+              {msg.role === 'assistant' ? stripMarkdownForDisplay(msg.content) : msg.content}
             </div>
           </motion.div>
         ))}
@@ -230,7 +234,7 @@ function CopilotoInner() {
           <div className="flex justify-start items-end gap-2">
             <HippoAvatar />
             <div className="max-w-[82%] px-4 py-3 rounded-card rounded-bl-sm bg-surface border border-hairline text-ink text-sm leading-relaxed shadow-soft">
-              {streamText || (
+              {streamText ? stripMarkdownForDisplay(streamText) : (
                 <span className="flex gap-1 items-center h-4">
                   <span className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{animationDelay:'0ms'}}/>
                   <span className="w-1.5 h-1.5 bg-sage rounded-full animate-bounce" style={{animationDelay:'150ms'}}/>

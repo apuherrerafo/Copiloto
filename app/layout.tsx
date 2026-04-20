@@ -1,10 +1,15 @@
 import type { Metadata, Viewport } from 'next';
+import { getServerSession } from 'next-auth';
 import './globals.css';
 import AppShell from '@/components/layout/AppShell';
 import PWARecovery from '@/components/layout/PWARecovery';
 import AuthSessionProvider from '@/components/providers/AuthSessionProvider';
 import SyncOnLogin from '@/components/sync/SyncOnLogin';
+import { authOptions } from '@/lib/auth.config';
 import { APP_NAME, APP_TAGLINE } from '@/lib/brand';
+
+/** Cookies/sesión vía getServerSession requieren render dinámico (evita fallo "Dynamic server usage" y pantalla en blanco). */
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: APP_NAME,
@@ -25,7 +30,10 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  /** Sesión inicial en servidor; nunca undefined para que SessionProvider no quede en "loading". */
+  const session = (await getServerSession(authOptions)) ?? null;
+
   return (
     <html lang="es">
       <head>
@@ -36,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <PWARecovery />
-        <AuthSessionProvider>
+        <AuthSessionProvider session={session}>
           <SyncOnLogin />
           <AppShell>
             <main className="min-h-screen pb-20">{children}</main>

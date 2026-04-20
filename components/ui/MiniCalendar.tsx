@@ -44,6 +44,70 @@ function buildDays(today: Date, past = 14, future = 10): Date[] {
 
 const DAY_LETTERS = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 
+/** Mini anillo de progreso por día (referencia dashboard) */
+const MINI_R = 14;
+const MINI_C = 2 * Math.PI * MINI_R;
+
+function DayProgressRing({
+  dayNum,
+  letter,
+  pct,
+  isFuture,
+  pastNoData,
+  isSel,
+  isToday,
+}: {
+  dayNum: number;
+  letter: string;
+  pct: number;
+  isFuture: boolean;
+  pastNoData: boolean;
+  isSel: boolean;
+  isToday: boolean;
+}) {
+  const dashOffset = MINI_C * (1 - Math.min(Math.max(pct, 0), 1));
+  const arcColor = pct >= 1 ? '#5B7A65' : '#C09050';
+  const showArc = !isFuture && !pastNoData && pct > 0;
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span
+        className={`text-[9px] font-bold uppercase tracking-wide ${
+          isSel ? 'text-white/90' : isToday ? 'text-sage' : 'text-muted'
+        }`}
+      >
+        {letter}
+      </span>
+      <div className="relative flex h-[46px] w-[46px] items-center justify-center">
+        <svg viewBox="0 0 36 36" className="absolute inset-0 h-full w-full -rotate-90">
+          <circle cx="18" cy="18" r={MINI_R} fill="none" stroke="#E8E5E0" strokeWidth="2.8" />
+          {showArc && (
+            <circle
+              cx="18"
+              cy="18"
+              r={MINI_R}
+              fill="none"
+              stroke={arcColor}
+              strokeWidth="2.8"
+              strokeLinecap="round"
+              strokeDasharray={MINI_C}
+              strokeDashoffset={dashOffset}
+              className="transition-[stroke-dashoffset] duration-500 ease-out"
+            />
+          )}
+        </svg>
+        <span
+          className={`relative z-[1] text-[13px] font-bold leading-none ${
+            isSel ? 'text-white' : pastNoData ? 'text-muted' : isToday ? 'text-sage' : 'text-ink'
+          }`}
+        >
+          {pastNoData ? '?' : dayNum}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 const TYPE_COLORS: Record<AppointmentType, string> = {
   medico: 'bg-coral/70',
   examen: 'bg-amber/70',
@@ -75,14 +139,26 @@ export default function MiniCalendar() {
   const [showAdd, setShowAdd] = useState(false);
   const stripRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  function buildChecksMap() {
     const map: Record<string, DayChecks> = {};
     days.forEach((d) => {
       const iso = localDateISO(d);
       if (iso <= todayISO) map[iso] = loadDayChecks(iso);
     });
-    setChecksMap(map);
+    return map;
+  }
+
+  useEffect(() => {
+    setChecksMap(buildChecksMap());
     setAppointments(loadAppointments());
+
+    // Refresh when ProtocolTimeline marks/unmarks an item
+    function onRefresh() {
+      setChecksMap(buildChecksMap());
+    }
+    window.addEventListener('copiloto-refresh', onRefresh);
+    return () => window.removeEventListener('copiloto-refresh', onRefresh);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days, todayISO]);
 
   // Scroll today into center on mount
@@ -98,18 +174,27 @@ export default function MiniCalendar() {
 
   function reloadApts() { setAppointments(loadAppointments()); }
 
+  function selectDate(iso: string) {
+    setSelected(iso);
+    // Reload fresh checks for the newly selected date
+    setChecksMap((prev) => ({
+      ...prev,
+      [iso]: loadDayChecks(iso),
+    }));
+  }
+
   const isFuture = selected > todayISO;
-  const isPast   = selected < todayISO;
   const isToday  = selected === todayISO;
   const dayChecks = checksMap[selected];
   const selApts = appointments.filter((a) => a.date === selected);
 
   return (
-    <div className="mb-2">
-      {/* Horizontal strip */}
+    <div className="mb-1">
+      <p className="mb-1.5 px-5 text-center font-serif text-xs italic text-ink/85">Mi semana</p>
+      {/* Horizontal strip — anillos tipo referencia */}
       <div
         ref={stripRef}
-        className="flex gap-1.5 overflow-x-auto px-6 pb-1 scrollbar-hide"
+        className="flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-hide"
         style={{ scrollbarWidth: 'none' }}
       >
         {days.map((d) => {
@@ -121,73 +206,66 @@ export default function MiniCalendar() {
           const pct = dc && TOTAL_KEYS > 0 ? dc.count / TOTAL_KEYS : 0;
           const hasApt = appointments.some((a) => a.date === iso);
           const aptType = appointments.find((a) => a.date === iso)?.type;
+          const pastNoData = !isFut && iso < todayISO && !dc?.hasData;
 
           return (
             <button
               key={iso}
               data-today={isT ? 'true' : undefined}
-              onClick={() => setSelected(iso)}
-              className={`flex-none flex flex-col items-center gap-0.5 rounded-2xl px-2.5 py-2 transition-all ${
-                isSel ? 'bg-sage text-white shadow-soft' : isT ? 'bg-sage/10 text-sage' : 'text-muted hover:bg-surface'
+              onClick={() => selectDate(iso)}
+              className={`flex-none rounded-3xl px-2 py-2 transition-all duration-300 ${
+                isSel
+                  ? 'bg-sage text-white shadow-lift ring-2 ring-sage/25 ring-offset-2 ring-offset-transparent'
+                  : isT
+                    ? 'bg-white/70 shadow-soft ring-1 ring-sage/20 backdrop-blur-sm'
+                    : 'bg-white/40 text-muted ring-1 ring-transparent backdrop-blur-sm hover:bg-white/70 hover:ring-hairline'
               }`}
-              style={{ minWidth: 44 }}
+              style={{ minWidth: 56 }}
             >
-              <span className={`text-[9px] font-semibold uppercase ${isSel ? 'text-white/70' : 'text-muted'}`}>
-                {DAY_LETTERS[d.getDay()]}
-              </span>
-              <span className={`text-sm font-bold leading-none ${isSel ? 'text-white' : isT ? 'text-sage' : 'text-ink'}`}>
-                {d.getDate()}
-              </span>
-              {/* Protocol dots */}
-              {!isFut ? (
-                <div className="flex gap-[2px] mt-0.5">
-                  {PROTOCOL_KEYS.map((k, i) => (
-                    <span key={k} className={`w-1 h-1 rounded-full transition-colors ${
-                      dc?.keys[k] ? (isSel ? 'bg-white' : 'bg-sage') : (isSel ? 'bg-white/25' : 'bg-ink/12')
-                    }`} />
-                  ))}
-                </div>
-              ) : (
-                <div className="h-2.5" />
-              )}
-              {/* Appointment indicator */}
+              <DayProgressRing
+                dayNum={d.getDate()}
+                letter={DAY_LETTERS[d.getDay()]}
+                pct={pct}
+                isFuture={isFut}
+                pastNoData={pastNoData}
+                isSel={isSel}
+                isToday={isT}
+              />
               {hasApt ? (
-                <span className={`w-1.5 h-1.5 rounded-full ${aptType ? TYPE_COLORS[aptType] : 'bg-coral/60'}`} />
+                <span className={`mx-auto mt-1 block h-1.5 w-1.5 rounded-full ${aptType ? TYPE_COLORS[aptType] : 'bg-coral/60'}`} />
               ) : (
-                <span className="h-1.5" />
+                <span className="mt-1 block h-1.5" />
               )}
             </button>
           );
         })}
       </div>
 
-      {/* Day detail panel */}
+      {/* Day detail panel — compacto */}
       <AnimatePresence mode="wait">
         <motion.div
           key={selected}
-          initial={{ opacity: 0, y: 4 }}
+          initial={{ opacity: 0, y: 3 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.18 }}
-          className="mx-6 mt-3 space-y-2"
+          transition={{ duration: 0.15 }}
+          className="mx-5 mt-2 space-y-1.5"
         >
           {/* Past or today: protocol summary */}
           {!isFuture && (
-            <div className={`rounded-2xl border px-4 py-3 flex items-center gap-3 ${
-              dayChecks?.hasData ? 'border-hairline bg-surface' : 'border-hairline/60 bg-surface/60'
-            }`}>
+            <>
               {dayChecks?.hasData ? (
-                <>
-                  <span className="text-xl shrink-0">
+                <div className="flex items-start gap-2.5 rounded-xl border border-hairline bg-white/70 px-3 py-2 shadow-soft backdrop-blur-sm">
+                  <span className="text-base leading-none shrink-0 pt-0.5">
                     {dayChecks.count === TOTAL_KEYS ? '🌟' : dayChecks.count >= 3 ? '✅' : '🟡'}
                   </span>
-                  <div>
-                    <p className={`text-sm font-semibold ${pctColor(dayChecks.count / TOTAL_KEYS)}`}>
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-xs font-semibold leading-tight ${pctColor(dayChecks.count / TOTAL_KEYS)}`}>
                       {pctLabel(dayChecks.count / TOTAL_KEYS, dayChecks.count)}
                     </p>
-                    <div className="flex gap-1.5 mt-1 flex-wrap">
+                    <div className="mt-1 flex flex-wrap gap-1">
                       {PROTOCOL_EVENTS.map((ev) => (
-                        <span key={ev.key} className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                        <span key={ev.key} className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
                           dayChecks.keys[ev.key]
                             ? 'bg-sage/15 text-sage'
                             : 'bg-ink/6 text-muted line-through'
@@ -200,34 +278,27 @@ export default function MiniCalendar() {
                       ))}
                     </div>
                   </div>
-                </>
+                </div>
               ) : (
-                <>
-                  <span className="text-xl shrink-0">😔</span>
-                  <div>
-                    <p className="text-sm font-medium text-muted">
-                      {isToday ? 'Aún sin registros hoy' : 'Sin información de este día'}
-                    </p>
-                    <p className="text-[10px] text-muted/70 mt-0.5">
-                      {isToday ? 'Marca ítems del protocolo para verlos aquí.' : 'No hay actividad registrada para esta fecha.'}
-                    </p>
-                  </div>
-                </>
+                <p className="rounded-lg border border-dashed border-hairline/70 bg-white/35 px-3 py-1.5 text-center text-[11px] leading-snug text-muted">
+                  {isToday
+                    ? 'Sin registros de protocolo hoy · márcalos abajo en el plan del día'
+                    : 'Sin datos de protocolo este día'}
+                </p>
               )}
-            </div>
+            </>
           )}
 
           {/* Future: show placeholder */}
           {isFuture && !selApts.length && (
-            <div className="rounded-2xl border border-hairline/60 bg-surface/60 px-4 py-3 flex items-center gap-3">
-              <span className="text-xl shrink-0">📅</span>
-              <p className="text-sm text-muted">Día futuro — agrega una cita o evento.</p>
-            </div>
+            <p className="rounded-lg border border-dashed border-hairline/70 bg-white/35 px-3 py-1.5 text-center text-[11px] text-muted">
+              Día futuro — agrega cita abajo
+            </p>
           )}
 
           {/* Appointments for selected day */}
           {selApts.map((apt) => (
-            <div key={apt.id} className="flex items-start justify-between gap-2 bg-surface border border-hairline rounded-2xl px-4 py-3">
+            <div key={apt.id} className="flex items-start justify-between gap-2 rounded-xl border border-hairline bg-white/80 px-3 py-2">
               <div>
                 <p className="text-sm font-semibold text-ink">{apt.title}</p>
                 <p className="text-[10px] text-muted mt-0.5">
@@ -247,10 +318,10 @@ export default function MiniCalendar() {
           {/* Add appointment button */}
           <button
             onClick={() => setShowAdd(true)}
-            className="flex items-center gap-1.5 text-[11px] text-sage font-semibold hover:opacity-80 transition-opacity py-0.5"
+            className="flex w-full items-center justify-center gap-1 py-0.5 text-[10px] font-semibold text-sage hover:opacity-80 transition-opacity"
           >
-            <span className="w-4 h-4 rounded-full bg-sage/15 flex items-center justify-center text-sage text-xs leading-none">+</span>
-            Agregar cita u evento
+            <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-sage/15 text-[10px] leading-none">+</span>
+            Cita o evento
           </button>
         </motion.div>
       </AnimatePresence>
