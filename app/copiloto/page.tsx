@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { getLogsByDate } from '@/lib/store/db';
 import { getFastElapsed } from '@/lib/protocols/julio';
+import { localDateISO } from '@/lib/dates';
 import GeneIcon from '@/components/ui/GeneIcon';
 
 interface Message {
@@ -63,8 +64,7 @@ export default function CopilotoPage() {
     setStreamText('');
 
     try {
-      const todayISO = new Date().toISOString().slice(0, 10);
-      const todayLogs = await getLogsByDate(todayISO);
+      const todayLogs = await getLogsByDate(localDateISO());
       const fastElapsedHours = getFastElapsed();
 
       const res = await fetch('/api/chat', {
@@ -128,8 +128,8 @@ export default function CopilotoPage() {
             <span className="text-white text-sm font-bold">C</span>
           </div>
           <div>
-            <h1 className="font-serif italic text-xl text-ink leading-none">Copiloto</h1>
-            <p className="text-xs text-muted mt-0.5">Conoce tu protocolo completo</p>
+            <h1 className="font-serif italic text-xl text-ink leading-none">HypoCopilot</h1>
+            <p className="text-xs text-muted mt-0.5">Chat con tu protocolo y la ciencia</p>
           </div>
           <span className="ml-auto text-xs bg-sage/10 text-sage px-2 py-1 rounded-full font-medium">
             Claude Haiku
@@ -153,7 +153,7 @@ export default function CopilotoPage() {
               Hola, Julio
             </motion.h2>
             <motion.p variants={fadeUp} className="text-muted text-sm mb-6 max-w-xs">
-              Conozco tu protocolo, tu Levotiroxina y tu historial del día. Pregúntame lo que necesites.
+              Conozco tu protocolo, levotiroxina, ayuno y tu historial del día. Pregúntame lo que necesites.
             </motion.p>
             <motion.div variants={startersGrid} className="grid grid-cols-1 gap-2 w-full max-w-xs">
               {STARTERS.map((s) => (

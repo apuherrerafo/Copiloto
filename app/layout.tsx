@@ -1,15 +1,16 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import BottomNav from '@/components/layout/BottomNav';
+import AppShell from '@/components/layout/AppShell';
+import { APP_NAME, APP_TAGLINE } from '@/lib/brand';
 
 export const metadata: Metadata = {
-  title: 'Copiloto Metabólico',
-  description: 'Tu protocolo metabólico personal',
+  title: APP_NAME,
+  description: APP_TAGLINE,
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Copiloto',
+    title: APP_NAME,
   },
 };
 
@@ -31,10 +32,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body>
-        <main className="min-h-screen pb-20">
-          {children}
-        </main>
-        <BottomNav />
+        <AppShell>
+          <main className="min-h-screen pb-20">{children}</main>
+        </AppShell>
       </body>
     </html>
   );

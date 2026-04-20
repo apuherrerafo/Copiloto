@@ -6,6 +6,9 @@ import {
   scheduleProtocolNotifications,
   getNotificationStatus,
 } from '@/lib/notifications/schedule';
+import { useHypoSession } from '@/components/layout/AppShell';
+import { readSession, saveSession } from '@/lib/auth/session';
+import { LEVO_DOSE_LABEL } from '@/lib/brand';
 
 interface Profile {
   name: string;
@@ -16,12 +19,16 @@ interface Profile {
 }
 
 const NOTIFICATION_SCHEDULE = [
-  { time: '10:55', label: 'Levotiroxina (5 min antes)', icon: '💊' },
-  { time: '12:00', label: 'Romper ayuno', icon: '🍽️' },
-  { time: '19:45', label: 'Última comida (15 min aviso)', icon: '⏰' },
+  { time: '08:00', label: 'Mañana — abrir app + micro-lección', icon: '🌅' },
+  { time: '10:55', label: 'Levotiroxina (5 min antes) + absorción', icon: '💊' },
+  { time: '12:00', label: 'Romper ayuno + glucosa', icon: '🍽️' },
+  { time: '13:45', label: 'Caminata post-almuerzo (nudge)', icon: '🚶' },
+  { time: '19:45', label: 'Última comida (15 min) + circadiano', icon: '⏰' },
+  { time: '20:45', label: 'Caminata post-cena (nudge)', icon: '🚶' },
 ];
 
 export default function YoPage() {
+  const { session, refresh, logout } = useHypoSession();
   const [profile, setProfile] = useState<Profile>({
     name: 'Julio Herrera',
     weight: '',
@@ -40,8 +47,22 @@ export default function YoPage() {
     setNotifStatus(getNotificationStatus());
   }, []);
 
+  useEffect(() => {
+    if (session?.name) {
+      setProfile((p) => ({ ...p, name: session.name }));
+    }
+  }, [session?.name]);
+
   function save() {
     localStorage.setItem('copiloto_profile', JSON.stringify(profile));
+    const s = readSession();
+    if (s) {
+      saveSession({
+        ...s,
+        name: profile.name.trim() || s.name,
+      });
+      refresh();
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
@@ -56,17 +77,46 @@ export default function YoPage() {
     <div className="min-h-screen bg-background">
       <div className="px-6 pt-12 pb-4">
         <h1 className="font-serif italic text-3xl text-ink">Mi perfil</h1>
-        <p className="text-xs text-gray-400 mt-1">El copiloto usa esta información para aconsejarte mejor</p>
+        <p className="text-xs text-muted mt-1">HypoCopilot usa esto para aconsejarte con base en ciencia</p>
       </div>
 
       <div className="px-6 space-y-5 pb-8">
+        <div className="flex flex-col items-center py-2">
+          {session?.avatarDataUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={session.avatarDataUrl}
+              alt=""
+              className="w-24 h-24 rounded-full object-cover border-2 border-hairline shadow-soft"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-sage/15 border border-sage/25 flex items-center justify-center text-sage font-serif italic text-2xl">
+              {(session?.name ?? 'Tú').slice(0, 1).toUpperCase()}
+            </div>
+          )}
+          <p className="text-sm font-semibold text-ink mt-2">{session?.name}</p>
+          {session?.email ? <p className="text-xs text-muted">{session.email}</p> : null}
+        </div>
+
+        <button
+          type="button"
+          onClick={logout}
+          className="w-full py-3 rounded-xl border border-coral/35 text-coral font-semibold text-sm hover:bg-coral/5 transition-colors"
+        >
+          Cerrar sesión
+        </button>
+
         {/* Health protocol card */}
         <div className="bg-sage/10 border border-sage/20 rounded-2xl px-5 py-4">
           <p className="text-xs text-sage uppercase tracking-widest font-semibold mb-3">Protocolo activo</p>
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
               <span>💊</span>
-              <span className="text-ink">Levotiroxina 75mcg — 11:00 AM (en ayunas)</span>
+              <span className="text-ink">Levotiroxina {LEVO_DOSE_LABEL} — 11:00 (ayunas, agua)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span>🚶</span>
+              <span className="text-ink">Caminata post-almuerzo ~14:00 · post-cena ~21:00</span>
             </div>
             <div className="flex items-center gap-2">
               <span>🍽️</span>

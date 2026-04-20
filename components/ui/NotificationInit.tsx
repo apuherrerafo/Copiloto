@@ -5,9 +5,9 @@ import { getNotificationStatus, scheduleProtocolNotifications } from '@/lib/noti
 
 export default function NotificationInit() {
   useEffect(() => {
-    if (getNotificationStatus() === 'granted') {
-      scheduleProtocolNotifications();
-    }
+    if (getNotificationStatus() !== 'granted') return;
+    const stop = scheduleProtocolNotifications();
+    return () => stop();
   }, []);
 
   return null;

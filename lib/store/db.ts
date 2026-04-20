@@ -1,14 +1,29 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 
+export type SymptomTag =
+  | 'fatiga'
+  | 'frio'
+  | 'niebla_mental'
+  | 'estreñimiento'
+  | 'palpitaciones'
+  | 'ansiedad'
+  | 'dolor_cabeza'
+  | 'insomnio'
+  | 'otro';
+
 interface LogEntry {
   id?: number;
-  date: string;       // ISO date YYYY-MM-DD
-  timestamp: number;  // Unix ms
-  type: 'meal' | 'medication' | 'fast' | 'symptom' | 'note';
+  date: string;         // ISO date YYYY-MM-DD (local)
+  timestamp: number;    // Unix ms (UTC)
+  type: 'meal' | 'medication' | 'fast' | 'symptom' | 'note' | 'walking';
   label: string;
   value?: string | number;
   mood?: 1 | 2 | 3 | 4 | 5;
   notes?: string;
+  /** Duration in minutes — applies to 'walking' type */
+  durationMin?: number;
+  /** Structured symptom tags — applies to 'symptom' type */
+  symptomTags?: SymptomTag[];
 }
 
 interface BodyEntry {

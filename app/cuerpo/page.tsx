@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { addBodyEntry, getAllBodyEntries, type BodyEntry } from '@/lib/store/db';
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
+import { localDateISO } from '@/lib/dates';
 
 function formatDate(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);
@@ -33,7 +30,7 @@ export default function CuerpoPage() {
     if (!weight && !waist) return;
     setSaving(true);
     await addBodyEntry({
-      date: todayISO(),
+      date: localDateISO(),
       weight: weight ? parseFloat(weight) : undefined,
       waist: waist ? parseFloat(waist) : undefined,
       notes: notes.trim() || undefined,

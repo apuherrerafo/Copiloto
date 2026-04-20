@@ -1,7 +1,7 @@
 {
-  "name": "Copiloto Metabólico",
-  "short_name": "Copiloto",
-  "description": "Tu protocolo metabólico personal",
+  "name": "HypoCopilot",
+  "short_name": "HypoCopilot",
+  "description": "Ciencia, protocolo y hábitos para hipotiroidismo",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F7F5F3",

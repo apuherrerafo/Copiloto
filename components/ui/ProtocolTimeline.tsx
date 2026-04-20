@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { getTodaySchedule } from '@/lib/protocols/julio';
+import { protocolCheckStorageKey } from '@/lib/protocol-checks';
+import { playUiSound } from '@/lib/sounds';
 
 type Event = ReturnType<typeof getTodaySchedule>[number];
 
@@ -19,13 +21,8 @@ function isCurrent(time: string, nextTime?: string): boolean {
 const ICONS: Record<string, string> = {
   medication: '💊',
   meal: '🍽️',
+  activity: '🚶',
 };
-
-const STORAGE_KEY = 'copiloto_checked_';
-
-function todayKey() {
-  return STORAGE_KEY + new Date().toISOString().slice(0, 10);
-}
 
 export default function ProtocolTimeline() {
   const events = getTodaySchedule();
@@ -33,15 +30,22 @@ export default function ProtocolTimeline() {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(todayKey());
+      const stored = localStorage.getItem(protocolCheckStorageKey());
       if (stored) setChecked(JSON.parse(stored));
     } catch {}
   }, []);
 
   function toggle(key: string) {
-    const next = { ...checked, [key]: !checked[key] };
+    const turningOn = !checked[key];
+    playUiSound(turningOn ? 'celebrate' : 'tap');
+    const next = { ...checked, [key]: turningOn };
     setChecked(next);
-    try { localStorage.setItem(todayKey(), JSON.stringify(next)); } catch {}
+    try {
+      localStorage.setItem(protocolCheckStorageKey(), JSON.stringify(next));
+    } catch {}
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('copiloto-refresh'));
+    }
   }
 
   return (

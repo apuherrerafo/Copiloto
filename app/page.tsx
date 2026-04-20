@@ -4,6 +4,8 @@ import NewsFeed from '@/components/ui/NewsFeed';
 import NotificationInit from '@/components/ui/NotificationInit';
 import PageEnter from '@/components/ui/PageEnter';
 import GeneIcon from '@/components/ui/GeneIcon';
+import YesterdayCoach from '@/components/ui/YesterdayCoach';
+import DidYouKnowBanner from '@/components/ui/DidYouKnowBanner';
 import Link from 'next/link';
 
 function todayLabel() {
@@ -32,10 +34,12 @@ export default function HoyPage() {
           <h1 className="font-serif italic text-3xl text-ink">{greeting()}, Julio</h1>
           <Link href="/copiloto" className="flex items-center gap-1.5 bg-sage/10 text-sage text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-sage/15 transition-colors">
             <GeneIcon className="w-4 h-4 text-sage shrink-0" />
-            Copiloto
+            Hypo
           </Link>
         </div>
       </div>
+
+      <YesterdayCoach />
 
       {/* Fast Ring — compact top section */}
       <div className="flex justify-center py-5">
@@ -65,10 +69,15 @@ export default function HoyPage() {
       {/* Divider */}
       <div className="mx-6 border-t border-hairline mb-5"/>
 
-      {/* Feed */}
+      <DidYouKnowBanner />
+
+      {/* Feed RSS (puede fallar si fuentes externas no responden) */}
       <div className="px-6 pb-28">
-        <p className="text-[10px] text-muted uppercase tracking-widest font-medium mb-3">
-          Tu feed — ciencia para tu estilo de vida
+        <p className="text-[10px] text-muted uppercase tracking-widest font-medium mb-1">
+          Noticias (RSS)
+        </p>
+        <p className="text-[10px] text-muted/70 mb-3 leading-snug">
+          Complemento opcional. Lo principal arriba: ¿Sabías que? + protocolo.
         </p>
         <NewsFeed />
       </div>
