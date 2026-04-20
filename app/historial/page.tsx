@@ -331,10 +331,6 @@ export default function HistorialPage() {
         </div>
       </div>
 
-      <div className="mt-4 px-safe">
-        <MonthlyComplianceRings />
-      </div>
-
       <AnimatePresence mode="wait">
         {tab === 'agenda' ? (
           <motion.div
@@ -359,6 +355,10 @@ export default function HistorialPage() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
           >
+      <div className="mt-4 px-safe">
+        <MonthlyComplianceRings />
+      </div>
+
       <div className="mt-3 px-safe">
         <label className="relative flex w-full items-center">
           <span className="absolute left-3 text-muted">
