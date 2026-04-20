@@ -11,6 +11,7 @@ import {
   type Appointment,
 } from '@/lib/store/appointments';
 import { localDateISO } from '@/lib/dates';
+import { useAppLoading } from '@/contexts/app-loading';
 import MonthlyComplianceRings from '@/components/history/MonthlyComplianceRings';
 
 type Tab = 'clinica' | 'agenda';
@@ -159,6 +160,7 @@ type TimelineItem =
 type GroupedDay = { date: string; label: string; items: TimelineItem[] };
 
 export default function HistorialPage() {
+  const { show: showLoader, hide: hideLoader } = useAppLoading();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [appts, setAppts] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -271,9 +273,21 @@ export default function HistorialPage() {
     };
   }, [filtered]);
 
-  function handleDeleteAppointment(id: string) {
-    removeAppointment(id);
-    setAppts(loadAppointments());
+  async function handleDeleteAppointment(id: string) {
+    showLoader({
+      title: 'Removing appointment…',
+      subtitle: 'Updating your schedule and timeline.',
+    });
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    try {
+      removeAppointment(id);
+      setAppts(loadAppointments());
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('copiloto-refresh'));
+      }
+    } finally {
+      hideLoader();
+    }
   }
 
   return (

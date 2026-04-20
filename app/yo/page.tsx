@@ -21,6 +21,7 @@ import {
 } from '@/lib/protocols/user-protocol';
 import { pushProfileAndProtocol } from '@/lib/sync/push';
 import { collectProtocolChecksForSync } from '@/lib/sync/protocol-collect';
+import { useAppLoading } from '@/contexts/app-loading';
 
 interface Profile {
   name: string;
@@ -36,6 +37,7 @@ interface Profile {
 
 export default function YoPage() {
   const { session, refresh, logout } = useHypoSession();
+  const { show: showLoader, hide: hideLoader } = useAppLoading();
   const fileRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<Profile>({
     name: '',
@@ -101,7 +103,7 @@ export default function YoPage() {
     return () => window.removeEventListener('hypo-storage-sync', onStorageSync);
   }, []);
 
-  function save() {
+  async function save() {
     const toSave: Profile = {
       ...profile,
       protocolSettings: sanitizeProtocolSettings(profile.protocolSettings ?? {}),
@@ -117,7 +119,15 @@ export default function YoPage() {
       refresh();
     }
     window.dispatchEvent(new Event('hypo-storage-sync'));
-    void pushProfileAndProtocol(toSave, collectProtocolChecksForSync());
+    showLoader({
+      title: 'Syncing profile…',
+      subtitle: 'Uploading your settings to the cloud.',
+    });
+    try {
+      await pushProfileAndProtocol(toSave, collectProtocolChecksForSync());
+    } finally {
+      hideLoader();
+    }
     if (getNotificationStatus() === 'granted') scheduleProtocolNotifications();
     setScheduleSuggested(false);
     setSaved(true);
@@ -445,7 +455,7 @@ export default function YoPage() {
 
           <button
             type="button"
-            onClick={save}
+            onClick={() => void save()}
             className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
               saved ? 'bg-sage/20 text-sage' : 'bg-sage text-white hover:bg-sage/90'
             }`}
