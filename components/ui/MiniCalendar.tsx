@@ -157,7 +157,11 @@ export default function MiniCalendar() {
       setChecksMap(buildChecksMap());
     }
     window.addEventListener('copiloto-refresh', onRefresh);
-    return () => window.removeEventListener('copiloto-refresh', onRefresh);
+    window.addEventListener('hypo-storage-sync', onRefresh);
+    return () => {
+      window.removeEventListener('copiloto-refresh', onRefresh);
+      window.removeEventListener('hypo-storage-sync', onRefresh);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days, todayISO]);
 

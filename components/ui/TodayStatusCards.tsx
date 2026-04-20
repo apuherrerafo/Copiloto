@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { getLogsByDate } from '@/lib/store/db';
 import { localDateISO } from '@/lib/dates';
-import { getFastElapsed, getProtocolSnapshot } from '@/lib/protocols/julio';
+import { getDisplayFastElapsed, getProtocolSnapshot } from '@/lib/protocols/julio';
+import { loadProtocolChecks } from '@/lib/protocol-checks';
 
 const HYD_TARGET_L = 2.0;
 const HYD_CUP_ML = 250;
@@ -109,7 +110,7 @@ export default function TodayStatusCards() {
   const hydHint =
     hydRemainingL === 0 ? 'Goal reached' : `${hydRemainingL.toFixed(1)} L to go`;
 
-  const elapsed = getFastElapsed(now);
+  const elapsed = getDisplayFastElapsed(now, { brokeFastToday: loadProtocolChecks(now).fastBreak === true });
   const inKetosis = elapsed >= 12 && elapsed < snap.fast.maxHours;
   const ketoTone: StatusTone = inKetosis ? 'ok' : 'pending';
   const ketoTitle = inKetosis ? 'Active' : 'Upcoming';

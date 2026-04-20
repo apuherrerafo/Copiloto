@@ -5,10 +5,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   getProtocolSnapshot,
   getFastBreak,
-  getFastElapsed,
+  getDisplayFastElapsed,
   getFastStart,
   isEatingWindow,
 } from '@/lib/protocols/julio';
+import { readProtocolSettings } from '@/lib/protocols/user-protocol';
+import { loadProtocolChecks } from '@/lib/protocol-checks';
 import {
   CATEGORY_LABEL,
   LEARNING_PHRASES,
@@ -51,8 +53,14 @@ type Phase = {
   lead: string;
 };
 
-function phaseFromElapsed(h: number, now: Date, maxH: number, targetH: number): Phase {
-  if (isEatingWindow(now)) {
+function phaseFromElapsed(
+  h: number,
+  now: Date,
+  maxH: number,
+  targetH: number,
+  inEatingOrPostBreakUi: boolean,
+): Phase {
+  if (inEatingOrPostBreakUi) {
     return {
       tag: 'eating',
       label: 'Eating window',
@@ -104,12 +112,21 @@ function phaseFromElapsed(h: number, now: Date, maxH: number, targetH: number): 
 
 export default function FastRing() {
   const [now, setNow] = useState<Date>(() => new Date());
+  const [brokeFastToday, setBrokeFastToday] = useState(false);
   const [showFact, setShowFact] = useState(false);
   const [factIndex, setFactIndex] = useState(() =>
     Math.floor(Math.random() * LEARNING_PHRASES.length),
   );
 
-  const refresh = useCallback(() => setNow(new Date()), []);
+  const refresh = useCallback(() => {
+    setNow(new Date());
+    try {
+      const c = loadProtocolChecks(new Date());
+      setBrokeFastToday(c.fastBreak === true);
+    } catch {
+      setBrokeFastToday(false);
+    }
+  }, []);
 
   useEffect(() => {
     refresh();
@@ -131,24 +148,39 @@ export default function FastRing() {
     };
   }, [refresh]);
 
-  // Learning carousel: 3.5s ring → 3.5s fact → ring → fact…
+  // Learning carousel: 5s ring → 7s fact (loop)
   useEffect(() => {
-    const tick = () => {
-      setShowFact((prev) => {
-        if (!prev) {
+    let cancelled = false;
+    const RING_MS = 5000;
+    const FACT_MS = 7000;
+    let showFactLocal = false;
+
+    const loop = async () => {
+      while (!cancelled) {
+        const delay = showFactLocal ? FACT_MS : RING_MS;
+        await new Promise((r) => setTimeout(r, delay));
+        if (cancelled) return;
+        showFactLocal = !showFactLocal;
+        setShowFact(showFactLocal);
+        if (showFactLocal) {
           setFactIndex((i) => (i + 1) % LEARNING_PHRASES.length);
         }
-        return !prev;
-      });
+      }
     };
-    const id = setInterval(tick, 3500);
-    return () => clearInterval(id);
+    void loop();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const snap = getProtocolSnapshot();
   const eatEndH = snap.eatingWindowEndHour;
+  const sProt = readProtocolSettings();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const inEatingOrPostBreakUi =
+    isEatingWindow(now) || (brokeFastToday && nowMin < sProt.eatingWindowEndHour * 60);
 
-  const elapsed = getFastElapsed(now);
+  const elapsed = getDisplayFastElapsed(now, { brokeFastToday });
   const fastStart = getFastStart(now);
   const fastBreak = getFastBreak(fastStart);
 
@@ -157,7 +189,7 @@ export default function FastRing() {
   const progress = Math.min(elapsed / target, 1);
   const dashOffset = CIRCUMFERENCE * (1 - progress);
   const stroke = ringStrokeColor(elapsed, maxH, target);
-  const phase = phaseFromElapsed(elapsed, now, maxH, target);
+  const phase = phaseFromElapsed(elapsed, now, maxH, target, inEatingOrPostBreakUi);
 
   const displayHours = Math.floor(elapsed);
   const startLabel = isSameDay(fastStart, now) ? 'Started today' : 'Started yesterday';

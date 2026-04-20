@@ -13,6 +13,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut, getSession } from 'next-auth/react';
 import BottomNav from '@/components/layout/BottomNav';
+import HypoNavFloat from '@/components/layout/HypoNavFloat';
+import ServiceWorkerUpdateBanner from '@/components/layout/ServiceWorkerUpdateBanner';
 import HealthDisclaimerGate from '@/components/legal/HealthDisclaimerGate';
 import { clearSession, readSession, type HypoSession } from '@/lib/auth/session';
 import { clearAllLocalUserData } from '@/lib/store/clear-local';
@@ -146,12 +148,16 @@ export default function AppShell({ children }: { children: ReactNode }) {
         </div>
       ) : (
         <>
+          <ServiceWorkerUpdateBanner />
           {status === 'authenticated' ? <HealthDisclaimerGate /> : null}
-          {/* CSS-only tab transition — no double-mounting, no framer overhead */}
-          <div key={pathname} className="animate-tab-in">
-            {children}
-          </div>
-          {showNav ? <BottomNav /> : null}
+          {/* Sin key=pathname: el cambio de ruta no remonta todo el subtree (navegación más rápida). */}
+          <div className="animate-tab-in">{children}</div>
+          {showNav ? (
+            <>
+              <HypoNavFloat />
+              <BottomNav />
+            </>
+          ) : null}
         </>
       )}
     </SessionContext.Provider>

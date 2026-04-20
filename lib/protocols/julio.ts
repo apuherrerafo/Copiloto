@@ -95,6 +95,22 @@ export function getFastElapsed(now = new Date()): number {
   return Math.max(0, ms / (1000 * 60 * 60));
 }
 
+/**
+ * UI fast hours: during the eating window the overnight timer should not keep climbing;
+ * if the user marked "break fast" for today before the window ends, treat the fast as reset for display.
+ */
+export function getDisplayFastElapsed(
+  now = new Date(),
+  opts?: { brokeFastToday?: boolean },
+): number {
+  if (isEatingWindow(now)) return 0;
+  const s = readProtocolSettings();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const endMin = s.eatingWindowEndHour * 60;
+  if (opts?.brokeFastToday && nowMin < endMin) return 0;
+  return getFastElapsed(now);
+}
+
 export function isEatingWindow(now = new Date()): boolean {
   const s = readProtocolSettings();
   const totalMinutes = now.getHours() * 60 + now.getMinutes();
