@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import HypoMascot from '@/components/ui/HypoMascot';
 
-const MASCOT = 34;
+/** Base size was 34px; ×3 for clearer mascot above the chat strip */
+const MASCOT = 102;
 
 /**
  * HypoAI: barra tipo input de chat. La mascota camina fuera del componente,
@@ -36,7 +37,11 @@ export default function HypoNavFloat() {
       }}
     >
       <div ref={wrapRef} className="pointer-events-auto mx-auto max-w-lg">
-        <div className="pointer-events-none relative mb-1 h-10 overflow-visible" aria-hidden>
+        <div
+          className="pointer-events-none relative mb-1 overflow-visible"
+          style={{ height: MASCOT }}
+          aria-hidden
+        >
           <motion.div
             className="absolute bottom-0"
             style={{ width: MASCOT, height: MASCOT, right: edge }}
@@ -55,12 +60,12 @@ export default function HypoNavFloat() {
 
         <Link
           href="/copiloto"
-          className="block rounded-[1.35rem] border border-hairline/90 bg-white px-4 py-3.5 shadow-glass transition-opacity active:opacity-90"
-          aria-label="Open HypoAI chat — Ask HypoAI, write here"
+          className="block rounded-[1.35rem] border border-hairline/90 bg-white px-4 py-2.5 shadow-glass transition-opacity active:opacity-90"
+          aria-label="Open HypoAI — Ask HypoAI any curiosity you have"
         >
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-sage">HypoAI</p>
-          <p className="mt-0.5 font-medium text-[15px] leading-snug text-ink">Ask HypoAI</p>
-          <p className="mt-1 text-[13px] leading-snug text-muted/85">Write here to chat…</p>
+          <p className="text-[13px] font-medium leading-snug text-ink/90">
+            Ask HypoAI any curiosity you have…
+          </p>
         </Link>
       </div>
     </div>
