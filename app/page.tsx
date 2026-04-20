@@ -13,6 +13,7 @@ import MotivationalHeader from '@/components/ui/MotivationalHeader';
 import DailyCheckin from '@/components/ui/DailyCheckin';
 import AlarmsPanel from '@/components/ui/AlarmsPanel';
 import TodayStatusCards from '@/components/ui/TodayStatusCards';
+import UpcomingAppointments from '@/components/ui/UpcomingAppointments';
 
 export default function HoyPage() {
   return (
@@ -61,6 +62,11 @@ export default function HoyPage() {
             >
               <MiniCalendar />
             </motion.div>
+
+            {/* 3b · Próximas citas médicas */}
+            <div className="mt-5">
+              <UpcomingAppointments />
+            </div>
 
             {/* 4 · ¿Sabías que? */}
             <div className="mt-3 flex flex-col items-center gap-2">

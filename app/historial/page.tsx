@@ -3,17 +3,18 @@
 import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import { motion } from 'framer-motion';
 import { getAllLogs, type LogEntry, type ProCheckInValue } from '@/lib/store/db';
+import { loadAppointments, type Appointment } from '@/lib/store/appointments';
 import { localDateISO } from '@/lib/dates';
 
 type FilterKey =
   | 'all'
+  | 'appointment'
   | 'medication'
   | 'meal'
   | 'symptom'
   | 'walking'
   | 'checkin'
-  | 'note'
-  | 'appointment';
+  | 'note';
 
 const FILTER_ORDER: { key: FilterKey; label: string }[] = [
   { key: 'all', label: 'Todo' },
@@ -73,8 +74,8 @@ const TYPE_ICON: Record<string, (c: string) => ReactElement> = {
   ),
   appointment: (c) => (
     <svg viewBox="0 0 24 24" className={c} fill="none" stroke="currentColor" strokeWidth="1.6">
-      <path d="M12 3c-1.5 4-5 5.5-5 10a5 5 0 0010 0c0-4.5-3.5-6-5-10z" strokeLinejoin="round" />
-      <path d="M10 15h4M12 13v4" strokeLinecap="round" />
+      <path d="M7 3v3M17 3v3M4 8h16M5 6h14a1 1 0 011 1v12a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1z" strokeLinejoin="round" />
+      <path d="M9 13h6M9 17h4" strokeLinecap="round" />
     </svg>
   ),
   fast: (c) => (
@@ -113,6 +114,9 @@ function formatDateLabel(iso: string): string {
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
   const yestISO = localDateISO(yesterday);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  const tomISO = localDateISO(tomorrow);
 
   if (iso === todayISO) {
     const rest = date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -122,6 +126,10 @@ function formatDateLabel(iso: string): string {
     const rest = date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
     return `Ayer, ${rest}`;
   }
+  if (iso === tomISO) {
+    const rest = date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+    return `Mañana, ${rest}`;
+  }
   return date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
@@ -129,16 +137,28 @@ function formatTime(ts: number): string {
   return new Date(ts).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
-type GroupedDay = { date: string; label: string; entries: LogEntry[] };
+function appointmentTimestamp(apt: Appointment): number {
+  const [y, m, d] = apt.date.split('-').map(Number);
+  const [hh, mm] = (apt.time ?? '12:00').split(':').map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1, hh ?? 12, mm ?? 0, 0, 0).getTime();
+}
+
+type TimelineItem =
+  | { kind: 'log'; id: string; date: string; ts: number; type: string; entry: LogEntry }
+  | { kind: 'appt'; id: string; date: string; ts: number; type: 'appointment'; appt: Appointment };
+
+type GroupedDay = { date: string; label: string; items: TimelineItem[] };
 
 export default function HistorialPage() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [appts, setAppts] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterKey>('all');
   const [query, setQuery] = useState('');
 
-  function loadLogs(silent = false) {
+  function loadAll(silent = false) {
     if (!silent) setLoading(true);
+    setAppts(loadAppointments());
     getAllLogs().then((all) => {
       setLogs(all);
       setLoading(false);
@@ -146,15 +166,35 @@ export default function HistorialPage() {
   }
 
   useEffect(() => {
-    loadLogs(false);
-    const onRefresh = () => loadLogs(true);
+    loadAll(false);
+    const onRefresh = () => loadAll(true);
     window.addEventListener('copiloto-refresh', onRefresh);
     return () => window.removeEventListener('copiloto-refresh', onRefresh);
   }, []);
 
+  const allItems = useMemo<TimelineItem[]>(() => {
+    const logItems: TimelineItem[] = logs.map((l) => ({
+      kind: 'log',
+      id: `log-${l.id ?? `${l.date}-${l.timestamp}`}`,
+      date: l.date,
+      ts: l.timestamp,
+      type: l.type,
+      entry: l,
+    }));
+    const apptItems: TimelineItem[] = appts.map((a) => ({
+      kind: 'appt',
+      id: `apt-${a.id}`,
+      date: a.date,
+      ts: appointmentTimestamp(a),
+      type: 'appointment',
+      appt: a,
+    }));
+    return [...logItems, ...apptItems];
+  }, [logs, appts]);
+
   const counts = useMemo(() => {
     const c: Record<FilterKey, number> = {
-      all: logs.length,
+      all: allItems.length,
       appointment: 0,
       medication: 0,
       meal: 0,
@@ -163,48 +203,56 @@ export default function HistorialPage() {
       checkin: 0,
       note: 0,
     };
-    for (const l of logs) {
-      if (l.type in c) c[l.type as FilterKey]++;
+    for (const it of allItems) {
+      if (it.type in c) c[it.type as FilterKey]++;
     }
     return c;
-  }, [logs]);
+  }, [allItems]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return logs.filter((l) => {
-      if (filter !== 'all' && l.type !== filter) return false;
+    return allItems.filter((it) => {
+      if (filter !== 'all' && it.type !== filter) return false;
       if (!q) return true;
-      const hay =
-        (l.label ?? '').toLowerCase() +
-        ' ' +
-        (l.notes ?? '').toLowerCase() +
-        ' ' +
-        (l.symptomTags ?? []).join(' ');
-      return hay.includes(q);
+      if (it.kind === 'log') {
+        const l = it.entry;
+        const hay =
+          (l.label ?? '').toLowerCase() +
+          ' ' +
+          (l.notes ?? '').toLowerCase() +
+          ' ' +
+          (l.symptomTags ?? []).join(' ');
+        return hay.includes(q);
+      } else {
+        const a = it.appt;
+        const hay =
+          (a.title ?? '').toLowerCase() + ' ' + (a.notes ?? '').toLowerCase();
+        return hay.includes(q);
+      }
     });
-  }, [logs, filter, query]);
+  }, [allItems, filter, query]);
 
   const { upcoming, past } = useMemo(() => {
     const todayISO = localDateISO();
-    const future: LogEntry[] = [];
-    const paste: LogEntry[] = [];
-    for (const log of filtered) {
-      if (log.date > todayISO) future.push(log);
-      else paste.push(log);
+    const future: TimelineItem[] = [];
+    const paste: TimelineItem[] = [];
+    for (const it of filtered) {
+      if (it.date > todayISO) future.push(it);
+      else paste.push(it);
     }
-    const groupBy = (arr: LogEntry[], asc: boolean) => {
-      const map = new Map<string, LogEntry[]>();
-      for (const log of arr) {
-        const a = map.get(log.date) ?? [];
-        a.push(log);
-        map.set(log.date, a);
+    const groupBy = (arr: TimelineItem[], asc: boolean): GroupedDay[] => {
+      const map = new Map<string, TimelineItem[]>();
+      for (const it of arr) {
+        const a = map.get(it.date) ?? [];
+        a.push(it);
+        map.set(it.date, a);
       }
       return [...map.entries()]
         .sort(([a], [b]) => (asc ? a.localeCompare(b) : b.localeCompare(a)))
-        .map(([date, entries]) => ({
+        .map(([date, items]) => ({
           date,
           label: formatDateLabel(date),
-          entries: entries.sort((x, y) => (asc ? x.timestamp - y.timestamp : y.timestamp - x.timestamp)),
+          items: items.sort((x, y) => (asc ? x.ts - y.ts : y.ts - x.ts)),
         }));
     };
     return {
@@ -294,9 +342,7 @@ export default function HistorialPage() {
                     {day.label}
                   </span>
                 </li>,
-                ...day.entries.map((entry, idx) => (
-                  <TimelineRow key={entry.id ?? `${entry.date}-${entry.timestamp}-u-${idx}`} entry={entry} />
-                )),
+                ...day.items.map((it) => <TimelineRow key={`u-${it.id}`} item={it} />),
               ])}
             </ul>
           </section>
@@ -307,8 +353,8 @@ export default function HistorialPage() {
             <h2 className="mb-3 font-serif text-[15px] italic capitalize text-coral">{day.label}</h2>
             <ul className="relative">
               <span aria-hidden className="absolute left-[52px] top-1 bottom-1 w-px bg-hairline/90" />
-              {day.entries.map((entry, idx) => (
-                <TimelineRow key={entry.id ?? `${entry.date}-${entry.timestamp}-${idx}`} entry={entry} />
+              {day.items.map((it) => (
+                <TimelineRow key={it.id} item={it} />
               ))}
             </ul>
           </section>
@@ -320,23 +366,70 @@ export default function HistorialPage() {
 
 function parseAppointmentNotes(raw: string | undefined) {
   if (!raw) return { specialty: '', bring: '', extra: '' };
-  const chunks = raw.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
+  const parts = raw
+    .split(/\s*·\s*|\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
   let specialty = '';
   let bring = '';
   const extras: string[] = [];
-  for (const c of chunks) {
-    if (/^llevar[:\s]/i.test(c)) bring = c.replace(/^llevar[:\s]*/i, '').trim();
-    else if (!specialty) specialty = c;
-    else extras.push(c);
+  for (const p of parts) {
+    if (/^especialidad[:\s]/i.test(p)) specialty = p.replace(/^especialidad[:\s]*/i, '').trim();
+    else if (/^llevar[:\s]/i.test(p)) bring = p.replace(/^llevar[:\s]*/i, '').trim();
+    else if (!specialty) specialty = p;
+    else extras.push(p);
   }
-  return { specialty, bring, extra: extras.join('\n\n') };
+  return { specialty, bring, extra: extras.join(' · ') };
 }
 
-function TimelineRow({ entry }: { entry: LogEntry }) {
-  const tone = toneFor(entry.type);
-  const time = formatTime(entry.timestamp);
-  const isAppt = entry.type === 'appointment';
-  const appt = isAppt ? parseAppointmentNotes(entry.notes) : null;
+function TimelineRow({ item }: { item: TimelineItem }) {
+  const tone = toneFor(item.type);
+  const time = formatTime(item.ts);
+
+  if (item.kind === 'appt') {
+    const apt = item.appt;
+    const parsed = parseAppointmentNotes(apt.notes);
+    return (
+      <motion.li
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="relative mb-3 grid grid-cols-[44px_18px_1fr] items-start gap-x-2"
+      >
+        <span className="mt-1.5 text-right text-[11px] font-semibold tabular-nums text-muted/90">
+          {apt.time ?? '—'}
+        </span>
+        <span className="relative flex h-[18px] justify-center">
+          <span className={`mt-1.5 inline-block h-2.5 w-2.5 rounded-full ${tone.dot} ring-4 ring-background`} />
+        </span>
+        <div className="min-w-0 rounded-[16px] border border-coral/25 bg-white/95 px-3 py-2.5 shadow-soft">
+          <div className="flex items-center gap-1.5">
+            <span className={`flex h-5 w-5 items-center justify-center rounded-md ${tone.tint} ${tone.text}`}>
+              {iconFor('appointment', 'h-3 w-3')}
+            </span>
+            <span className={`text-[10px] font-semibold uppercase tracking-wide ${tone.text}`}>Cita médica</span>
+          </div>
+          <p className="mt-1 text-[14px] font-semibold leading-snug text-ink">{apt.title}</p>
+          {parsed.specialty && (
+            <p className="mt-0.5 text-[12px] leading-snug text-muted">{parsed.specialty}</p>
+          )}
+          {parsed.bring && (
+            <div className="mt-2 rounded-lg border border-coral/15 bg-coral/5 px-2.5 py-1.5">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-coral/90">Recuerda llevar</p>
+              <p className="mt-0.5 text-[12px] italic leading-snug text-muted">{parsed.bring}</p>
+            </div>
+          )}
+          {parsed.extra && (
+            <div className="mt-2 rounded-lg bg-background/70 px-2.5 py-1.5">
+              <p className="whitespace-pre-wrap text-[12px] italic leading-snug text-muted">{parsed.extra}</p>
+            </div>
+          )}
+        </div>
+      </motion.li>
+    );
+  }
+
+  const entry = item.entry;
   return (
     <motion.li
       initial={{ opacity: 0, y: 6 }}
@@ -345,11 +438,9 @@ function TimelineRow({ entry }: { entry: LogEntry }) {
       className="relative mb-3 grid grid-cols-[44px_18px_1fr] items-start gap-x-2"
     >
       <span className="mt-1.5 text-right text-[11px] font-semibold tabular-nums text-muted/90">{time}</span>
-
       <span className="relative flex h-[18px] justify-center">
         <span className={`mt-1.5 inline-block h-2.5 w-2.5 rounded-full ${tone.dot} ring-4 ring-background`} />
       </span>
-
       <div className="min-w-0 rounded-[16px] border border-hairline/70 bg-white/95 px-3 py-2.5 shadow-soft">
         <div className="flex items-center gap-1.5">
           <span className={`flex h-5 w-5 items-center justify-center rounded-md ${tone.tint} ${tone.text}`}>
@@ -360,10 +451,6 @@ function TimelineRow({ entry }: { entry: LogEntry }) {
           </span>
         </div>
         <p className="mt-1 text-[14px] font-semibold leading-snug text-ink">{entry.label}</p>
-
-        {isAppt && appt?.specialty && (
-          <p className="mt-0.5 text-[12px] leading-snug text-muted">{appt.specialty}</p>
-        )}
 
         {entry.type === 'checkin' &&
           entry.value &&
@@ -392,24 +479,11 @@ function TimelineRow({ entry }: { entry: LogEntry }) {
           </div>
         )}
 
-        {isAppt && appt?.bring && (
-          <div className="mt-2 rounded-lg border border-coral/15 bg-coral/5 px-2.5 py-1.5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-coral/90">Recuerda llevar</p>
-            <p className="mt-0.5 text-[12px] italic leading-snug text-muted">{appt.bring}</p>
+        {entry.notes && (
+          <div className="mt-2 rounded-lg bg-background/70 px-2.5 py-1.5">
+            <p className="whitespace-pre-wrap text-[12px] italic leading-snug text-muted">{entry.notes}</p>
           </div>
         )}
-
-        {isAppt
-          ? appt?.extra && (
-              <div className="mt-2 rounded-lg bg-background/70 px-2.5 py-1.5">
-                <p className="whitespace-pre-wrap text-[12px] italic leading-snug text-muted">{appt.extra}</p>
-              </div>
-            )
-          : entry.notes && (
-              <div className="mt-2 rounded-lg bg-background/70 px-2.5 py-1.5">
-                <p className="whitespace-pre-wrap text-[12px] italic leading-snug text-muted">{entry.notes}</p>
-              </div>
-            )}
       </div>
     </motion.li>
   );

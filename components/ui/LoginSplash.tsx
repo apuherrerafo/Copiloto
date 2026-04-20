@@ -23,7 +23,7 @@ export default function LoginSplash({ name }: { name?: string }) {
           animate={{ scale: [1, 1.05, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <HypoMascot size={112} title="HypoCopilot" />
+          <HypoMascot size={140} animated title="HypoAI, tu copiloto" />
         </motion.div>
       </motion.div>
 

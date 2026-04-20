@@ -199,17 +199,34 @@ export default function FastRing() {
         <svg viewBox="0 0 220 220" className="h-full w-full -rotate-90">
           <defs>
             <linearGradient id="ringStrokeSage" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#9BB8A3" />
-              <stop offset="100%" stopColor="#5B7A65" />
+              <stop offset="0%" stopColor="#B6DCBF" />
+              <stop offset="45%" stopColor="#6FA07C" />
+              <stop offset="100%" stopColor="#3E6A51" />
             </linearGradient>
             <linearGradient id="ringStrokeAmber" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#D4B078" />
-              <stop offset="100%" stopColor="#C09050" />
+              <stop offset="0%" stopColor="#EAC78B" />
+              <stop offset="50%" stopColor="#C99154" />
+              <stop offset="100%" stopColor="#8F5F2A" />
             </linearGradient>
             <linearGradient id="ringStrokeCoral" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#D4988A" />
-              <stop offset="100%" stopColor="#C47663" />
+              <stop offset="0%" stopColor="#E6A89A" />
+              <stop offset="50%" stopColor="#C47663" />
+              <stop offset="100%" stopColor="#8F4638" />
             </linearGradient>
+            <filter id="ringGlow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="3.5" result="blur">
+                <animate
+                  attributeName="stdDeviation"
+                  values="3;7.5;3"
+                  dur="2.8s"
+                  repeatCount="indefinite"
+                />
+              </feGaussianBlur>
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
           <circle cx="110" cy="110" r={R} fill="none" stroke="#E8E5E0" strokeWidth="10" />
           <motion.circle
@@ -221,9 +238,13 @@ export default function FastRing() {
             strokeWidth="10"
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
-            initial={{ strokeDashoffset: CIRCUMFERENCE }}
-            animate={{ strokeDashoffset: dashOffset }}
-            transition={{ duration: 1.15, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+            filter="url(#ringGlow)"
+            initial={{ strokeDashoffset: CIRCUMFERENCE, opacity: 0.75 }}
+            animate={{ strokeDashoffset: dashOffset, opacity: [0.75, 1, 0.75] }}
+            transition={{
+              strokeDashoffset: { duration: 1.15, ease: [0.22, 1, 0.36, 1], delay: 0.15 },
+              opacity: { duration: 2.8, repeat: Infinity, ease: 'easeInOut' },
+            }}
           />
         </svg>
 

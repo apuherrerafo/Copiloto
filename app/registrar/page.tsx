@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { addLog, getLogsByDate, type SymptomTag } from '@/lib/store/db';
+import { addAppointment } from '@/lib/store/appointments';
 import { localDateISO, addDaysLocal } from '@/lib/dates';
 import { LEVO_DOSE_LABEL } from '@/lib/brand';
 import { playUiSound } from '@/lib/sounds';
@@ -74,13 +75,28 @@ function timestampForEntryDate(entryDateIso: string): number {
   return new Date(y, m - 1, d, 12, 0, 0, 0).getTime();
 }
 
+const VALID_TYPES: EntryType[] = ['meal', 'medication', 'walking', 'symptom', 'appointment', 'note'];
+
 export default function RegistrarPage() {
+  return (
+    <Suspense>
+      <RegistrarInner />
+    </Suspense>
+  );
+}
+
+function RegistrarInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialType = ((): EntryType => {
+    const t = searchParams?.get('type');
+    return t && (VALID_TYPES as string[]).includes(t) ? (t as EntryType) : 'meal';
+  })();
   const todayISO = localDateISO();
   const oldestISO = localDateISO(addDaysLocal(new Date(), -365));
   const farFutureISO = localDateISO(addDaysLocal(new Date(), 365));
   const [entryDate, setEntryDate] = useState(todayISO);
-  const [type, setType] = useState<EntryType>('meal');
+  const [type, setType] = useState<EntryType>(initialType);
   const [label, setLabel] = useState('');
   const [mood, setMood] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
@@ -114,12 +130,6 @@ export default function RegistrarPage() {
     setSelectedSymptomTags([]);
   }
 
-  function timestampForAppointment(dateISO: string, time: string): number {
-    const [y, m, d] = dateISO.split('-').map(Number);
-    const [hh, mm] = time.split(':').map(Number);
-    return new Date(y, (m ?? 1) - 1, d ?? 1, hh ?? 12, mm ?? 0, 0, 0).getTime();
-  }
-
   async function handleSave(skipAbsorptionCheck = false) {
     const isAppt = type === 'appointment';
     const finalLabel = isAppt
@@ -141,6 +151,30 @@ export default function RegistrarPage() {
 
     setSaving(true);
     try {
+      if (isAppt) {
+        const specialty = apptSpecialty.trim();
+        const bring = apptBring.trim();
+        const noteParts = [
+          specialty ? `Especialidad: ${specialty}` : '',
+          bring ? `Llevar: ${bring}` : '',
+          notes.trim(),
+        ].filter(Boolean);
+        addAppointment({
+          title: finalLabel,
+          date: entryDate,
+          time: apptTime || undefined,
+          type: 'medico',
+          notes: noteParts.length ? noteParts.join(' · ') : undefined,
+        });
+        playUiSound('success');
+        setSaved(true);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('copiloto-refresh'));
+        }
+        setTimeout(() => router.push('/historial'), 800);
+        return;
+      }
+
       const emotionNote = emotionBubble
         ? `[${EMOTION_BUBBLES.find((e) => e.key === emotionBubble)?.label ?? emotionBubble}] `
         : '';
@@ -148,21 +182,9 @@ export default function RegistrarPage() {
       if (skipAbsorptionCheck && absorptionConflict) {
         extra = `Nota: registro antes de ${LEVO_ABSORPTION_MINUTES} min tras levotiroxina (${absorptionConflict.levoTimeLabel}); decisión consciente del usuario.\n`;
       }
-      let finalNotes: string | undefined;
-      if (isAppt) {
-        const parts = [
-          apptSpecialty.trim(),
-          apptBring.trim() ? `Llevar: ${apptBring.trim()}` : '',
-          notes.trim(),
-        ].filter(Boolean);
-        finalNotes = parts.length ? parts.join('\n\n') : undefined;
-      } else {
-        finalNotes = `${extra}${emotionNote}${notes.trim()}`.trim() || undefined;
-      }
+      const finalNotes = `${extra}${emotionNote}${notes.trim()}`.trim() || undefined;
 
-      const ts = isAppt
-        ? timestampForAppointment(entryDate, apptTime)
-        : timestampForEntryDate(entryDate);
+      const ts = timestampForEntryDate(entryDate);
 
       await addLog({
         date: entryDate,
