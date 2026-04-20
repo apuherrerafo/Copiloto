@@ -74,7 +74,7 @@ export default function HypoNavFloat() {
 
         <Link
           href="/copiloto"
-          className="block rounded-[1.35rem] border border-ink/[0.08] bg-[#E4E1DC]/95 px-4 py-2.5 shadow-hypo-float backdrop-blur-md transition-[transform,filter,opacity] duration-150 ease-out active:scale-[0.97] active:brightness-[0.97] active:opacity-95"
+          className="block rounded-[1.35rem] border border-ink/12 bg-[#CEC6BA] px-4 py-2.5 shadow-soft ring-1 ring-ink/[0.04] transition-[transform,filter,opacity] duration-150 ease-out active:scale-[0.97] active:brightness-[0.97] active:opacity-95"
           aria-label="Open HypoAI — Ask HypoAI any curiosity you have"
         >
           <p className="text-[13px] font-medium leading-snug text-ink/90">
