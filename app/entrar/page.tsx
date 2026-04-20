@@ -8,6 +8,7 @@ import { signIn } from 'next-auth/react';
 import { APP_NAME, APP_TAGLINE } from '@/lib/brand';
 import { useAppLoading } from '@/contexts/app-loading';
 import HypoSplashHero from '@/components/ui/HypoSplashHero';
+import HypoWalkStrip from '@/components/ui/HypoWalkStrip';
 import LoginSplash from '@/components/ui/LoginSplash';
 
 const showGoogle = process.env.NEXT_PUBLIC_GOOGLE_LOGIN === 'true';
@@ -101,7 +102,11 @@ export default function EntrarPage() {
           </div>
         </div>
 
-        <div className="flex-1 px-6 pt-3 pb-10 flex flex-col justify-end gap-2 max-w-md mx-auto w-full">
+        <div className="shrink-0 w-full max-w-md mx-auto px-6 py-1 pointer-events-none">
+          <HypoWalkStrip mascotSize={76} edgeInset={8} duration={15} direction="ltr" />
+        </div>
+
+        <div className="flex-1 px-6 pt-2 pb-10 flex flex-col justify-end gap-2 max-w-md mx-auto w-full">
           <AnimatePresence>
             {success ? (
               <motion.p
