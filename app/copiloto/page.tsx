@@ -4,9 +4,10 @@ import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { getLogsByDate, getLogsForLastNDays } from '@/lib/store/db';
-import { getFastElapsed } from '@/lib/protocols/julio';
+import { getFastElapsed, isEatingWindow } from '@/lib/protocols/julio';
 import { localDateISO } from '@/lib/dates';
 import { buildRecentLogsDigest } from '@/lib/chat/recent-digest';
+import { formatProtocolForPrompt, readProtocolSettings } from '@/lib/protocols/user-protocol';
 import { stripMarkdownForDisplay } from '@/lib/chat/sanitize-display';
 import HypoMascot from '@/components/ui/HypoMascot';
 
@@ -102,6 +103,10 @@ function CopilotoInner() {
       ]);
       const fastElapsedHours = getFastElapsed();
       const recentDigest = buildRecentLogsDigest(weekLogs);
+      const s = readProtocolSettings();
+      const eatingWindowLine = isEatingWindow()
+        ? `Inside eating window (~${s.breakFastHour}:00–${s.eatingWindowEndHour}:00, local).`
+        : 'Currently fasting (outside eating window).';
 
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -111,6 +116,8 @@ function CopilotoInner() {
           todayLogs,
           fastElapsedHours,
           recentDigest,
+          userProtocolSummary: formatProtocolForPrompt(),
+          contextMeta: { eatingWindowLine, maxFastHours: s.maxFastHours },
         }),
       });
 

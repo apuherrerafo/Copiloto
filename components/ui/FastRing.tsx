@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  EATING_WINDOW,
-  PROTOCOL,
+  getProtocolSnapshot,
   getFastBreak,
   getFastElapsed,
   getFastStart,
@@ -19,9 +18,9 @@ import {
 const R = 96;
 const CIRCUMFERENCE = 2 * Math.PI * R;
 
-function ringStrokeColor(hours: number) {
-  if (hours >= PROTOCOL.fast.maxHours) return 'url(#ringStrokeCoral)';
-  if (hours >= PROTOCOL.fast.durationHours) return 'url(#ringStrokeAmber)';
+function ringStrokeColor(hours: number, maxH: number, targetH: number) {
+  if (hours >= maxH) return 'url(#ringStrokeCoral)';
+  if (hours >= targetH) return 'url(#ringStrokeAmber)';
   return 'url(#ringStrokeSage)';
 }
 
@@ -52,7 +51,7 @@ type Phase = {
   lead: string;
 };
 
-function phaseFromElapsed(h: number, now: Date): Phase {
+function phaseFromElapsed(h: number, now: Date, maxH: number, targetH: number): Phase {
   if (isEatingWindow(now)) {
     return {
       tag: 'eating',
@@ -61,7 +60,7 @@ function phaseFromElapsed(h: number, now: Date): Phase {
       lead: 'Hydrate well and prioritize real protein.',
     };
   }
-  if (h >= PROTOCOL.fast.maxHours) {
+  if (h >= maxH) {
     return {
       tag: 'over',
       label: 'Fast limit exceeded',
@@ -69,7 +68,7 @@ function phaseFromElapsed(h: number, now: Date): Phase {
       lead: 'Do not wait, break with something light.',
     };
   }
-  if (h >= PROTOCOL.fast.durationHours) {
+  if (h >= targetH) {
     return {
       tag: 'complete',
       label: 'Fast complete',
@@ -77,7 +76,9 @@ function phaseFromElapsed(h: number, now: Date): Phase {
       lead: 'You can break the fast whenever you are ready.',
     };
   }
-  if (h >= 12) {
+  const mid = Math.max(6, targetH * 0.55);
+  const deep = Math.max(10, targetH * 0.75);
+  if (h >= deep) {
     return {
       tag: 'burning',
       label: 'Burning fat',
@@ -85,7 +86,7 @@ function phaseFromElapsed(h: number, now: Date): Phase {
       lead: 'Your body is burning fat.',
     };
   }
-  if (h >= 8) {
+  if (h >= mid) {
     return {
       tag: 'glucoShift',
       label: 'Switching fuel',
@@ -119,11 +120,13 @@ export default function FastRing() {
     const onRefresh = () => refresh();
     document.addEventListener('visibilitychange', onVis);
     window.addEventListener('copiloto-refresh', onRefresh);
+    window.addEventListener('hypo-storage-sync', onRefresh);
     window.addEventListener('focus', onRefresh);
     return () => {
       clearInterval(id);
       document.removeEventListener('visibilitychange', onVis);
       window.removeEventListener('copiloto-refresh', onRefresh);
+      window.removeEventListener('hypo-storage-sync', onRefresh);
       window.removeEventListener('focus', onRefresh);
     };
   }, [refresh]);
@@ -142,15 +145,19 @@ export default function FastRing() {
     return () => clearInterval(id);
   }, []);
 
+  const snap = getProtocolSnapshot();
+  const eatEndH = snap.eatingWindowEndHour;
+
   const elapsed = getFastElapsed(now);
   const fastStart = getFastStart(now);
   const fastBreak = getFastBreak(fastStart);
 
-  const target = PROTOCOL.fast.durationHours;
+  const target = snap.fast.durationHours;
+  const maxH = snap.fast.maxHours;
   const progress = Math.min(elapsed / target, 1);
   const dashOffset = CIRCUMFERENCE * (1 - progress);
-  const stroke = ringStrokeColor(elapsed);
-  const phase = phaseFromElapsed(elapsed, now);
+  const stroke = ringStrokeColor(elapsed, maxH, target);
+  const phase = phaseFromElapsed(elapsed, now, maxH, target);
 
   const displayHours = Math.floor(elapsed);
   const startLabel = isSameDay(fastStart, now) ? 'Started today' : 'Started yesterday';
@@ -161,7 +168,7 @@ export default function FastRing() {
   let remainingLine = '';
   if (phase.tag === 'eating') {
     const eatingEnd = new Date(now);
-    eatingEnd.setHours(20, 0, 0, 0);
+    eatingEnd.setHours(eatEndH, 0, 0, 0);
     const minsToClose = Math.max(0, Math.round((eatingEnd.getTime() - now.getTime()) / 60_000));
     const { h: ceH, m: ceM } = hmFromMinutes(minsToClose);
     remainingLine =
@@ -204,7 +211,7 @@ export default function FastRing() {
           </p>
         </div>
         <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted/80">
-          Window {target}:{EATING_WINDOW.durationHours}
+          Window {target}:{snap.eatingWindowDurationHours || 8}
         </p>
       </div>
 

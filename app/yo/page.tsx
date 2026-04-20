@@ -1,17 +1,24 @@
 'use client';
 
-import { useEffect, useState, useRef, type ChangeEvent } from 'react';
+import { useEffect, useState, useRef, useMemo, type ChangeEvent } from 'react';
 import {
   requestNotificationPermission,
   scheduleProtocolNotifications,
   getNotificationStatus,
   sendTestNotification,
+  getProtocolAlertScheduleRows,
 } from '@/lib/notifications/schedule';
 import { useHypoSession } from '@/components/layout/AppShell';
 import { readSession, saveSession } from '@/lib/auth/session';
 import { compressImageToDataUrl } from '@/lib/images/compress-avatar';
 import { LEVO_DOSE_LABEL } from '@/lib/brand';
-import { PROTOCOL } from '@/lib/protocols/julio';
+import { getProtocolSnapshot } from '@/lib/protocols/julio';
+import {
+  DEFAULT_PROTOCOL_SETTINGS,
+  getSmartDefaultSettings,
+  sanitizeProtocolSettings,
+  type UserProtocolSettings,
+} from '@/lib/protocols/user-protocol';
 import { pushProfileAndProtocol } from '@/lib/sync/push';
 import { collectProtocolChecksForSync } from '@/lib/sync/protocol-collect';
 
@@ -24,16 +31,8 @@ interface Profile {
   notes: string;
   medication?: string | null;
   medicationMcg?: string | number | null;
+  protocolSettings?: UserProtocolSettings;
 }
-
-const NOTIFICATION_SCHEDULE = [
-  { time: '08:00', label: 'Morning — open app + micro-lesson', icon: '🌅' },
-  { time: '10:55', label: 'Levothyroxine (5 min ahead) + absorption', icon: '💊' },
-  { time: '12:00', label: 'Break the fast + glucose', icon: '🍽️' },
-  { time: '13:45', label: 'Post-lunch walk (nudge)', icon: '🚶' },
-  { time: '19:45', label: 'Last meal (15 min) + circadian', icon: '⏰' },
-  { time: '20:15', label: 'Post-dinner walk (nudge)', icon: '🚶' },
-];
 
 export default function YoPage() {
   const { session, refresh, logout } = useHypoSession();
@@ -44,15 +43,31 @@ export default function YoPage() {
     height: '',
     goal: 'Metabolic control and body composition',
     notes: '',
+    protocolSettings: { ...DEFAULT_PROTOCOL_SETTINGS },
   });
   const [saved, setSaved] = useState(false);
+  const [scheduleSuggested, setScheduleSuggested] = useState(false);
   const [notifStatus, setNotifStatus] = useState<'granted' | 'denied' | 'default' | 'unsupported'>('default');
   const [testNotifHint, setTestNotifHint] = useState<string | null>(null);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem('copiloto_profile');
-      if (stored) setProfile(JSON.parse(stored));
+      if (stored) {
+        const p = JSON.parse(stored) as Profile;
+        const hasSavedSchedule = !!p.protocolSettings;
+        setProfile({
+          ...p,
+          protocolSettings: hasSavedSchedule
+            ? sanitizeProtocolSettings(p.protocolSettings!)
+            : getSmartDefaultSettings(),
+        });
+        setScheduleSuggested(!hasSavedSchedule);
+      } else {
+        // Brand-new user — anchor to phone time
+        setProfile(prev => ({ ...prev, protocolSettings: getSmartDefaultSettings() }));
+        setScheduleSuggested(true);
+      }
     } catch {}
     setNotifStatus(getNotificationStatus());
   }, []);
@@ -67,7 +82,17 @@ export default function YoPage() {
     function onStorageSync() {
       try {
         const stored = localStorage.getItem('copiloto_profile');
-        if (stored) setProfile(JSON.parse(stored));
+        if (stored) {
+          const p = JSON.parse(stored) as Profile;
+          const hasSavedSchedule = !!p.protocolSettings;
+          setProfile({
+            ...p,
+            protocolSettings: hasSavedSchedule
+              ? sanitizeProtocolSettings(p.protocolSettings!)
+              : getSmartDefaultSettings(),
+          });
+          setScheduleSuggested(!hasSavedSchedule);
+        }
       } catch {
         /* ignore */
       }
@@ -77,19 +102,47 @@ export default function YoPage() {
   }, []);
 
   function save() {
-    localStorage.setItem('copiloto_profile', JSON.stringify(profile));
+    const toSave: Profile = {
+      ...profile,
+      protocolSettings: sanitizeProtocolSettings(profile.protocolSettings ?? {}),
+    };
+    localStorage.setItem('copiloto_profile', JSON.stringify(toSave));
+    setProfile(toSave);
     const s = readSession();
     if (s) {
       saveSession({
         ...s,
-        name: profile.name.trim() || s.name,
+        name: toSave.name.trim() || s.name,
       });
       refresh();
     }
     window.dispatchEvent(new Event('hypo-storage-sync'));
-    void pushProfileAndProtocol(profile, collectProtocolChecksForSync());
+    void pushProfileAndProtocol(toSave, collectProtocolChecksForSync());
+    if (getNotificationStatus() === 'granted') scheduleProtocolNotifications();
+    setScheduleSuggested(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  }
+
+  const protocolSanitized = useMemo(
+    () => sanitizeProtocolSettings(profile.protocolSettings ?? {}),
+    [profile.protocolSettings],
+  );
+  const protocolSnap = useMemo(() => getProtocolSnapshot(protocolSanitized), [protocolSanitized]);
+  const notificationScheduleRows = useMemo(
+    () => getProtocolAlertScheduleRows(protocolSanitized),
+    [protocolSanitized],
+  );
+
+  function patchProtocol(partial: Partial<UserProtocolSettings>) {
+    setProfile(prev => ({
+      ...prev,
+      protocolSettings: sanitizeProtocolSettings({
+        ...DEFAULT_PROTOCOL_SETTINGS,
+        ...prev.protocolSettings,
+        ...partial,
+      }),
+    }));
   }
 
   async function onAvatarPick(e: ChangeEvent<HTMLInputElement>) {
@@ -185,33 +238,145 @@ export default function YoPage() {
           Download report (JSON) — cloud memory
         </a>
 
-        <button
-          type="button"
-          onClick={logout}
-          className="w-full py-3 rounded-xl border border-coral/35 text-coral font-semibold text-sm hover:bg-coral/5 transition-colors"
-        >
-          Log out
-        </button>
+        {/* My schedule — aligned with your clinician; drives rings, chat, and alert times */}
+        <div className="bg-surface border border-gray-100 rounded-2xl px-5 py-4 space-y-4">
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-medium">My schedule</p>
+            {scheduleSuggested ? (
+              <p className="text-[11px] text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 mt-2 leading-relaxed">
+                Suggested from your current local time — confirm or adjust, then save.
+              </p>
+            ) : (
+              <p className="text-[11px] text-muted mt-1 leading-relaxed">
+                Set times that match your plan with your doctor. This app does not change medication dose — only habits
+                and logging.
+              </p>
+            )}
+          </div>
 
-        {/* Health protocol card */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-gray-400 block mb-1.5">Levothyroxine — hour</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={4}
+                max={14}
+                value={protocolSanitized.levoHour}
+                onChange={e => patchProtocol({ levoHour: Number(e.target.value) })}
+                className="w-full bg-background border border-gray-100 rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-sage transition-colors"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-1.5">Levothyroxine — min</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={59}
+                value={protocolSanitized.levoMinute}
+                onChange={e => patchProtocol({ levoMinute: Number(e.target.value) })}
+                className="w-full bg-background border border-gray-100 rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-sage transition-colors"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-gray-400 block mb-1.5">Break fast (earliest meal)</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={5}
+                max={14}
+                value={protocolSanitized.breakFastHour}
+                onChange={e => patchProtocol({ breakFastHour: Number(e.target.value) })}
+                className="w-full bg-background border border-gray-100 rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-sage transition-colors"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-1.5">Last meal (window ends)</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={17}
+                max={23}
+                value={protocolSanitized.eatingWindowEndHour}
+                onChange={e => patchProtocol({ eatingWindowEndHour: Number(e.target.value) })}
+                className="w-full bg-background border border-gray-100 rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-sage transition-colors"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-gray-400 block mb-1.5">Evening fast starts (~last meal)</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={16}
+                max={23}
+                value={protocolSanitized.eveningFastStartHour}
+                onChange={e => patchProtocol({ eveningFastStartHour: Number(e.target.value) })}
+                className="w-full bg-background border border-gray-100 rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-sage transition-colors"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 block mb-1.5">Target fast (hours)</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={12}
+                max={20}
+                value={protocolSanitized.targetFastHours}
+                onChange={e => patchProtocol({ targetFastHours: Number(e.target.value) })}
+                className="w-full bg-background border border-gray-100 rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-sage transition-colors"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-400 block mb-1.5">Max fast without clinician ok (hours)</label>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={12}
+              max={22}
+              value={protocolSanitized.maxFastHours}
+              onChange={e => patchProtocol({ maxFastHours: Number(e.target.value) })}
+              className="w-full bg-background border border-gray-100 rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-sage transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Health protocol card — live preview */}
         <div className="bg-sage/10 border border-sage/20 rounded-2xl px-5 py-4">
           <p className="text-xs text-sage uppercase tracking-widest font-semibold mb-3">Active protocol</p>
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
               <span>💊</span>
-              <span className="text-ink">Levothyroxine {LEVO_DOSE_LABEL} — 11:00 (fasted, water)</span>
+              <span className="text-ink">
+                Levothyroxine {LEVO_DOSE_LABEL} — {protocolSnap.levothyroxine.time} (fasted, water)
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span>🚶</span>
-              <span className="text-ink">Post-lunch walk ~2:00 PM · post-dinner ~9:00 PM</span>
+              <span className="text-ink">
+                Post-lunch walk ~{notificationScheduleRows[3]?.time ?? '—'} · post-dinner ~
+                {notificationScheduleRows[5]?.time ?? '—'}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span>🍽️</span>
-              <span className="text-ink">Eating window: 12:00 PM — 8:00 PM</span>
+              <span className="text-ink">
+                Eating window: {protocolSnap.fastBreak.time} — {protocolSnap.lastMeal.time}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span>⏱️</span>
-              <span className="text-ink">16h fast · 17h max</span>
+              <span className="text-ink">
+                {protocolSnap.fast.durationHours}h target fast · {protocolSnap.fast.maxHours}h max
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span>🫀</span>
@@ -279,12 +444,13 @@ export default function YoPage() {
           </div>
 
           <button
+            type="button"
             onClick={save}
             className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
               saved ? 'bg-sage/20 text-sage' : 'bg-sage text-white hover:bg-sage/90'
             }`}
           >
-            {saved ? '✓ Saved' : 'Save profile'}
+            {saved ? '✓ Saved' : 'Save profile & schedule'}
           </button>
         </div>
 
@@ -304,8 +470,8 @@ export default function YoPage() {
           </div>
 
           <div className="space-y-2 mb-4">
-            {NOTIFICATION_SCHEDULE.map(n => (
-              <div key={n.time} className="flex items-center gap-3 text-sm">
+            {notificationScheduleRows.map(n => (
+              <div key={`${n.time}-${n.label}`} className="flex items-center gap-3 text-sm">
                 <span>{n.icon}</span>
                 <span className="text-gray-400 w-12 shrink-0 font-mono text-xs">{n.time}</span>
                 <span className="text-ink">{n.label}</span>
@@ -326,7 +492,7 @@ export default function YoPage() {
             <div className="space-y-2">
               <p className="text-[11px] text-muted leading-relaxed">
                 Smart copilot alerts watch your fasting window and eating window (e.g. if you have not logged a meal and
-                you are near the {PROTOCOL.fast.maxHours} h mark, or when dinner time is closing). They complement the schedule
+                you are near the {protocolSnap.fast.maxHours} h mark, or when dinner time is closing). They complement the schedule
                 above — habits only, not medical advice. Bring patterns to your doctor so dose and diet stay
                 clinician-led.
               </p>
@@ -359,6 +525,14 @@ export default function YoPage() {
             </p>
           )}
         </div>
+
+        <button
+          type="button"
+          onClick={logout}
+          className="w-full py-3 rounded-xl border border-coral/35 text-coral font-semibold text-sm hover:bg-coral/5 transition-colors"
+        >
+          Log out
+        </button>
       </div>
     </div>
   );

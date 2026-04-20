@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { getLogsByDate } from '@/lib/store/db';
 import { localDateISO } from '@/lib/dates';
-import { getFastElapsed, PROTOCOL } from '@/lib/protocols/julio';
+import { getFastElapsed, getProtocolSnapshot } from '@/lib/protocols/julio';
 
 const HYD_TARGET_L = 2.0;
 const HYD_CUP_ML = 250;
@@ -85,10 +85,12 @@ export default function TodayStatusCards() {
     refresh();
     const onRefresh = () => refresh();
     window.addEventListener('copiloto-refresh', onRefresh);
+    window.addEventListener('hypo-storage-sync', onRefresh);
     window.addEventListener('focus', onRefresh);
     const tick = setInterval(refresh, 60_000);
     return () => {
       window.removeEventListener('copiloto-refresh', onRefresh);
+      window.removeEventListener('hypo-storage-sync', onRefresh);
       window.removeEventListener('focus', onRefresh);
       clearInterval(tick);
     };
@@ -97,9 +99,10 @@ export default function TodayStatusCards() {
   const hydL = (cups * HYD_CUP_ML) / 1000;
   const hydRemainingL = Math.max(0, HYD_TARGET_L - hydL);
 
+  const snap = getProtocolSnapshot();
   const pillTone: StatusTone = pillTakenAt ? 'ok' : 'pending';
   const pillTitle = pillTakenAt ? 'Taken' : 'Pending';
-  const pillHint = pillTakenAt ? `At ${pillTakenAt}` : `${PROTOCOL.levothyroxine.time}`;
+  const pillHint = pillTakenAt ? `At ${pillTakenAt}` : `${snap.levothyroxine.time}`;
 
   const hydTone: StatusTone = hydRemainingL === 0 ? 'ok' : hydL > 0 ? 'progress' : 'pending';
   const hydTitle = `${hydL.toFixed(1)} L`;
@@ -107,7 +110,7 @@ export default function TodayStatusCards() {
     hydRemainingL === 0 ? 'Goal reached' : `${hydRemainingL.toFixed(1)} L to go`;
 
   const elapsed = getFastElapsed(now);
-  const inKetosis = elapsed >= 12 && elapsed < PROTOCOL.fast.maxHours;
+  const inKetosis = elapsed >= 12 && elapsed < snap.fast.maxHours;
   const ketoTone: StatusTone = inKetosis ? 'ok' : 'pending';
   const ketoTitle = inKetosis ? 'Active' : 'Upcoming';
   const ketoHint = inKetosis

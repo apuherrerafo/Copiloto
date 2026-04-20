@@ -1,6 +1,16 @@
 'use client';
 
-import { APP_NAME, LEVO_DOSE_LABEL } from '@/lib/brand';
+/**
+ * RTB — reliable alerts when the app is fully closed:
+ * Web Push (VAPID) + service worker `showNotification`, or native wrappers.
+ * Client `setTimeout` only runs while JS is alive (tab/PWA background is best-effort).
+ */
+import { APP_NAME } from '@/lib/brand';
+import { readProtocolSettings, sanitizeProtocolSettings, type UserProtocolSettings } from '@/lib/protocols/user-protocol';
+
+function pad2(n: number): string {
+  return n.toString().padStart(2, '0');
+}
 
 interface ProtocolNotification {
   hour: number;
@@ -10,54 +20,97 @@ interface ProtocolNotification {
   tag: string;
 }
 
-/**
- * Notificaciones estilo "¿Sabías que?" — lenguaje accesible, tono Ray Ramis
- * (biohacking práctico + conexión al hipotiroidismo, sin jerga técnica).
- */
-const PROTOCOL_NOTIFICATIONS: ProtocolNotification[] = [
-  {
-    hour: 8,
-    minute: 0,
-    title: `🌅 ${APP_NAME} — Good morning!`,
-    body: `Did you know 10 minutes of morning sunlight raises vitamin D, lowers cortisol and lifts your mood? With hypothyroidism this matters even more: high cortisol blocks your pill from working well. Step out onto the balcony if that’s all you can do. Check today’s protocol.`,
-    tag: 'morning-open',
-  },
-  {
-    hour: 10,
-    minute: 55,
-    title: `💊 ${APP_NAME} — Your pill in 5 min`,
-    body: `Did you know taking levothyroxine on an empty stomach can roughly double how much your body absorbs versus taking it with coffee? No caffeine, no milk, no supplements for 60 min. Just water. A tiny habit with a huge impact on how you feel all day.`,
-    tag: 'levotiroxina',
-  },
-  {
-    hour: 12,
-    minute: 0,
-    title: `🍽️ ${APP_NAME} — Open your window`,
-    body: `Did you know after hours of fasting your body is primed to absorb nutrients well? Eat protein + healthy fat first. That gives your thyroid the "bricks" it needs to turn the pill into real energy. Avoid pure carbs — the 2-hour crash is real.`,
-    tag: 'fastbreak',
-  },
-  {
-    hour: 13,
-    minute: 45,
-    title: `🚶 ${APP_NAME} — Walk for 10 minutes`,
-    body: `Did you know walking right after a meal makes your muscles absorb glucose without needing insulin? With hypothyroidism your metabolism is already slow — this walk is like an express turbo for your afternoon energy. No special shoes, no excuses.`,
-    tag: 'walk-lunch-nudge',
-  },
-  {
-    hour: 19,
-    minute: 45,
-    title: `⏰ ${APP_NAME} — Close your window in 15 min`,
-    body: `Did you know eating very late desynchronizes your circadian clock? At that hour the same plate can hit your metabolism harder. Close at 8:00 PM. Your liver and thyroid rest better when the fast starts on time.`,
-    tag: 'lastmeal',
-  },
-  {
-    hour: 20,
-    minute: 15,
-    title: `🚶 ${APP_NAME} — Gentle post-dinner walk`,
-    body: `Did you know a calm 15-minute walk activates your nervous system’s "rest mode"? It improves digestion, stabilizes blood sugar for the overnight fast and prepares deep sleep. Don’t rush or push hard — that would raise cortisol and delay sleep.`,
-    tag: 'walk-dinner-nudge',
-  },
+/** Micro-lessons — times follow saved protocol (Profile → My schedule). */
+function buildProtocolNotificationsFromSettings(override?: UserProtocolSettings): ProtocolNotification[] {
+  const s = override ? sanitizeProtocolSettings(override) : readProtocolSettings();
+  const levoTotalMin = s.levoHour * 60 + s.levoMinute;
+  let remMin = levoTotalMin - 5;
+  if (remMin < 0) remMin += 24 * 60;
+  const levoReminderH = Math.floor(remMin / 60) % 24;
+  const levoReminderM = remMin % 60;
+
+  const walkLunchTotal = s.breakFastHour * 60 + 2 * 60 + 45;
+  const walkLunchH = Math.floor(walkLunchTotal / 60) % 24;
+  const walkLunchMi = walkLunchTotal % 60;
+
+  const lastWarnTotal = s.eatingWindowEndHour * 60 - 15;
+  const lastWarnH = Math.max(0, Math.floor(lastWarnTotal / 60) % 24);
+  const lastWarnMi = ((lastWarnTotal % 60) + 60) % 60;
+
+  const walkDinnerTotal = Math.min(s.eatingWindowEndHour * 60 + 15, 23 * 60 + 45);
+  const walkDinnerH = Math.floor(walkDinnerTotal / 60) % 24;
+  const walkDinnerMi = walkDinnerTotal % 60;
+
+  const closeLabel = `${s.eatingWindowEndHour}:00`;
+
+  return [
+    {
+      hour: 8,
+      minute: 0,
+      title: `🌅 ${APP_NAME} — Good morning!`,
+      body: `Did you know 10 minutes of morning sunlight raises vitamin D, lowers cortisol and lifts your mood? With hypothyroidism this matters even more: high cortisol blocks your pill from working well. Step out onto the balcony if that’s all you can do. Check today’s protocol.`,
+      tag: 'morning-open',
+    },
+    {
+      hour: levoReminderH,
+      minute: levoReminderM,
+      title: `💊 ${APP_NAME} — Your pill in 5 min`,
+      body: `Did you know taking levothyroxine on an empty stomach can roughly double how much your body absorbs versus taking it with coffee? No caffeine, no milk, no supplements for 60 min. Just water. A tiny habit with a huge impact on how you feel all day.`,
+      tag: 'levotiroxina',
+    },
+    {
+      hour: s.breakFastHour,
+      minute: 0,
+      title: `🍽️ ${APP_NAME} — Open your window`,
+      body: `Did you know after hours of fasting your body is primed to absorb nutrients well? Eat protein + healthy fat first. That gives your thyroid the "bricks" it needs to turn the pill into real energy. Avoid pure carbs — the 2-hour crash is real.`,
+      tag: 'fastbreak',
+    },
+    {
+      hour: walkLunchH,
+      minute: walkLunchMi,
+      title: `🚶 ${APP_NAME} — Walk for 10 minutes`,
+      body: `Did you know walking right after a meal makes your muscles absorb glucose without needing insulin? With hypothyroidism your metabolism is already slow — this walk is like an express turbo for your afternoon energy. No special shoes, no excuses.`,
+      tag: 'walk-lunch-nudge',
+    },
+    {
+      hour: lastWarnH,
+      minute: lastWarnMi,
+      title: `⏰ ${APP_NAME} — Close your window in 15 min`,
+      body: `Did you know eating very late desynchronizes your circadian clock? At that hour the same plate can hit your metabolism harder. Close at ${closeLabel}. Your liver and thyroid rest better when the fast starts on time.`,
+      tag: 'lastmeal',
+    },
+    {
+      hour: walkDinnerH,
+      minute: walkDinnerMi,
+      title: `🚶 ${APP_NAME} — Gentle post-dinner walk`,
+      body: `Did you know a calm 15-minute walk activates your nervous system’s "rest mode"? It improves digestion, stabilizes blood sugar for the overnight fast and prepares deep sleep. Don’t rush or push hard — that would raise cortisol and delay sleep.`,
+      tag: 'walk-dinner-nudge',
+    },
+  ];
+}
+
+const ALERT_SCHEDULE_UI_ROWS: Array<{ icon: string; label: string }> = [
+  { icon: '🌅', label: 'Morning — open app + micro-lesson' },
+  { icon: '💊', label: 'Levothyroxine (5 min ahead) + absorption' },
+  { icon: '🍽️', label: 'Break the fast + glucose' },
+  { icon: '🚶', label: 'Post-lunch walk (nudge)' },
+  { icon: '⏰', label: 'Last meal (15 min) + circadian' },
+  { icon: '🚶', label: 'Post-dinner walk (nudge)' },
 ];
+
+/** Display rows for Profile → Protocol alerts (matches `buildProtocolNotificationsFromSettings`). */
+export function getProtocolAlertScheduleRows(override?: UserProtocolSettings): Array<{
+  time: string;
+  label: string;
+  icon: string;
+}> {
+  const notifs = buildProtocolNotificationsFromSettings(override);
+  return notifs.map((n, i) => ({
+    time: `${pad2(n.hour)}:${pad2(n.minute)}`,
+    label: ALERT_SCHEDULE_UI_ROWS[i]?.label ?? n.title,
+    icon: ALERT_SCHEDULE_UI_ROWS[i]?.icon ?? '•',
+  }));
+}
 
 const protocolTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
@@ -112,7 +165,7 @@ export function scheduleProtocolNotifications(): () => void {
   }
 
   clearProtocolTimers();
-  for (const notif of PROTOCOL_NOTIFICATIONS) {
+  for (const notif of buildProtocolNotificationsFromSettings()) {
     scheduleOne(notif);
   }
 
@@ -121,13 +174,13 @@ export function scheduleProtocolNotifications(): () => void {
 
 export function scheduleFastLimitAlert(fastElapsedHours: number): (() => void) | null {
   if (typeof window === 'undefined' || Notification.permission !== 'granted') return null;
-  const max = 17;
+  const max = readProtocolSettings().maxFastHours;
   if (fastElapsedHours >= max) return null;
 
   const remaining = (max - fastElapsedHours) * 3600 * 1000;
   const timer = setTimeout(() => {
     new Notification(`⚠️ ${APP_NAME} — Fast limit`, {
-      body: '17h: your liver is already mobilizing a lot of endogenous glucose; break it with something light. Prolonged fasting is not a substitute for medical evaluation.',
+      body: `${max}h: your liver is already mobilizing a lot of endogenous glucose; break it with something light. Prolonged fasting is not a substitute for medical evaluation.`,
       icon: '/icons/icon-192.png',
       tag: 'fast-limit',
       requireInteraction: true,

@@ -39,22 +39,38 @@ HOW YOU RESPOND:
 USEFUL BIOHACKING CONTEXT FOR JULIO:
 ${BIOHACK_TIROIDES_SNIPPET}`;
 
-export function buildContextBlock(todayLogs: Array<{type: string; label: string; timestamp: number}>, fastElapsedHours: number): string {
+export type ChatContextMeta = {
+  /** Client-computed; e.g. "Inside eating window (~12:00–20:00)." */
+  eatingWindowLine?: string;
+  maxFastHours?: number;
+};
+
+export function buildContextBlock(
+  todayLogs: Array<{ type: string; label: string; timestamp: number }>,
+  fastElapsedHours: number,
+  meta?: ChatContextMeta,
+): string {
   const now = new Date();
   const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-  const isEatingWindow = (() => {
-    const h = now.getHours(), m = now.getMinutes();
-    return (h * 60 + m) >= 720 && (h * 60 + m) < 1200;
-  })();
+  const maxF = meta?.maxFastHours ?? 17;
+  const ewLine =
+    meta?.eatingWindowLine?.trim() || 'Eating window: use your saved schedule in the app (Me tab).';
 
   const logsText = todayLogs.length > 0
     ? todayLogs.map(l => `  - ${l.type}: ${l.label} (${new Date(l.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })})`).join('\n')
     : '  - No entries yet';
 
+  const fastWarn =
+    fastElapsedHours > maxF
+      ? ` (past ${maxF} h: break the fast soon)`
+      : fastElapsedHours > maxF - 1
+        ? ' (near your fast ceiling)'
+        : '';
+
   return `\n\nCURRENT CONTEXT (${now.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}):
 Time: ${timeStr}.
-${isEatingWindow ? 'Inside eating window (12:00–20:00).' : 'Currently fasting.'}
-Approx. fast hours: ${fastElapsedHours.toFixed(1)} h${fastElapsedHours > 17 ? ' (past 17 h: break the fast soon)' : fastElapsedHours > 16 ? ' (near the prudent limit)' : ''}.
+${ewLine}
+Approx. fast hours: ${fastElapsedHours.toFixed(1)} h${fastWarn}.
 Today's logs:
 ${logsText}`;
 }
@@ -66,5 +82,15 @@ export function buildRecentDaysBlock(digest: string): string {
   return `
 
 RECENT DAYS (rolling log digest — not medical records):
+${t}`;
+}
+
+/** Schedule summary from the app (client); never overrides clinician instructions. */
+export function buildUserProtocolBlock(summary: string): string {
+  const t = summary.trim();
+  if (!t) return '';
+  return `
+
+USER SCHEDULE (from app settings — align with your clinician):
 ${t}`;
 }
