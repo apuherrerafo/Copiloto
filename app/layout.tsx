@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import AppShell from '@/components/layout/AppShell';
+import PWARecovery from '@/components/layout/PWARecovery';
 import { APP_NAME, APP_TAGLINE } from '@/lib/brand';
 
 export const metadata: Metadata = {
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body>
+        <PWARecovery />
         <AppShell>
           <main className="min-h-screen pb-20">{children}</main>
         </AppShell>

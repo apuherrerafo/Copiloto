@@ -4,17 +4,8 @@ const withPWA = require('next-pwa')({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
-  runtimeCaching: [
-    {
-      urlPattern: /^https?.*/,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'copiloto-cache',
-        expiration: { maxEntries: 200, maxAgeSeconds: 7 * 24 * 60 * 60 },
-        networkTimeoutSeconds: 10,
-      },
-    },
-  ],
+  // No uses un patrón global tipo /^https?.*/: cachea incluso /_next/static y tras un nuevo
+  // build los chunks cambian de hash → 404 y la app queda en blanco. Deja los defaults de next-pwa.
 });
 
 const nextConfig = {
