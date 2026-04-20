@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic';
+// Vercel Edge/Node will revalidate every hour; CDN can serve stale for up to 24 h
+export const revalidate = 3600;
 
 export interface FeedItem {
   id: string;
@@ -232,5 +233,9 @@ export async function GET() {
     })
     .slice(0, 20);
 
-  return NextResponse.json(scored);
+  return NextResponse.json(scored, {
+    headers: {
+      'Cache-Control': 's-maxage=3600, stale-while-revalidate=86400',
+    },
+  });
 }

@@ -6,6 +6,8 @@ import FeedCard from './FeedCard';
 import { type FeedItem } from '@/app/api/news/route';
 
 const TAG_FILTERS = ['todos', 'ayuno', 'tiroides', 'metabolismo', 'biohack'] as const;
+const NEWS_CACHE_KEY = 'copiloto_news_cache';
+const NEWS_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 function tagLabel(t: string) {
   if (t === 'todos') return 'All';
@@ -15,15 +17,47 @@ function tagLabel(t: string) {
   return 'Metabolism';
 }
 
+function readCache(): { items: FeedItem[]; ts: number } | null {
+  try {
+    const raw = localStorage.getItem(NEWS_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { items: FeedItem[]; ts: number };
+    if (!Array.isArray(parsed.items) || typeof parsed.ts !== 'number') return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(items: FeedItem[]) {
+  try {
+    localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify({ items, ts: Date.now() }));
+  } catch {
+    /* ignore quota errors */
+  }
+}
+
 export default function NewsFeed() {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('todos');
 
   useEffect(() => {
+    // Show cached items instantly, then revalidate in background if stale
+    const cached = readCache();
+    if (cached) {
+      setItems(cached.items);
+      setLoading(false);
+      if (Date.now() - cached.ts < NEWS_CACHE_TTL_MS) return; // fresh — skip network
+    }
+
     fetch('/api/news')
       .then(r => r.json())
-      .then(data => { setItems(data); setLoading(false); })
+      .then((data: FeedItem[]) => {
+        setItems(data);
+        setLoading(false);
+        writeCache(data);
+      })
       .catch(() => setLoading(false));
   }, []);
 

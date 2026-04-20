@@ -1,21 +1,26 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
+
+// Critical above-the-fold — loaded eagerly
 import AbsorptionRing from '@/components/ui/AbsorptionRing';
 import FastRing from '@/components/ui/FastRing';
-import EveningPROM from '@/components/ui/EveningPROM';
-import ProtocolTimeline from '@/components/ui/ProtocolTimeline';
-import NewsFeed from '@/components/ui/NewsFeed';
 import NotificationInit from '@/components/ui/NotificationInit';
 import PageEnter from '@/components/ui/PageEnter';
-import YesterdayCoach from '@/components/ui/YesterdayCoach';
-import DidYouKnowBanner from '@/components/ui/DidYouKnowBanner';
-import MiniCalendar from '@/components/ui/MiniCalendar';
 import MotivationalHeader from '@/components/ui/MotivationalHeader';
 import DailyCheckin from '@/components/ui/DailyCheckin';
-import AlarmsPanel from '@/components/ui/AlarmsPanel';
 import TodayStatusCards from '@/components/ui/TodayStatusCards';
-import UpcomingAppointments from '@/components/ui/UpcomingAppointments';
+
+// Below-the-fold — lazy-loaded after first paint
+const EveningPROM = dynamic(() => import('@/components/ui/EveningPROM'), { ssr: false });
+const MiniCalendar = dynamic(() => import('@/components/ui/MiniCalendar'), { ssr: false });
+const UpcomingAppointments = dynamic(() => import('@/components/ui/UpcomingAppointments'), { ssr: false });
+const DidYouKnowBanner = dynamic(() => import('@/components/ui/DidYouKnowBanner'), { ssr: false });
+const YesterdayCoach = dynamic(() => import('@/components/ui/YesterdayCoach'), { ssr: false });
+const AlarmsPanel = dynamic(() => import('@/components/ui/AlarmsPanel'), { ssr: false });
+const ProtocolTimeline = dynamic(() => import('@/components/ui/ProtocolTimeline'), { ssr: false });
+const NewsFeed = dynamic(() => import('@/components/ui/NewsFeed'), { ssr: false });
 
 export default function HoyPage() {
   return (

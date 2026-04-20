@@ -1,6 +1,22 @@
 import type { Metadata, Viewport } from 'next';
 import { getServerSession } from 'next-auth';
+import { Instrument_Serif, Inter } from 'next/font/google';
 import './globals.css';
+
+const instrumentSerif = Instrument_Serif({
+  weight: ['400'],
+  style: ['normal', 'italic'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-serif',
+});
+
+const inter = Inter({
+  weight: ['400', '500', '600'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+});
 import AppShell from '@/components/layout/AppShell';
 import PWARecovery from '@/components/layout/PWARecovery';
 import AuthSessionProvider from '@/components/providers/AuthSessionProvider';
@@ -37,7 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const session = (await getServerSession(authOptions)) ?? null;
 
   return (
-    <html lang="en">
+    <html lang="en" className={`${instrumentSerif.variable} ${inter.variable}`}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
