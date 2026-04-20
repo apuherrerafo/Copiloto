@@ -12,7 +12,6 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut, getSession } from 'next-auth/react';
-import { AnimatePresence, motion } from 'framer-motion';
 import BottomNav from '@/components/layout/BottomNav';
 import HealthDisclaimerGate from '@/components/legal/HealthDisclaimerGate';
 import { clearSession, readSession, type HypoSession } from '@/lib/auth/session';
@@ -148,17 +147,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
       ) : (
         <>
           {status === 'authenticated' ? <HealthDisclaimerGate /> : null}
-          <AnimatePresence mode="sync" initial={false}>
-            <motion.div
-              key={pathname}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
+          {/* CSS-only tab transition — no double-mounting, no framer overhead */}
+          <div key={pathname} className="animate-tab-in">
+            {children}
+          </div>
           {showNav ? <BottomNav /> : null}
         </>
       )}

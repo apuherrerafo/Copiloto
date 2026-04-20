@@ -15,7 +15,7 @@ import {
   pickLearningPhrase,
 } from '@/lib/content/learning';
 
-const R = 96;
+const R = 78;
 const CIRCUMFERENCE = 2 * Math.PI * R;
 
 function ringStrokeColor(hours: number, maxH: number, targetH: number) {
@@ -186,11 +186,8 @@ export default function FastRing() {
   const currentPhrase = pickLearningPhrase(factIndex);
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-[22px] border border-white/70 bg-white/80 shadow-glass backdrop-blur-sm"
+    <section
+      className="rounded-[22px] border border-white/70 bg-white/90 shadow-glass"
       aria-label="Fast status"
     >
       <div className="flex items-center justify-between px-5 pt-4">
@@ -215,39 +212,25 @@ export default function FastRing() {
         </p>
       </div>
 
-      <div className="relative mx-auto mt-3 h-[16rem] w-[16rem] sm:h-[17rem] sm:w-[17rem]">
-        {(() => {
-          const halo =
-            phase.tag === 'over' || phase.tag === 'complete'
-              ? 'rgba(192,144,80,0.24)'
-              : phase.tag === 'eating'
-                ? 'rgba(212,176,120,0.20)'
-                : 'rgba(91,122,101,0.24)';
-          return (
-            <motion.div
-              className="pointer-events-none absolute inset-0 rounded-full"
-              style={{
-                background: `radial-gradient(circle, ${halo} 0%, transparent 62%)`,
-              }}
-              animate={{
-                scale: [1, 1.07, 1.02, 1.1, 1],
-                opacity: [0.55, 1, 0.7, 1, 0.55],
-              }}
-              transition={{
-                duration: 1.4,
-                repeat: Infinity,
-                ease: 'easeInOut',
-                times: [0, 0.12, 0.28, 0.42, 1],
-              }}
-            />
-          );
-        })()}
+      <div className="relative mx-auto mt-3 h-[13rem] w-[13rem]">
+        {/* Static halo — no continuous animation */}
+        <div
+          className="pointer-events-none absolute inset-0 rounded-full opacity-60"
+          style={{
+            background: `radial-gradient(circle, ${
+              phase.tag === 'over' || phase.tag === 'complete'
+                ? 'rgba(192,144,80,0.30)'
+                : phase.tag === 'eating'
+                  ? 'rgba(212,176,120,0.25)'
+                  : 'rgba(91,122,101,0.28)'
+            } 0%, transparent 65%)`,
+          }}
+        />
 
-        <motion.svg
+        <svg
           viewBox="0 0 220 220"
           className="h-full w-full -rotate-90"
-          animate={{ opacity: showFact ? 0.15 : 1 }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          style={{ opacity: showFact ? 0.15 : 1, transition: 'opacity 0.4s ease' }}
         >
           <defs>
             <linearGradient id="ringStrokeSage" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -265,24 +248,9 @@ export default function FastRing() {
               <stop offset="50%" stopColor="#C47663" />
               <stop offset="100%" stopColor="#8F4638" />
             </linearGradient>
-            <filter id="ringGlow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="3" result="blur">
-                <animate
-                  attributeName="stdDeviation"
-                  values="3;11;4;13;3"
-                  keyTimes="0;0.12;0.28;0.42;1"
-                  dur="1.4s"
-                  repeatCount="indefinite"
-                />
-              </feGaussianBlur>
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
           </defs>
           <circle cx="110" cy="110" r={R} fill="none" stroke="#E8E5E0" strokeWidth="10" />
-          <motion.circle
+          <circle
             cx="110"
             cy="110"
             r={R}
@@ -291,23 +259,10 @@ export default function FastRing() {
             strokeWidth="10"
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
-            filter="url(#ringGlow)"
-            initial={{ strokeDashoffset: CIRCUMFERENCE, opacity: 0.8 }}
-            animate={{
-              strokeDashoffset: dashOffset,
-              opacity: [0.7, 1, 0.82, 1, 0.7],
-            }}
-            transition={{
-              strokeDashoffset: { duration: 1.15, ease: [0.22, 1, 0.36, 1], delay: 0.15 },
-              opacity: {
-                duration: 1.4,
-                repeat: Infinity,
-                ease: 'easeInOut',
-                times: [0, 0.12, 0.28, 0.42, 1],
-              },
-            }}
+            strokeDashoffset={dashOffset}
+            className="transition-[stroke-dashoffset] duration-[1100ms] ease-out"
           />
-        </motion.svg>
+        </svg>
 
         {/* Center content: hours display OR learning fact */}
         <div className="absolute inset-0 flex items-center justify-center px-6">
@@ -385,6 +340,6 @@ export default function FastRing() {
           </div>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }

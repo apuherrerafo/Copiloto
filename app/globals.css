@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Lightweight tab transition — CSS only, no JS cost, single DOM tree */
+@keyframes tabIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-tab-in {
+  animation: tabIn 0.14s ease-out both;
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
