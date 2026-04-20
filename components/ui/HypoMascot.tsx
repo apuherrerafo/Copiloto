@@ -49,9 +49,6 @@ export default function HypoMascot({
         </linearGradient>
       </defs>
 
-      {/* sombra suave bajo el cuerpo */}
-      <ellipse cx="50" cy="90" rx="28" ry="4" fill="#2A1F1A" opacity="0.08" />
-
       {/* cuerpo */}
       <ellipse cx="50" cy="66" rx="30" ry="22" fill={`url(#${bodyGrad})`} />
 

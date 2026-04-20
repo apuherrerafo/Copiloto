@@ -64,20 +64,7 @@ export default function HypoWalkStrip({
           times: [0, 0.25, 0.5, 0.75, 1],
         }}
       >
-        <div className="relative h-full w-full">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute bottom-[8%] left-1/2 h-[38%] w-[95%] max-w-[7.5rem] -translate-x-1/2 rounded-[50%] opacity-[0.75] blur-[14px]"
-            style={{
-              background:
-                'radial-gradient(ellipse 80% 100% at 50% 100%, rgba(91, 122, 101, 0.42) 0%, rgba(255, 178, 132, 0.2) 42%, transparent 72%)',
-            }}
-          />
-          <HypoMascot
-            size={mascotSize}
-            className="relative z-[1] drop-shadow-[0_12px_24px_rgba(91,122,101,0.32)]"
-          />
-        </div>
+        <HypoMascot size={mascotSize} />
       </motion.div>
     </div>
   );

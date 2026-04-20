@@ -43,7 +43,7 @@ export default function FullScreenLoader({
             ease: 'easeInOut',
           }}
         >
-          <HypoMascot size={112} animated className="drop-shadow-[0_8px_20px_rgba(91,122,101,0.2)]" />
+          <HypoMascot size={112} animated />
         </motion.div>
         <p className="mt-8 text-[15px] font-semibold tracking-wide text-ink">Loading</p>
       </div>
