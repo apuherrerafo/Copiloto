@@ -285,14 +285,12 @@ export default function MonthlyComplianceRings() {
     <>
       <section
         className="mb-5 overflow-hidden rounded-[1.35rem] border border-hairline/80 bg-white/80 shadow-soft backdrop-blur-sm"
-        aria-label="Protocol compliance in clinical history"
+        aria-label="Protocol compliance stats"
       >
         <div className="border-b border-hairline/60 bg-white/55 px-4 py-3.5">
           <div className="mb-2.5 flex flex-wrap items-start justify-between gap-2">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
-                Clinical overview
-              </p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Stats</p>
               <p className="mt-0.5 font-serif text-[1.15rem] italic leading-tight text-ink">
                 Plan compliance
               </p>

@@ -14,7 +14,7 @@ import { localDateISO } from '@/lib/dates';
 import { useAppLoading } from '@/contexts/app-loading';
 import MonthlyComplianceRings from '@/components/history/MonthlyComplianceRings';
 
-type Tab = 'clinica' | 'agenda';
+type Tab = 'clinica' | 'stats' | 'agenda';
 
 type FilterKey =
   | 'all'
@@ -204,9 +204,15 @@ export default function HistorialPage() {
     return [...logItems, ...apptItems];
   }, [logs, appts]);
 
+  /** Clinical history tab: logged outcomes only (meals, meds, symptoms, etc.) — not appointments */
+  const timelineSource = useMemo(
+    () => allItems.filter((it) => it.kind === 'log'),
+    [allItems],
+  );
+
   const counts = useMemo(() => {
     const c: Record<FilterKey, number> = {
-      all: allItems.length,
+      all: timelineSource.length,
       appointment: 0,
       medication: 0,
       meal: 0,
@@ -215,34 +221,27 @@ export default function HistorialPage() {
       checkin: 0,
       note: 0,
     };
-    for (const it of allItems) {
+    for (const it of timelineSource) {
       if (it.type in c) c[it.type as FilterKey]++;
     }
     return c;
-  }, [allItems]);
+  }, [timelineSource]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return allItems.filter((it) => {
+    return timelineSource.filter((it) => {
       if (filter !== 'all' && it.type !== filter) return false;
       if (!q) return true;
-      if (it.kind === 'log') {
-        const l = it.entry;
-        const hay =
-          (l.label ?? '').toLowerCase() +
-          ' ' +
-          (l.notes ?? '').toLowerCase() +
-          ' ' +
-          (l.symptomTags ?? []).join(' ');
-        return hay.includes(q);
-      } else {
-        const a = it.appt;
-        const hay =
-          (a.title ?? '').toLowerCase() + ' ' + (a.notes ?? '').toLowerCase();
-        return hay.includes(q);
-      }
+      const l = it.entry;
+      const hay =
+        (l.label ?? '').toLowerCase() +
+        ' ' +
+        (l.notes ?? '').toLowerCase() +
+        ' ' +
+        (l.symptomTags ?? []).join(' ');
+      return hay.includes(q);
     });
-  }, [allItems, filter, query]);
+  }, [timelineSource, filter, query]);
 
   const { upcoming, past } = useMemo(() => {
     const todayISO = localDateISO();
@@ -299,13 +298,16 @@ export default function HistorialPage() {
         </h1>
       </div>
 
-      {/* Tabs: Historia clínica · Agenda */}
+      {/* Tabs: clinical log · stats · schedule */}
       <div className="px-safe">
         <div className="flex rounded-full border border-hairline/80 bg-white/85 p-1 shadow-soft">
-          {([
-            { key: 'clinica', label: 'Clinical history' },
-            { key: 'agenda', label: 'Schedule' },
-          ] as { key: Tab; label: string }[]).map((t) => {
+          {(
+            [
+              { key: 'clinica' as const, label: 'Clinical history' },
+              { key: 'stats' as const, label: 'Stats' },
+              { key: 'agenda' as const, label: 'Schedule' },
+            ] as const
+          ).map((t) => {
             const active = tab === t.key;
             return (
               <motion.button
@@ -313,7 +315,7 @@ export default function HistorialPage() {
                 type="button"
                 onClick={() => setTab(t.key)}
                 whileTap={{ scale: 0.96 }}
-                className={`relative flex-1 rounded-full px-3 py-2 text-[12.5px] font-semibold transition-colors ${
+                className={`relative min-w-0 flex-1 rounded-full px-2 py-2 text-[9px] font-semibold uppercase tracking-wide transition-colors sm:px-2.5 sm:text-[10px] ${
                   active ? 'text-white' : 'text-ink/70 hover:text-ink'
                 }`}
               >
@@ -324,7 +326,7 @@ export default function HistorialPage() {
                     transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                   />
                 )}
-                <span className="relative">{t.label}</span>
+                <span className="relative leading-tight">{t.label}</span>
               </motion.button>
             );
           })}
@@ -347,6 +349,19 @@ export default function HistorialPage() {
               onDelete={handleDeleteAppointment}
             />
           </motion.div>
+        ) : tab === 'stats' ? (
+          <motion.div
+            key="stats"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            className="pb-nav-clear"
+          >
+            <div className="mt-4 px-safe">
+              <MonthlyComplianceRings />
+            </div>
+          </motion.div>
         ) : (
           <motion.div
             key="clinica"
@@ -355,10 +370,6 @@ export default function HistorialPage() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
           >
-      <div className="mt-4 px-safe">
-        <MonthlyComplianceRings />
-      </div>
-
       <div className="mt-3 px-safe">
         <label className="relative flex w-full items-center">
           <span className="absolute left-3 text-muted">
@@ -414,8 +425,8 @@ export default function HistorialPage() {
         {!loading && upcoming.length === 0 && past.length === 0 && (
           <div className="py-16 text-center">
             <p className="mb-3 text-4xl">📋</p>
-            <p className="text-sm text-muted">No entries yet</p>
-            <p className="mt-1 text-xs text-muted/70">Tap the green + to log your first one</p>
+            <p className="text-sm text-muted">No clinical entries yet</p>
+            <p className="mt-1 text-xs text-muted/70">Log meals, meds, walks, and symptoms from the + button</p>
           </div>
         )}
 
