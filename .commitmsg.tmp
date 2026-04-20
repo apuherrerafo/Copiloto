@@ -1,8 +1,0 @@
-feat: icono full-bleed, gradient cálido, splash de login y registro de citas
-
-- public/icons/icon.svg ahora es full 512x512 sin margen transparente; elimina el borde negro que iOS pintaba al instalar la PWA. PNG 192/512 regenerados via npm run icons:build.
-- .home-mesh con malla orgánica cálida (peach + coral + sage) al estilo del mock de referencia. Nueva utilidad .warm-splash para overlays de bienvenida.
-- Componente LoginSplash: tras signIn correcto se muestra un splash animado con el logo, saludo personalizado y redirección suave a /.
-- /registrar: nuevo tipo cita médica (appointment) con campos quién / especialidad / hora / qué llevar. Permite fechas futuras (hasta 1 año) y emite timestamp con la hora real de la cita.
-- /historial: nuevo chip Citas con contador, sección Próximamente para fechas futuras y tarjeta específica de cita (subtítulo especialidad + bloque recordatorio de qué llevar en coral).
-- LogEntry.type extendido con 'appointment' (Supabase usa text, sin migración).
