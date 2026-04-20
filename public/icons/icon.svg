@@ -6,13 +6,16 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" fill="url(#hcg)"/>
-  <path
-    d="M112 256 h30 l22 -80 l52 156 l38 -208 l38 140 h68"
-    fill="none"
-    stroke="#F7F5F3"
-    stroke-width="30"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    opacity="0.97"
-  />
+  <!-- Centro del trazo ~ (236,228) vs centro lienzo (256,256) → translate(20,28) -->
+  <g transform="translate(20 28)">
+    <path
+      d="M112 256 h30 l22 -80 l52 156 l38 -208 l38 140 h68"
+      fill="none"
+      stroke="#F7F5F3"
+      stroke-width="30"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      opacity="0.97"
+    />
+  </g>
 </svg>
