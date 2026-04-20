@@ -66,6 +66,20 @@ export function isEatingWindow(now = new Date()): boolean {
   return totalMinutes >= 12 * 60 && totalMinutes < 20 * 60;
 }
 
+/** Minutes until the 17h fast mark from last night's fast start (0 once past deadline). */
+export function getMinutesUntilFastDeadline(now = new Date()): number {
+  const d = getFastDeadline(getFastStart(now));
+  return Math.max(0, Math.round((d.getTime() - now.getTime()) / 60000));
+}
+
+/** Minutes until 20:00 same calendar day; null if outside the eating window. */
+export function getMinutesUntilEatingWindowCloses(now = new Date()): number | null {
+  if (!isEatingWindow(now)) return null;
+  const end = new Date(now);
+  end.setHours(20, 0, 0, 0);
+  return Math.max(0, Math.round((end.getTime() - now.getTime()) / 60000));
+}
+
 export function getTodaySchedule() {
   return [
     { time: '11:00', key: 'pill', label: `Levothyroxine ${LEVO_DOSE_LABEL}`, type: 'medication' as const },

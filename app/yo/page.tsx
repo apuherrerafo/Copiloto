@@ -11,6 +11,7 @@ import { useHypoSession } from '@/components/layout/AppShell';
 import { readSession, saveSession } from '@/lib/auth/session';
 import { compressImageToDataUrl } from '@/lib/images/compress-avatar';
 import { LEVO_DOSE_LABEL } from '@/lib/brand';
+import { PROTOCOL } from '@/lib/protocols/julio';
 import { pushProfileAndProtocol } from '@/lib/sync/push';
 import { collectProtocolChecksForSync } from '@/lib/sync/protocol-collect';
 
@@ -324,8 +325,13 @@ export default function YoPage() {
           {notifStatus === 'granted' && (
             <div className="space-y-2">
               <p className="text-[11px] text-muted leading-relaxed">
-                Reminders use the open app: keep Copiloto in the background (or reopen before each time). Closing the app
-                completely means alerts resume only after the next launch.
+                Smart copilot alerts watch your fasting window and eating window (e.g. if you have not logged a meal and
+                you are near the {PROTOCOL.fast.maxHours} h mark, or when dinner time is closing). They complement the schedule
+                above — habits only, not medical advice. Bring patterns to your doctor so dose and diet stay
+                clinician-led.
+              </p>
+              <p className="text-[11px] text-muted leading-relaxed">
+                Reminders need the app running in the background; fully closing it pauses timers until you open again.
               </p>
               <button
                 type="button"
