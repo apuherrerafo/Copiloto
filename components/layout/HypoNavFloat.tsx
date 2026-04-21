@@ -18,18 +18,22 @@ export default function HypoNavFloat() {
         bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))',
       }}
     >
-      <div className="pointer-events-auto mx-auto max-w-lg">
+      {/*
+        Solo el Link debe ser pointer-events-auto: si el contenedor padre lo es, toda la banda max-w-lg
+        roba taps a botones que quedan detrás (p. ej. Save en /registrar).
+      */}
+      <div className="pointer-events-none mx-auto max-w-lg">
         <HypoWalkStrip
           mascotSize={MASCOT}
           edgeInset={10}
           duration={16}
           direction="rtl"
-          className="pointer-events-none relative mb-1"
+          className="relative mb-1"
         />
 
         <Link
           href="/copiloto"
-          className="block rounded-[1.35rem] border border-ink/12 bg-[#CEC6BA] px-4 py-2.5 shadow-soft ring-1 ring-ink/[0.04] motion-reduce:animate-none motion-reduce:shadow-soft animate-hypo-invite-pulse transition-[transform,opacity] duration-150 ease-out will-change-[filter,box-shadow] active:scale-[0.97] active:opacity-95 motion-safe:active:animate-none motion-safe:active:brightness-[0.97] motion-safe:active:shadow-soft"
+          className="pointer-events-auto block rounded-[1.35rem] border border-ink/12 bg-[#CEC6BA] px-4 py-2.5 shadow-soft ring-1 ring-ink/[0.04] motion-reduce:animate-none motion-reduce:shadow-soft animate-hypo-invite-pulse transition-[transform,opacity] duration-150 ease-out will-change-[filter,box-shadow] active:scale-[0.97] active:opacity-95 motion-safe:active:animate-none motion-safe:active:brightness-[0.97] motion-safe:active:shadow-soft"
           aria-label="Open HypoAI — Ask HypoAI any curiosity you have"
         >
           <p className="text-[13px] font-medium leading-snug text-ink/90">

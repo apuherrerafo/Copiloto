@@ -261,7 +261,7 @@ function RegistrarInner() {
         </div>
       </div>
 
-      <div className="px-6 space-y-5 pb-8">
+      <div className="px-6 space-y-5 pb-nav-clear">
         {/* Fecha del registro */}
         <div>
           <label className="mb-2 block text-xs font-medium uppercase tracking-widest text-muted">
