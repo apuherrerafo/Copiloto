@@ -177,7 +177,7 @@ function RegistrarInner() {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('copiloto-refresh'));
         }
-        setTimeout(() => router.push('/historial'), 800);
+        setTimeout(() => router.push('/historial?tab=agenda'), 800);
         return;
       }
 

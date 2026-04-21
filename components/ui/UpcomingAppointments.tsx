@@ -10,6 +10,13 @@ import {
 } from '@/lib/store/appointments';
 import { localDateISO } from '@/lib/dates';
 
+function dayOfMonthFromIso(iso: string): string {
+  const part = iso.split('-')[2];
+  if (!part) return '—';
+  const n = parseInt(part, 10);
+  return Number.isFinite(n) ? String(n) : part;
+}
+
 function relativeDayLabel(iso: string): string {
   const todayISO = localDateISO();
   const [y, m, d] = iso.split('-').map(Number);
@@ -34,7 +41,11 @@ export default function UpcomingAppointments() {
     load();
     const onRefresh = () => load();
     window.addEventListener('copiloto-refresh', onRefresh);
-    return () => window.removeEventListener('copiloto-refresh', onRefresh);
+    window.addEventListener('hypo-storage-sync', onRefresh);
+    return () => {
+      window.removeEventListener('copiloto-refresh', onRefresh);
+      window.removeEventListener('hypo-storage-sync', onRefresh);
+    };
   }, []);
 
   const next = useMemo(() => appts.slice(0, 3), [appts]);
@@ -53,7 +64,7 @@ export default function UpcomingAppointments() {
           Upcoming appointments
         </p>
         <Link
-          href="/historial"
+          href="/historial?tab=agenda"
           className="text-[11px] font-medium text-sage/90 hover:text-sage"
         >
           See all →
@@ -71,8 +82,8 @@ export default function UpcomingAppointments() {
                 <span className="text-[9px] font-bold uppercase leading-none tracking-wider">
                   {relativeDayLabel(apt.date).slice(0, 3)}
                 </span>
-                <span className="mt-0.5 font-serif text-[18px] italic leading-none">
-                  {apt.time ?? '—'}
+                <span className="mt-0.5 font-serif text-[18px] italic leading-none text-ink">
+                  {dayOfMonthFromIso(apt.date)}
                 </span>
               </div>
               <div className="min-w-0 flex-1">
@@ -80,7 +91,8 @@ export default function UpcomingAppointments() {
                   {apt.title}
                 </p>
                 <p className="mt-0.5 truncate text-[11px] leading-snug text-muted">
-                  {relativeDayLabel(apt.date)} · {TYPE_LABELS[apt.type]}
+                  {relativeDayLabel(apt.date)}
+                  {apt.time ? ` · ${apt.time}` : ''} · {TYPE_LABELS[apt.type]}
                   {apt.notes ? ` · ${apt.notes.split(/\s*·\s*|\n/)[0]}` : ''}
                 </p>
               </div>

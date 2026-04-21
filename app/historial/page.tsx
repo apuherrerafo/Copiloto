@@ -171,17 +171,32 @@ export default function HistorialPage() {
   function loadAll(silent = false) {
     if (!silent) setLoading(true);
     setAppts(loadAppointments());
-    getAllLogs().then((all) => {
-      setLogs(all);
-      setLoading(false);
-    });
+    void getAllLogs()
+      .then((all) => setLogs(all))
+      .catch(() => setLogs([]))
+      .finally(() => setLoading(false));
   }
+
+  useEffect(() => {
+    try {
+      const t = new URLSearchParams(window.location.search).get('tab');
+      if (t === 'agenda' || t === 'schedule') setTab('agenda');
+      else if (t === 'stats') setTab('stats');
+      else if (t === 'clinica' || t === 'clinical') setTab('clinica');
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   useEffect(() => {
     loadAll(false);
     const onRefresh = () => loadAll(true);
     window.addEventListener('copiloto-refresh', onRefresh);
-    return () => window.removeEventListener('copiloto-refresh', onRefresh);
+    window.addEventListener('hypo-storage-sync', onRefresh);
+    return () => {
+      window.removeEventListener('copiloto-refresh', onRefresh);
+      window.removeEventListener('hypo-storage-sync', onRefresh);
+    };
   }, []);
 
   const allItems = useMemo<TimelineItem[]>(() => {
@@ -346,7 +361,7 @@ export default function HistorialPage() {
           >
             <AgendaView
               appointments={appts}
-              loading={loading}
+              loading={false}
               onDelete={handleDeleteAppointment}
             />
           </motion.div>
@@ -473,6 +488,13 @@ export default function HistorialPage() {
 
 function apptTimestamp(a: Appointment): number {
   return appointmentTimestamp(a);
+}
+
+function dayOfMonthFromIso(iso: string): string {
+  const part = iso.split('-')[2];
+  if (!part) return '—';
+  const n = parseInt(part, 10);
+  return Number.isFinite(n) ? String(n) : part;
 }
 
 function relativeDay(iso: string): string {
@@ -662,13 +684,14 @@ function AppointmentCard({
           {relativeDay(apt.date).slice(0, 3)}
         </span>
         <span className="mt-0.5 font-serif text-[20px] italic leading-none text-ink">
-          {apt.time ?? '—'}
+          {dayOfMonthFromIso(apt.date)}
         </span>
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-[14px] font-semibold leading-tight text-ink">{apt.title}</p>
         <p className="mt-0.5 truncate text-[11.5px] leading-snug text-muted">
-          {relativeDay(apt.date)} · {APPT_TYPE_LABELS[apt.type]}
+          {relativeDay(apt.date)}
+          {apt.time ? ` · ${apt.time}` : ''} · {APPT_TYPE_LABELS[apt.type]}
           {parsed.specialty ? ` · ${parsed.specialty}` : ''}
         </p>
         {upcoming && parsed.bring && (
