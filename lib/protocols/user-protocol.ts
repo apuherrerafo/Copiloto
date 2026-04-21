@@ -33,17 +33,21 @@ function clamp(n: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, n));
 }
 
+function finiteNum(v: unknown): v is number {
+  return typeof v === 'number' && Number.isFinite(v);
+}
+
 export function sanitizeProtocolSettings(p: Partial<UserProtocolSettings>): UserProtocolSettings {
   const d = { ...DEFAULT_PROTOCOL_SETTINGS };
-  if (typeof p.eveningFastStartHour === 'number')
+  if (finiteNum(p.eveningFastStartHour))
     d.eveningFastStartHour = clamp(Math.round(p.eveningFastStartHour), 16, 23);
-  if (typeof p.breakFastHour === 'number') d.breakFastHour = clamp(Math.round(p.breakFastHour), 5, 14);
-  if (typeof p.eatingWindowEndHour === 'number')
+  if (finiteNum(p.breakFastHour)) d.breakFastHour = clamp(Math.round(p.breakFastHour), 5, 14);
+  if (finiteNum(p.eatingWindowEndHour))
     d.eatingWindowEndHour = clamp(Math.round(p.eatingWindowEndHour), 17, 23);
-  if (typeof p.maxFastHours === 'number') d.maxFastHours = clamp(Math.round(p.maxFastHours), 12, 22);
-  if (typeof p.targetFastHours === 'number') d.targetFastHours = clamp(Math.round(p.targetFastHours), 12, 20);
-  if (typeof p.levoHour === 'number') d.levoHour = clamp(Math.round(p.levoHour), 4, 14);
-  if (typeof p.levoMinute === 'number') d.levoMinute = clamp(Math.round(p.levoMinute), 0, 59);
+  if (finiteNum(p.maxFastHours)) d.maxFastHours = clamp(Math.round(p.maxFastHours), 12, 22);
+  if (finiteNum(p.targetFastHours)) d.targetFastHours = clamp(Math.round(p.targetFastHours), 12, 20);
+  if (finiteNum(p.levoHour)) d.levoHour = clamp(Math.round(p.levoHour), 4, 14);
+  if (finiteNum(p.levoMinute)) d.levoMinute = clamp(Math.round(p.levoMinute), 0, 59);
 
   if (d.breakFastHour >= d.eatingWindowEndHour) {
     d.eatingWindowEndHour = Math.min(23, d.breakFastHour + 8);

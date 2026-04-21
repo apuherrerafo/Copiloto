@@ -120,6 +120,7 @@ export default function YoPage() {
       refresh();
     }
     window.dispatchEvent(new Event('hypo-storage-sync'));
+    window.dispatchEvent(new Event('copiloto-refresh'));
     showLoader({
       title: 'Syncing profile…',
       subtitle: 'Uploading your settings to the cloud.',
@@ -360,6 +361,18 @@ export default function YoPage() {
               className="w-full bg-background border border-gray-100 rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-sage transition-colors"
             />
           </div>
+
+          <button
+            type="button"
+            onClick={() => void save()}
+            className="w-full rounded-xl bg-sage py-3 text-sm font-semibold text-white shadow-soft transition-colors hover:bg-sage/90 active:scale-[0.99]"
+          >
+            Save schedule
+          </button>
+          <p className="text-center text-[10px] text-muted leading-snug">
+            Same action as the green button under Personal details — saves protocol and profile on this device and syncs
+            when your account allows it.
+          </p>
         </div>
 
         {/* Health protocol card — live preview */}
